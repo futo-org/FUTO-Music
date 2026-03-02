@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/image_art"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:maxWidth="100dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintDimensionRatio="1"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:src="#111111"
+        app:shapeAppearanceOverlay="@style/roundedCorners_8dp"
+
+        />
+
+    <androidx.media3.ui.PlayerControlView
+        android:id="@+id/view_control"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        app:show_timeout="-1"
+        app:layout_constraintTop_toBottomOf="@id/image_art"
+        app:controller_layout_id="@layout/video_player_ui" />
+
+    <LinearLayout
+        android:id="@+id/container_trait_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="30dp"
+        app:layout_constraintTop_toBottomOf="@id/view_control"
+        app:layout_constraintLeft_toLeftOf="parent">
+
+        <ImageButton
+            android:id="@+id/button_shuffle"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/ic_shuffle"
+            android:background="@color/transparent"
+            android:scaleType="fitCenter"
+            android:padding="5dp"
+            />
+
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/container_trait_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="30dp"
+        app:layout_constraintTop_toBottomOf="@id/view_control"
+        app:layout_constraintRight_toRightOf="parent">
+        <ImageButton
+            android:id="@+id/button_loop"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/ic_repeat"
+            android:background="@color/transparent"
+            android:scaleType="fitCenter"
+            android:padding="5dp"
+            />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/container_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/container_trait_right"
+        app:layout_constraintBottom_toTopOf="@+id/container_buttons"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp">
+
+        <TextView
+            android:id="@+id/text_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_regular"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:text="Daft Punk"
+            android:textSize="17sp" />
+        <TextView
+            android:id="@+id/text_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_medium"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:text="Revolution 909"
+            android:textSize="26sp" />
+        <TextView
+            android:id="@+id/text_album"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_regular"
+            android:gravity="center"
+            android:text="Some Album Name"
+            android:textColor="#AAAAAAAA"
+            android:textSize="17sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/container_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/container_bottom"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center">
+        <ImageButton
+            android:id="@+id/button_left"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_skip_previous"
+            android:background="@color/transparent"
+            android:scaleType="fitCenter"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            />
+        <ImageButton
+            android:id="@+id/button_play"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/ic_play"
+            android:background="@drawable/background_round_35dp"
+            android:layout_margin="10dp"
+            android:scaleType="fitCenter"
+            android:padding="20dp"
+            />
+        <ImageButton
+            android:id="@+id/button_right"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_skip_next"
+            android:background="@color/transparent"
+            android:scaleType="fitCenter"
+            android:padding="10dp"
+            android:layout_margin="10dp"
+            />
+
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

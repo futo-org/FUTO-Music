@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="RoundButton">
+        <attr name="RoundButton_image" format="reference" />
+        <attr name="RoundButton_background" format="reference" />
+    </declare-styleable>
+</resources>

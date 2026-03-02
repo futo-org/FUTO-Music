@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.FUTOMusic" parent="Theme.AppCompat.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+
+        <item name="imageButtonStyle">@style/Theme.FUTOMusic.ImageButton</item>
+        <item name="android:textViewStyle">@style/Theme.FUTOMusic.TextView</item>
+    </style>
+    <style name="Theme.FUTOMusic.ImageButton" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background">@null</item>
+    </style>
+    <style name="Theme.FUTOMusic.TextView" parent="Widget.AppCompat.TextView">
+        <item name="android:background">@null</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+</resources>

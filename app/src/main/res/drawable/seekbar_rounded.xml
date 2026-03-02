@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <corners android:radius="10dp" /> <!-- Adjust the radius to control the roundness of the corners -->
+    <solid android:color="#DDDDDD" /> <!-- Background color for the time bar -->
+</shape>

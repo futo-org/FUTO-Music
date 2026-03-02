@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="top"
+    android:layoutDirection="ltr"
+    android:orientation="vertical">
+
+    <androidx.media3.ui.DefaultTimeBar
+        android:id="@+id/time_progress"
+        android:layout_width="match_parent"
+        android:layout_height="16dp"
+        android:layout_marginBottom="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="0dp"
+        app:bar_height="2dp"
+        app:scrubber_drawable="@drawable/player_thumb"
+        app:scrubber_disabled_size="0dp"
+        app:scrubber_enabled_size="16dp"
+        app:scrubber_dragged_size="20dp"
+        app:played_color="@color/colorPrimary"
+        app:buffered_color="#333333"
+        app:unplayed_color="#333333"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

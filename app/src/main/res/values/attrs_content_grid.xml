@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ContentGrid">
+        <attr name="ContentGrid_vertical" format="boolean" />
+        <attr name="ContentGrid_text" format="string" />
+        <attr name="ContentGrid_row_height" format="dimension" />
+    </declare-styleable>
+</resources>

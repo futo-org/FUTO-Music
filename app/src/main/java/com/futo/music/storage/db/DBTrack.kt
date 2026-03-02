@@ -1,0 +1,132 @@
+package com.futo.music.storage.db
+
+import android.content.Context
+import android.net.Uri
+import android.os.Bundle
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.room.Dao
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.Update
+import com.futo.music.models.ImageVariable
+import com.futo.music.models.playable.IPlayable
+import com.futo.music.models.playable.IPlayableTrack
+import com.futo.music.models.playable.PlayableType
+import com.futo.music.models.playable.Track
+import com.futo.music.states.StateDatabase
+import java.time.OffsetDateTime
+
+@Entity(tableName = "tracks")
+class DBTrack(
+    @PrimaryKey(autoGenerate = true) var id: Long = 0,
+
+    override val name: String,
+    val author: String,
+
+    val artistId: Long? = null,
+    val artistLine: String? = null,
+
+    val contentUrl: String? = null,
+
+    override val datePlayed: OffsetDateTime = OffsetDateTime.MIN,
+    val dateAdded: OffsetDateTime = OffsetDateTime.MIN,
+    val score: Int = 0,
+    val scoreCalculated: Int = 0,
+
+    val skips: Int = 0,
+    val plays: Int = 0,
+
+    val duration: Int = 0,
+
+    val mediaStoreId: Long = -1,
+    val mediaStoreArtistId: Long = -1,
+    val mediaStoreAlbumId: Long = -1
+): IPlayable, IPlayableTrack {
+    override val type: PlayableType get() = PlayableType.Album;
+
+    override fun getImage(): ImageVariable? {
+        return null;
+    }
+
+    override fun getTracks(context: Context): List<IPlayableTrack> {
+        return listOf(this);
+    }
+
+
+    override fun getMediaItem(): MediaItem {
+        val mediaItemBuilder = MediaItem.Builder()
+            .setMediaId(id.toString())
+            .setUri(contentUrl);
+
+
+        val artists = StateDatabase.instance.getTrackArtists(id);
+        val albums = StateDatabase.instance.getTrackAlbums(id);
+
+        //#region Metadata
+        val metadataBuilder = MediaMetadata.Builder();
+        metadataBuilder.setExtras(Bundle().apply {
+            putLong("id", id);
+        });
+        if(artistLine != null) {
+            metadataBuilder.setTitle(name);
+            metadataBuilder.setArtist(artistLine);
+        }
+        else
+            metadataBuilder.setTitle(name);
+        val art = albums.find { it.artUri != null }?.artUri ?:
+            artists.find { it.artUri != null }?.artUri;
+
+        if(art != null) {
+            metadataBuilder.setArtworkUri(Uri.parse(art));
+        }
+
+        val metadata = metadataBuilder.build();
+        //#endregion
+
+        val mediaItem = mediaItemBuilder
+            .setMediaMetadata(metadata)
+            .build();
+
+        return mediaItem;
+    }
+}
+
+@Dao
+interface DBTrackDao {
+    @Query("SELECT * FROM tracks")
+    fun getAll(): List<DBTrack>;
+    @Query("SELECT * FROM tracks WHERE id = :id")
+    fun get(id: Long): DBTrack?;
+    @Query("SELECT * FROM tracks WHERE mediaStoreId = :id")
+    fun getByMSID(id: Long): DBTrack?;
+
+    @Query("SELECT * FROM tracks WHERE INSTR(lower(name), lower(:str))")
+    fun search(str: String): List<DBTrack>;
+
+    @Query("SELECT t.* FROM tracks t INNER JOIN album_tracks at ON t.id = at.trackId WHERE at.albumId = :albumId")
+    fun getAlbumTracks(albumId: Long): List<DBTrack>
+    @Query("SELECT t.* FROM tracks t INNER JOIN artist_tracks at ON t.id = at.trackId WHERE at.artistId = :artistId")
+    fun getArtistTracks(artistId: Long): List<DBTrack>
+    @Query("SELECT t.* FROM tracks t INNER JOIN playlist_tracks at ON t.id = at.trackId WHERE at.playlistId = :playlistId ORDER BY at.ordering")
+    fun getPlaylistTracks(playlistId: Long): List<DBTrack>
+
+
+    @Query("SELECT COUNT(*) FROM tracks")
+    fun count(): Int;
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(vararg tracks: DBTrack): Array<Long>;
+
+    @Update(entity = DBTrack::class)
+    fun setPlayed(update: DBTrackUpdatePlayed)
+}
+
+@Entity
+class DBTrackUpdatePlayed(
+    val id: Long,
+    val datePlayed: OffsetDateTime
+)

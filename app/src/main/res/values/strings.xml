@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">FUTO Music</string>
+
+    <string name="hint_search_home">Song, Artist, Album, Playlist..</string>
+    <string name="hint_filter">Filter</string>
+</resources>
