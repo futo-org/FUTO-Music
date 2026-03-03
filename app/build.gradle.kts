@@ -1,9 +1,27 @@
+import com.android.build.api.dsl.ApkSigningConfig
+import java.io.FileInputStream
+import java.util.Properties
+//import org.ajoberstar.grgit.Grgit
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("org.ajoberstar.grgit") version "5.3.3"
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization") version "2.2.21"
+}
+
+//var gitVersionName = Grgit.describe()
+//var gitVersionCode = if(gitVersionName != null && gitVersionName.isInteger()) gitVersionName.toInteger() else 1
+
+//println("Version Name: $gitVersionName")
+//println("Version Code: $gitVersionCode")
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("/opt/key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -22,9 +40,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String?
+            keyPassword = keystoreProperties["keyPassword"] as String?
+            storeFile = if(keystoreProperties["storeFile"] as String? != null) file(keystoreProperties["storeFile"] as String) as File? else null
+            storePassword = keystoreProperties["storePassword"] as String?
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs["release"] as ApkSigningConfig?
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
