@@ -1,48 +1,66 @@
 #!/bin/sh
 set -eu
 
-DOCUMENT_ROOT=/var/www/html/music
-MAINT_FILE="$DOCUMENT_ROOT/maintenance.file"
+R2_ENDPOINT="https://$CF_R2_ACCOUNT_ID.r2.cloudflarestorage.com"
+PREFIX="music"
 
-cleanup() {
-  rm -f "$MAINT_FILE"
+r2_cp() {
+  src="$1"
+  key="$2"
+  cache_control="$3"
+  content_type="$4"
+
+  AWS_ACCESS_KEY_ID="$CF_R2_ACCESS_KEY_ID" \
+  AWS_SECRET_ACCESS_KEY="$CF_R2_SECRET_ACCESS_KEY" \
+  AWS_DEFAULT_REGION=auto \
+  aws s3 cp "$src" "s3://$CF_R2_BUCKET/$key" \
+    --endpoint-url "$R2_ENDPOINT" \
+    --only-show-errors \
+    --cache-control "$cache_control" \
+    --content-type "$content_type"
 }
-trap cleanup EXIT INT TERM
 
-# Build content
+upload_apk_latest_and_versioned() {
+  src="$1"
+  filename="$2"
+
+  r2_cp "$src" "$PREFIX/$VERSION/$filename" \
+    "public, max-age=31536000, immutable" \
+    "application/vnd.android.package-archive"
+
+  r2_cp "$src" "$PREFIX/$filename" \
+    "no-store" \
+    "application/vnd.android.package-archive"
+}
+
 echo "Building content..."
-./gradlew --stacktrace assembleStableRelease
-
-# Take site offline
-echo "Taking site offline..."
-touch "$MAINT_FILE"
-
-mkdir -p "$DOCUMENT_ROOT"
-
-# Swap over the content
-echo "Deploying content..."
-cp ./app/build/outputs/apk/stable/release/app-stable-x86_64-release.apk "$DOCUMENT_ROOT/app-x86_64-release.apk"
-cp ./app/build/outputs/apk/stable/release/app-stable-arm64-v8a-release.apk "$DOCUMENT_ROOT/app-arm64-v8a-release.apk"
-cp ./app/build/outputs/apk/stable/release/app-stable-armeabi-v7a-release.apk "$DOCUMENT_ROOT/app-armeabi-v7a-release.apk"
-cp ./app/build/outputs/apk/stable/release/app-stable-universal-release.apk "$DOCUMENT_ROOT/app-universal-release.apk"
-cp ./app/build/outputs/apk/stable/release/app-stable-x86-release.apk "$DOCUMENT_ROOT/app-x86-release.apk"
-cp ./app/build/outputs/apk/stable/release/app-stable-arm64-v8a-release.apk "$DOCUMENT_ROOT/app-release.apk"
+./gradlew --stacktrace assembleRelease
 
 VERSION="$(git describe --tags)"
-echo "$VERSION" > "$DOCUMENT_ROOT/version.txt"
-mkdir -p "$DOCUMENT_ROOT/changelogs"
-git tag -l --format='%(contents)' "$VERSION" > "$DOCUMENT_ROOT/changelogs/$VERSION"
 
-# Notify Cloudflare to wipe the CDN cache
-echo "Purging Cloudflare cache for zone $CLOUDFLARE_ZONE_ID..."
-curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" \
-     -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-     -H "Content-Type: application/json" \
-     --data '{"files":["https://releases.grayjay.app/music/app-x86_64-release.apk", "https://releases.grayjay.app/music/app-arm64-v8a-release.apk", "https://releases.grayjay.app/music/app-armeabi-v7a-release.apk", "https://releases.grayjay.app/music/app-universal-release.apk", "https://releases.grayjay.app/music/app-x86-release.apk", "https://releases.grayjay.app/music/app-release.apk", "https://releases.grayjay.app/music/version.txt"]}'
+echo "Deploying music artifacts to Cloudflare R2..."
+upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-stable-x86_64-release.apk" "app-x86_64-release.apk"
+upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-stable-arm64-v8a-release.apk" "app-arm64-v8a-release.apk"
+upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-stable-armeabi-v7a-release.apk" "app-armeabi-v7a-release.apk"
+upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-stable-universal-release.apk" "app-universal-release.apk"
+upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-stable-x86-release.apk" "app-x86-release.apk"
+upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-stable-arm64-v8a-release.apk" "app-release.apk"
 
-sleep 30
+tmp_version="$(mktemp)"
+printf '%s\n' "$VERSION" > "$tmp_version"
+r2_cp "$tmp_version" "$PREFIX/$VERSION/version.txt" \
+  "public, max-age=31536000, immutable" \
+  "text/plain; charset=utf-8"
+r2_cp "$tmp_version" "$PREFIX/version.txt" \
+  "no-store" \
+  "text/plain; charset=utf-8"
+rm -f "$tmp_version"
 
-# Take site back online
-echo "Bringing site back online..."
-rm -f "$MAINT_FILE"
-trap - EXIT INT TERM
+tmp_changelog="$(mktemp)"
+git tag -l --format='%(contents)' "$VERSION" > "$tmp_changelog"
+r2_cp "$tmp_changelog" "$PREFIX/changelogs/$VERSION" \
+  "public, max-age=31536000, immutable" \
+  "text/plain; charset=utf-8"
+rm -f "$tmp_changelog"
+
+echo "Done."
