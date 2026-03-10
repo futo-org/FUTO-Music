@@ -128,7 +128,7 @@ class StateAnnouncement {
 
     //Special Announcement
 
-    fun registerLoading(title: String, description: String, icon: ImageVariable? = null, customId: String? = null): SessionAnnouncement {
+    fun registerLoading(title: String, description: String, icon: ImageVariable? = null, customId: String? = null, withProgress: Boolean = false): SessionAnnouncement {
         val id = "loading-" + UUID.randomUUID().toString();
         val announcement = SessionAnnouncement(
             customId ?: id,
@@ -138,6 +138,7 @@ class StateAnnouncement {
             null, "loading", null, null,
             null, null,null, icon
         );
+        announcement.progress = if(withProgress) 0.0 else null;
         registerAnnouncementSession(announcement);
         return announcement;
     }
@@ -224,14 +225,20 @@ class StateAnnouncement {
     }
 
     fun deleteAnnouncement(id: String) {
+        var sessionAnnouncementRemoved: SessionAnnouncement? = null;
         synchronized(_lock) {
             val item = _announcementsStore.findItem { it.id == id };
             if (item != null)
                 _announcementsStore.delete(item);
             val itemSession = _sessionAnnouncements.get(id);
-            if (itemSession != null)
+            if (itemSession != null) {
                 _sessionAnnouncements.remove(id);
+                if(itemSession is SessionAnnouncement)
+                    sessionAnnouncementRemoved = itemSession;
+            }
         }
+        if(sessionAnnouncementRemoved != null)
+            sessionAnnouncementRemoved.onRemoved.emit(sessionAnnouncementRemoved);
 
         onAnnouncementChanged.emit();
     }
@@ -360,7 +367,9 @@ class SessionAnnouncement(
 
     var progressText: String? = null;
     var progress: Double? = null;
+    var isRemoved: Boolean = false;
     val onProgressChanged = Event1<SessionAnnouncement>();
+    val onRemoved = Event1<SessionAnnouncement>();
 
     fun withExtraAction(name: String, id: String, data: String? = null): SessionAnnouncement {
         extraActionName = name;

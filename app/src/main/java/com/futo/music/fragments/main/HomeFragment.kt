@@ -73,10 +73,17 @@ class HomeFragment: MainFragment() {
     override fun onCreateMainView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = FragView(this, inflater);
         _view = view;
+        StateLibrary.instance.onSyncCompleted.subscribe("homeFrag", {
+            clearCache();
+            lifecycleScope.launch(Dispatchers.Main) {
+                _view?.updateContent();
+            }
+        });
         return view;
     }
     override fun onDestroyMainView() {
         super.onDestroyMainView();
+        StateLibrary.instance.onSyncCompleted.remove("homeFrag");
         _view = null;
     }
 
@@ -216,15 +223,9 @@ class HomeFragment: MainFragment() {
 
         fun onShown(paramter: Any? = null) {
 
-            StateLibrary.instance.onSyncCompleted.subscribe("homeFrag", {
-                fragment.lifecycleScope.launch(Dispatchers.Main) {
-                    updateContent();
-                }
-            });
         }
 
         fun onHide() {
-            StateLibrary.instance.onSyncCompleted.remove("homeFrag");
         }
     }
 }

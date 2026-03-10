@@ -192,6 +192,7 @@ class PlaybackFragment: MainFragment() {
                         }
                     }
                 }
+                else UIDialogs.appToast("No current track set?");
             }
 
 

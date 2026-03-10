@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 class NavigationTopBarFragment : TopFragment() {
 
     private var _buttonNotifs: ConstraintLayout? = null;
+    private var _buttonBack: ImageButton? = null;
     private var _buttonNotifIcon: ImageView? = null;
     private var _buttonNotifCount: TextView? = null;
     private var _textTitle: TextView? = null;
@@ -58,8 +59,14 @@ class NavigationTopBarFragment : TopFragment() {
 
         _textTitle = view.findViewById(R.id.text_title)
         _buttonNotifs = view.findViewById(R.id.button_notifs);
+        _buttonBack = view.findViewById(R.id.button_back);
         _buttonNotifIcon = view.findViewById(R.id.button_notifs_icon);
         _buttonNotifCount = view.findViewById(R.id.button_notifs_count);
+
+        _buttonBack?.setOnClickListener {
+            closeSegment();
+        }
+
 
         _textTitle?.let {
             it.text = _title;

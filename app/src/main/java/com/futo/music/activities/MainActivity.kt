@@ -217,7 +217,7 @@ class MainActivity : AppCompatActivity() {
     fun sync() {
         if(StateLibrary.instance.requireSync(this)) {
             val announce = StateAnnouncement.instance.registerLoading("Syncing Mediastore", "Importing new music from your phone", null,
-                "importing");
+                "importing", true);
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
                     val results = StateLibrary.instance.syncDatabase(applicationContext, { max, progress, type, text ->
