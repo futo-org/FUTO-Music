@@ -2,7 +2,6 @@ package com.futo.music.ui.views.containers
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
@@ -15,7 +14,6 @@ import com.futo.music.dp
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.ui.adapters.ContentAdapter
 import com.futo.music.ui.buttons.RoundButton
-import kotlin.div
 import kotlin.math.floor
 
 class ContentGrid: ConstraintLayout {
@@ -72,7 +70,14 @@ class ContentGrid: ConstraintLayout {
         recycler.adapter = adapter;
     }
 
-    fun setButtonListListener(handler: ()->Unit) {
+    fun setButtonListener(handler: ()->Unit) {
+        buttonList?.onClick?.subscribe {
+            handler();
+        }
+        buttonList?.isVisible = true;
+    }
+    fun setButtonListener(iconRes: Int, handler: ()->Unit) {
+        buttonList?.buttonImage?.setImageResource(iconRes);
         buttonList?.onClick?.subscribe {
             handler();
         }

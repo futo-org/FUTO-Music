@@ -46,7 +46,7 @@ class DBTrack(
     val mediaStoreArtistId: Long = -1,
     val mediaStoreAlbumId: Long = -1
 ): IPlayable, IPlayableTrack {
-    override val type: PlayableType get() = PlayableType.Album;
+    override val type: PlayableType get() = PlayableType.Track;
 
     override fun getImage(): ImageVariable? {
         return null;

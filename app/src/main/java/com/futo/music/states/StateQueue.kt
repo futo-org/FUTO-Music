@@ -11,6 +11,7 @@ import android.webkit.MimeTypeMap
 import androidx.core.database.getStringOrNull
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import androidx.media3.common.MediaItem
 import com.futo.music.constructs.Event1
 import com.futo.music.logging.Logger
 import com.futo.music.models.ImageVariable
@@ -49,6 +50,23 @@ class StateQueue {
     val _queue: MutableList<IPlayableTrack> = mutableListOf();
 
     val onQueueChanged = Event1<List<IPlayableTrack>>();
+
+    private var _lastSetMediaItems: List<MediaItem>? = null;
+
+    fun setLastMediaItems(items: List<MediaItem>) {
+        _lastSetMediaItems = items;
+    }
+    //Hackfix for missing data temporarily
+    fun restoreMediaItem(item: MediaItem?): MediaItem? {
+        if(item == null)
+            return null;
+        if(item.localConfiguration?.uri != null) {
+            val original = _lastSetMediaItems?.find { it.localConfiguration?.uri != null && it.localConfiguration?.uri == item.localConfiguration?.uri };
+            if(original != null)
+                return original;
+        }
+        return item;
+    }
 
     fun getQueue(): List<IPlayableTrack> {
         synchronized(_queue) {

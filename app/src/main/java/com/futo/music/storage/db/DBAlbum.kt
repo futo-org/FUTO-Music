@@ -96,6 +96,8 @@ interface DBAlbumDao {
 
     @Query("SELECT a.* FROM albums a INNER JOIN album_tracks at ON a.id = at.albumId WHERE at.trackId = :trackId")
     fun getTrackAlbums(trackId: Long): List<DBAlbum>
+    @Query("SELECT a.artUri FROM albums a INNER JOIN album_tracks at ON a.id = at.albumId WHERE at.trackId = :trackId AND a.artUri IS NOT NULL AND a.artUri != ''")
+    fun getTrackAlbumArts(trackId: Long): List<String>
 
     @Query("SELECT a.artUri FROM albums a INNER JOIN album_artists at ON a.id = at.albumId WHERE at.artistId = :artistId AND a.artUri IS NOT NULL AND a.artUri != ''")
     fun getAlbumArtByArtist(artistId: Long): String?

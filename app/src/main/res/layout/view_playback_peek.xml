@@ -32,8 +32,11 @@
             android:id="@+id/text_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:textSize="16dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="2dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textSize="15dp"
             android:text="Testing"
             />
         <TextView
@@ -42,7 +45,10 @@
             android:layout_height="wrap_content"
             app:layout_constraintLeft_toRightOf="@id/image_art"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginLeft="10dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="2dp"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:textColor="#888888"
             android:textSize="13dp"
             android:text="Testing"
@@ -61,18 +67,37 @@
             android:src="@drawable/ic_play"
             android:scaleType="fitCenter"
             android:padding="7dp"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="5dp" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp" />
 
         <ImageButton
             android:id="@+id/button_next"
             android:src="@drawable/ic_skip_next"
             android:scaleType="fitCenter"
             android:padding="7dp"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_margin="5dp" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp" />
+
+
+        <ImageButton
+            android:id="@+id/button_close"
+            android:src="@drawable/ic_close"
+            android:scaleType="fitCenter"
+            android:padding="7dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp" />
 
     </LinearLayout>
 

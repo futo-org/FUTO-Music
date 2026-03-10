@@ -5,8 +5,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
+import com.futo.music.constructs.Event0
 import com.futo.music.constructs.Event1
 import com.futo.music.constructs.Event2
+import com.futo.music.states.StateQueue
 
 class PlayerManager {
 
@@ -18,6 +20,7 @@ class PlayerManager {
     val onPlayingChanged = Event1<Boolean>();
     val onMediaMetadataChanged = Event1<MediaMetadata>();
     val onMediaItemChanged = Event2<MediaItem?, Int>();
+    val onMediaClose = Event0();
 
     private val _listeners = mutableMapOf<Any, Listener>();
 
@@ -35,11 +38,18 @@ class PlayerManager {
             }
         }
 
-        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            super.onMediaItemTransition(mediaItem, reason)
+        override fun onMediaItemTransition(mediaItemOriginal: MediaItem?, reason: Int) {
+            super.onMediaItemTransition(mediaItemOriginal, reason)
+
+            //TODO: Remove this hackfix once metadata restore is fixed
+            val mediaItem = StateQueue.instance.restoreMediaItem(mediaItemOriginal) ?: mediaItemOriginal;
             onMediaItemChanged.emit(mediaItem, reason);
+            if(mediaItem?.mediaMetadata != null && mediaItem?.mediaMetadata?.title?.isNotEmpty() == true)
+                onMediaMetadataChanged.emit(mediaItem.mediaMetadata);
             invokeListener {
                 it.onMediaItemChanged(player, mediaItem, reason);
+                if(mediaItem?.mediaMetadata != null && mediaItem?.mediaMetadata?.title?.isNotEmpty() == true)
+                    it.onMediaMetadataChanged(player, mediaItem.mediaMetadata)
             }
         }
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -48,6 +58,19 @@ class PlayerManager {
             onMediaMetadataChanged.emit(mediaMetadata);
             invokeListener {
                 it.onMediaMetadataChanged(player, mediaMetadata);
+            }
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            super.onPlaybackStateChanged(playbackState);
+
+            when(playbackState) {
+                Player.STATE_ENDED -> {
+                    onMediaClose.emit();
+                    invokeListener {
+                        it.onMediaClose();
+                    }
+                }
             }
         }
     }
@@ -87,5 +110,6 @@ class PlayerManager {
         fun onPlayingChanged(isPlaying: Boolean);
         fun onMediaMetadataChanged(player: Player, mediaMetadata: MediaMetadata?);
         fun onMediaItemChanged(player: Player, mediaItem: MediaItem?, reason: Int);
+        fun onMediaClose();
     }
 }

@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">FUTO Music</string>
 
+    <string name="no_playlists_title">No playlists</string>
+    <string name="no_playlists_text">You haven\'t created any playlists yet</string>
     <string name="hint_search_home">Song, Artist, Album, Playlist..</string>
     <string name="hint_filter">Filter</string>
 </resources>

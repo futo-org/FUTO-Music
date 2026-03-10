@@ -4,17 +4,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.collection.emptyLongSet
-import androidx.compose.animation.core.updateTransition
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
+import com.futo.music.UIDialogs
 import com.futo.music.fragments.MainFragView
 import com.futo.music.models.playable.IPlayable
-import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
+import com.futo.music.storage.db.DBPlaylist
+import com.futo.music.ui.buttons.RoundButton
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +34,31 @@ class HomeFragment: MainFragment() {
     private var _dataAlbums: List<DBAlbum>? = null;
     private var _dataArtists: List<DBArtist>? = null;
     private var _dataRecent: List<IPlayable>? = null;
+    private var _dataPlaylists: List<DBPlaylist>? = null;
 
+    fun clearCache() {
+        _dataAlbums = null;
+        _dataArtists = null;
+        _dataRecent = null;
+        _dataPlaylists = null;
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState);
+
+        StateDatabase.instance.onLibraryUpdated.subscribe(this) {
+            clearCache();
+            lifecycleScope.launch(Dispatchers.Main) {
+                _view?.updateContent();
+            }
+        }
+
+    }
+
+    override fun onDestroy() {
+        StateDatabase.instance.onLibraryUpdated.remove(this);
+        super.onDestroy()
+    }
 
     override fun onShownWithView(parameter: Any?, isBack: Boolean) {
         super.onShownWithView(parameter, isBack);
@@ -64,6 +89,9 @@ class HomeFragment: MainFragment() {
         val gridArtists: ContentGrid;
         val gridAlbums: ContentGrid;
 
+        val containerPlaylistsCreate: ConstraintLayout;
+        val buttonPlaylistsCreate: RoundButton;
+
 
         init {
             search = findViewById(R.id.view_search);
@@ -72,15 +100,21 @@ class HomeFragment: MainFragment() {
             gridArtists = findViewById(R.id.grid_artists);
             gridAlbums = findViewById(R.id.grid_albums);
 
-            gridArtists.setButtonListListener {
+            containerPlaylistsCreate = findViewById(R.id.container_playlist_create);
+            buttonPlaylistsCreate = findViewById(R.id.button_add_playlist);
+
+            gridArtists.setButtonListener {
                 fragment._dataArtists?.let {
                     fragment.navigate<ContentsFragment>(Pair("Artists", it));
                 }
             }
-            gridAlbums.setButtonListListener {
+            gridAlbums.setButtonListener {
                 fragment._dataAlbums?.let {
                     fragment.navigate<ContentsFragment>(Pair("Albums", it));
                 }
+            }
+            gridPlaylists.setButtonListener(androidx.media3.session.R.drawable.media3_icon_plus) {
+                showNewPlaylistDialog();
             }
 
             gridArtists.onClick.subscribe {
@@ -89,6 +123,18 @@ class HomeFragment: MainFragment() {
             gridAlbums.onClick.subscribe {
                 fragment.navigate<PlaybackFragment>(it);
             }
+            gridPlaylists.onClick.subscribe {
+                fragment.navigate<PlaybackFragment>(it);
+            }
+            gridRecent.onClick.subscribe {
+                fragment.navigate<PlaybackFragment>(it);
+            }
+
+
+            buttonPlaylistsCreate.onClick.subscribe {
+                showNewPlaylistDialog();
+            }
+
 
             search.onFocusChange.subscribe {
                 if(it) {
@@ -100,16 +146,38 @@ class HomeFragment: MainFragment() {
             updateContent();
         }
 
-        fun updateContent() {
-            val playlists = listOf<IPlayable>();
+        fun showNewPlaylistDialog() {
+            val dialog = UIDialogs.showDialog(context, R.drawable.ic_playlist, false, "New Playlist", "Enter a name for your new playlist", null, "", "Playlist name...", 0,
+                UIDialogs.Action("Cancel", {
 
+                }, UIDialogs.ActionStyle.NONE, true),
+                UIDialogs.Action.withInput("Create", { result ->
+
+                    if(result?.text.isNullOrBlank()) {
+                        UIDialogs.appToast("No name provided for playlist");
+                        return@withInput;
+                    }
+                    fragment.lifecycleScope.launch(Dispatchers.IO) {
+                        StateDatabase.instance.createPlaylist(result.text);
+
+                        withContext(Dispatchers.Main) {
+                            fragment.clearCache();
+                            updateContent();
+                        }
+                    }
+                }, UIDialogs.ActionStyle.PRIMARY, true));
+        }
+
+        fun updateContent() {
             fragment.lifecycleScope.launch(Dispatchers.IO) {
                 val recent = fragment._dataRecent ?: StateDatabase.instance.getRecentPlays();
                 val artists = fragment._dataArtists ?: StateDatabase.instance.getArtistsByRecent();
                 val albums = fragment._dataAlbums ?:  StateDatabase.instance.getAlbumsByRecent();
-                fragment._dataRecent = recent;
+                val playlists = fragment._dataPlaylists ?: StateDatabase.instance.getPlaylistsByRecent();
+                //fragment._dataRecent = recent;
                 fragment._dataArtists = artists;
                 fragment._dataAlbums = albums;
+                //fragment._dataPlaylists = playlists;
                 withContext(Dispatchers.Main) {
                     if(recent.isNullOrEmpty())
                         gridRecent.visibility = View.GONE;
@@ -117,11 +185,14 @@ class HomeFragment: MainFragment() {
                         gridRecent.setData(recent);
                         gridRecent.visibility = View.VISIBLE;
                     }
-                    if(playlists.isNullOrEmpty())
+                    if(playlists.isNullOrEmpty()) {
                         gridPlaylists.visibility = View.GONE;
+                        containerPlaylistsCreate.visibility = View.VISIBLE;
+                    }
                     else {
                         gridPlaylists.setData(playlists);
                         gridPlaylists.visibility = View.VISIBLE;
+                        containerPlaylistsCreate.visibility = View.GONE;
                     }
                     if(artists.isNullOrEmpty())
                         gridArtists.visibility = View.GONE;
@@ -145,10 +216,15 @@ class HomeFragment: MainFragment() {
 
         fun onShown(paramter: Any? = null) {
 
+            StateLibrary.instance.onSyncCompleted.subscribe("homeFrag", {
+                fragment.lifecycleScope.launch(Dispatchers.Main) {
+                    updateContent();
+                }
+            });
         }
 
         fun onHide() {
-
+            StateLibrary.instance.onSyncCompleted.remove("homeFrag");
         }
     }
 }

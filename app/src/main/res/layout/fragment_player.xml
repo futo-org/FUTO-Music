@@ -90,23 +90,35 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/inter_regular"
             android:gravity="center"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:textColor="@color/white"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:text="Daft Punk"
-            android:textSize="17sp" />
+            android:textSize="16sp" />
         <TextView
             android:id="@+id/text_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="@font/inter_medium"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:maxLines="2"
+            android:ellipsize="end"
             android:gravity="center"
             android:textColor="@color/white"
             android:text="Revolution 909"
-            android:textSize="26sp" />
+            android:textSize="23sp" />
         <TextView
             android:id="@+id/text_album"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="@font/inter_regular"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:gravity="center"
             android:text="Some Album Name"
             android:textColor="#AAAAAAAA"
@@ -122,7 +134,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="5dp"
         android:gravity="center">
         <ImageButton
             android:id="@+id/button_left"
@@ -160,12 +172,72 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/container_bottom"
         android:layout_width="match_parent"
-        android:layout_height="10dp"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginRight="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent">
 
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+                <ImageButton
+                    android:id="@+id/button_stars"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_stars"
+                    android:background="@color/transparent"
+                    android:scaleType="fitCenter"
+                    android:padding="10dp"
+                    android:alpha="0.5"
+                    android:layout_weight="1"
+                    />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginBottom="5dp"
+                android:gravity="center">
+                <ImageButton
+                    android:id="@+id/button_queue"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_list"
+                    android:background="@color/transparent"
+                    android:scaleType="fitCenter"
+                    android:alpha="0.5"
+                    android:padding="10dp"
+                    />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center">
+                <ImageButton
+                    android:id="@+id/button_add_playlist"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/ic_playlist_add"
+                    android:background="@color/transparent"
+                    android:scaleType="fitCenter"
+                    android:padding="10dp"
+                    />
+            </LinearLayout>
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

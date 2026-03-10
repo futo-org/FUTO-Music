@@ -3,12 +3,23 @@ package com.futo.music.activities
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.window.OnBackInvokedDispatcher
+import androidx.activity.SystemBarStyle
+import androidx.activity.addCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.os.BuildCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsCompat.Type
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
@@ -19,6 +30,7 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.futo.music.R
+import com.futo.music.RootInsetsController
 import com.futo.music.constructs.Event1
 import com.futo.music.fragments.bottom.MenuBottomBarFragment
 import com.futo.music.fragments.main.ContentsFragment
@@ -52,11 +64,13 @@ import okhttp3.Dispatcher
 import java.util.LinkedList
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.math.max
 import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var _rootView: ConstraintLayout;
     private lateinit var _fragContainerTopBar: FragmentContainerView;
     private lateinit var _fragContainerMain: FragmentContainerView;
     private lateinit var _fragContainerBotBar: FragmentContainerView;
@@ -77,6 +91,7 @@ class MainActivity : AppCompatActivity() {
 
     //Main
 
+    private lateinit var _rootInsetsController: RootInsetsController
 
 
     private val _queue: LinkedList<Pair<MainFragment, Any?>> = LinkedList();
@@ -102,16 +117,26 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState);
 
+        enableEdgeToEdge(
+            navigationBarStyle = SystemBarStyle.light(
+                Color.TRANSPARENT, Color.TRANSPARENT
+            )
+        )
+
         StateApp.instance.registerContext(this);
         StateApp.instance.registerScope(lifecycleScope);
 
         setContentView(R.layout.activity_main);
 
-
+        _rootView = findViewById(R.id.rootView);
         _fragContainerTopBar = findViewById(R.id.fragment_top_bar);
         _fragContainerMain = findViewById(R.id.fragment_main);
         _fragContainerBotBar = findViewById(R.id.fragment_bottom_bar);
         _toastView = findViewById(R.id.toast_view);
+
+
+        _rootInsetsController = RootInsetsController.attach(this, _rootView);
+        _rootInsetsController.setLightSystemBarAppearance(lightStatus = false, lightNav = false);
 
         for(frag in fragmentsMain) {
             frag.value.get().topBar = frag.value.topbar;
@@ -143,6 +168,8 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
+                override fun onMediaClose() {
+                }
             });
 
             _fragPlayer.setPlayer(it);
@@ -174,6 +201,17 @@ class MainActivity : AppCompatActivity() {
                     .commitNow();
             }
         }
+
+
+        if(Build.VERSION.SDK_INT >= 33) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {
+                handleBack();
+            }
+        }
+        else
+            onBackPressedDispatcher.addCallback {
+                handleBack();
+            }
     }
 
     fun sync() {
@@ -199,7 +237,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        _rootInsetsController.onConfigurationChanged();
+    }
+
     override fun onBackPressed() {
+        handleBack();
+    }
+
+    fun handleBack() {
         Logger.i(TAG, "onBackPressed")
 
         //if (_fragBotBarMenu.onBackPressed())
@@ -207,8 +254,8 @@ class MainActivity : AppCompatActivity() {
 
         if (!(fragCurrent?.onBackPressed() ?: true))
             closeSegment();
-    }
 
+    }
 
 
     //#region Navigation
@@ -415,7 +462,7 @@ class MainActivity : AppCompatActivity() {
             StateQueue.instance.onQueueChanged.subscribe {
                 lifecycleScope.launch(Dispatchers.IO) {
                     val mediaItems = it.map { it.getMediaItem() }
-
+                    StateQueue.instance.setLastMediaItems(mediaItems);
                     withContext(Dispatchers.Main) {
                         player.setMediaItems(mediaItems);
                         player.prepare();

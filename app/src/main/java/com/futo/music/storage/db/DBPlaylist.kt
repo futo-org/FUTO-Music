@@ -2,6 +2,7 @@ package com.futo.music.storage.db
 
 import android.content.Context
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Insert
@@ -23,7 +24,14 @@ class DBPlaylist(
     override val name: String,
     val score: Int = 0,
 
-    val artUri: String? = null,
+    var artUri1: String? = null,
+    var artUriTrack1: Long? = null,
+    var artUri2: String? = null,
+    var artUriTrack2: Long? = null,
+    var artUri3: String? = null,
+    var artUriTrack3: Long? = null,
+    var artUri4: String? = null,
+    var artUriTrack4: Long? = null,
 
     val dateAdded: OffsetDateTime = OffsetDateTime.MIN,
     override val datePlayed: OffsetDateTime = OffsetDateTime.MIN,
@@ -31,13 +39,13 @@ class DBPlaylist(
 
     val plays: Int = 0,
 
-    val trackCount: Int = -1,
-    val trackDurations: Int = -1,
+    var trackCount: Int = -1,
+    var trackDurations: Int = -1,
 ): IPlayable {
     override val type: PlayableType get() = PlayableType.Playlist;
 
     override fun getImage(): ImageVariable? {
-        return ImageVariable.fromUrl(artUri);
+        return ImageVariable.fromUrl(artUri1);
     }
 
     override fun getTracks(context: Context): List<IPlayableTrack> {
@@ -54,7 +62,7 @@ class DBPlaylist(
 class DBPlaylistTrack(
     val playlistId: Long,
     val trackId: Long,
-    val ordering: Long
+    val ordering: Int
 )
 
 @Dao
@@ -65,6 +73,9 @@ interface DBPlaylistDao {
     fun getAllByRecentPlayed(): List<DBPlaylist>;
     @Query("SELECT * FROM playlists ORDER BY datePlayed DESC LIMIT :count")
     fun getTopByRecentPlayed(count: Int): List<DBPlaylist>;
+
+    @Query("SELECT MAX(ordering) FROM playlist_tracks WHERE playlistId = :playlistId")
+    fun getPlaylistMaxOrder(playlistId: Long): Int;
 
     @Query("SELECT * FROM playlists WHERE id = :id")
     fun get(id: Long): DBPlaylist?;
@@ -80,7 +91,10 @@ interface DBPlaylistDao {
     fun insert(vararg albums: DBPlaylist): Array<Long>;
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(vararg atrack: DBPlaylistTrack);
+    fun insert(vararg atrack: DBPlaylistTrack): Array<Long>
+
+    @Query("DELETE FROM playlist_tracks WHERE playlistId = :playlistId AND trackId = :trackId")
+    fun deletePlaylistTrack(playlistId: Long, trackId: Long);
 
     @Query("SELECT * FROM playlist_tracks WHERE playlistId = :playlistId AND trackId = :trackId")
     fun getPlaylistTrackRef(playlistId: Long, trackId: Long): DBPlaylistTrack?;
@@ -88,7 +102,7 @@ interface DBPlaylistDao {
     @Update(entity = DBAlbum::class)
     fun setPlayed(update: DBPlaylistUpdatePlayed)
 
-    @Update(entity = DBAlbum::class)
+    @Update(entity = DBPlaylist::class)
     fun setTrackMetadata(update: DBPlaylistUpdateTrackMetadata)
 
     @Update(entity = DBPlaylistTrack::class)
@@ -103,5 +117,13 @@ class DBPlaylistUpdatePlayed(
 class DBPlaylistUpdateTrackMetadata(
     val id: Long,
     val trackCount: Int,
-    val trackDurations: Int
+    val trackDurations: Int,
+    val artUri1: String?,
+    val artUriTrack1: Long?,
+    val artUri2: String?,
+    val artUriTrack2: Long?,
+    val artUri3: String?,
+    val artUriTrack3: Long?,
+    val artUri4: String?,
+    val artUriTrack4: Long?
 )

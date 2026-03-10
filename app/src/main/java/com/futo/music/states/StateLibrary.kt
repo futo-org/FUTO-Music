@@ -12,6 +12,7 @@ import androidx.core.database.getStringOrNull
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.futo.music.RootApplication
+import com.futo.music.constructs.Event0
 import com.futo.music.logging.Logger
 import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.Album
@@ -40,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap
 //TODO: Clean this class up
 class StateLibrary {
 
+    val onSyncCompleted = Event0();
 
     private val _mediaStoreVersions = FragmentedStorage.get<StringStringMapStorage>("mediaStoreVersions");
 
@@ -108,6 +110,7 @@ class StateLibrary {
 
         syncDatabaseMetadata(onProgress);
 
+        onSyncCompleted.emit();
         return ImportResult(albumPos, artistPos, trackPos,
             albumNew, artistNew, trackNew);
     }
@@ -156,7 +159,26 @@ class StateLibrary {
             val allTracks = StateDatabase.instance.getPlaylistTracks(playlist.id);
             val count = allTracks.size;
             val duration = if(count > 0) allTracks.sumOf { it.duration } else 0;
-            StateDatabase.instance.db.playlistDao().setTrackMetadata(DBPlaylistUpdateTrackMetadata(playlist.id, count, duration));
+
+            val artList = mutableListOf<Pair<String, Long>>()
+            for(track in allTracks) {
+                val albumArts = StateDatabase.instance.getTrackAlbumArt(track.id);
+                if(albumArts?.isNotBlank() == true) {
+                    artList.add(Pair(albumArts, track.id));
+                    if(artList.size >= 4)
+                        break;
+                }
+            }
+
+            StateDatabase.instance.db.playlistDao().setTrackMetadata(DBPlaylistUpdateTrackMetadata(playlist.id, count, duration,
+                artUri1 = if(artList.size > 0) artList[0].first else null,
+                artUriTrack1 = if(artList.size > 0) artList[0].second else null,
+                artUri2 = if(artList.size > 1) artList[1].first else null,
+                artUriTrack2 = if(artList.size > 1) artList[1].second else null,
+                artUri3 = if(artList.size > 2) artList[2].first else null,
+                artUriTrack3 = if(artList.size > 2) artList[2].second else null,
+                artUri4 = if(artList.size > 3) artList[3].first else null,
+                artUriTrack4 = if(artList.size > 3) artList[3].second else null));
             onProgress?.invoke(allPlaylists.size, playlistPos, "playlist", "Updating Playlist ${playlist.name}");
             playlistPos++;
         }

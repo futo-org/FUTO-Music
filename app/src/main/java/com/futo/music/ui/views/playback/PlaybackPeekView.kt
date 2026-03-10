@@ -24,6 +24,7 @@ class PlaybackPeekView: ConstraintLayout {
     private val _textArtist: TextView;
     private val _buttonPlay: ImageButton;
     private val _buttonNext: ImageButton;
+    private val _buttonClose: ImageButton;
 
     private var _player: PlayerManager? = null;
 
@@ -39,6 +40,7 @@ class PlaybackPeekView: ConstraintLayout {
         _textArtist = findViewById(R.id.text_artist);
         _buttonPlay = findViewById(R.id.button_play);
         _buttonNext = findViewById(R.id.button_next);
+        _buttonClose = findViewById(R.id.button_close);
 
         setOnClickListener {
             onClick.emit();
@@ -54,6 +56,10 @@ class PlaybackPeekView: ConstraintLayout {
         }
         _buttonNext.setOnClickListener {
             _player?.player?.seekToNextMediaItem();
+        }
+        _buttonClose.setOnClickListener {
+            _player?.player?.stop();
+            this@PlaybackPeekView.visibility = GONE;
         }
     }
 
@@ -80,6 +86,10 @@ class PlaybackPeekView: ConstraintLayout {
             }
 
             override fun onMediaItemChanged(player: Player, mediaItem: MediaItem?, reason: Int) {}
+
+            override fun onMediaClose() {
+                this@PlaybackPeekView.visibility = GONE;
+            }
         })
     }
 }

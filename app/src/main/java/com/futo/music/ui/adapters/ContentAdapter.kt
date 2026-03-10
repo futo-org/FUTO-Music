@@ -10,6 +10,8 @@ import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.ui.views.grid.ContentAlbumGridView
 import com.futo.music.ui.views.grid.ContentArtistGridView
+import com.futo.music.ui.views.grid.ContentPlaylistGridView
+import com.futo.music.ui.views.grid.ContentTrackGridView
 import com.futo.music.ui.views.grid.IContentGridView
 
 class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?): RecyclerView.Adapter<ContentAdapter.ViewHolder>() {
@@ -19,9 +21,10 @@ class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?): 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val result = when(viewType) {
-            PlayableType.Track.value -> ViewHolder(ContentAlbumGridView(parent))
+            PlayableType.Track.value -> ViewHolder(ContentTrackGridView(parent))
             PlayableType.Artist.value -> ViewHolder(ContentArtistGridView(parent))
             PlayableType.Album.value -> ViewHolder(ContentAlbumGridView(parent))
+            PlayableType.Playlist.value -> ViewHolder(ContentPlaylistGridView(parent))
             else -> throw NotImplementedError();
         }
         onCreate?.invoke(result);

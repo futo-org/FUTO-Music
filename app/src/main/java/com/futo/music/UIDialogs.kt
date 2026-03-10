@@ -1,14 +1,9 @@
 package com.futo.music
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Animatable
-import android.net.Uri
-import android.provider.Settings
-import android.text.Layout
 import android.text.method.ScrollingMovementMethod
 import android.util.TypedValue
 import android.view.Gravity
@@ -20,11 +15,22 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
+import com.futo.music.extensions.assume
 import com.futo.music.logging.Logger
 import com.futo.music.states.StateApp
+import com.futo.music.states.StateDatabase
+import com.futo.music.storage.db.DBPlaylist
+import com.futo.music.storage.db.DBTrack
+import com.futo.music.ui.adapters.AnyAdapterView.Companion.asAny
+import com.futo.music.ui.viewholders.ListPlaylistViewHolder
 import com.futo.music.ui.views.toasts.ToastView
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.collections.map
 import kotlin.collections.toList
 import kotlin.let
 
@@ -77,6 +83,177 @@ class UIDialogs {
             StateApp.instance.activity()?.let {
                 it.showAppToast(toast);
             }
+        }
+
+        fun showAddToPlaylistDialog(context: Context, scope: CoroutineScope, reason: String, track: DBTrack) {
+            scope.launch(Dispatchers.IO) {
+                val trackArt = StateDatabase.instance.getTrackAlbumArt(track.id);
+                val playlists = StateDatabase.instance.getPlaylistsByRecent()
+                val partOf = StateDatabase.instance.getTrackPlaylists(track.id);
+                val list = playlists.map { ListPlaylistViewHolder.Item(it, partOf.any{ part -> part.id == it.id}) };
+                withContext(Dispatchers.Main) {
+                    showAdapterDialog(context, "Select a playlist", reason, {
+                        it.asAny<ListPlaylistViewHolder.Item, ListPlaylistViewHolder>(ArrayList(list), RecyclerView.VERTICAL, false, { view ->
+                            view.onClick.subscribe { view, item ->
+                                scope.launch(Dispatchers.IO) {
+                                    if(item.added) {
+                                        StateDatabase.instance.removeTrackFromPlaylist(item.playlist.id, track.id);
+                                        item.added = false;
+
+                                        StateDatabase.instance.updatePlaylistMetadata(item.playlist.id);
+                                        StateDatabase.instance.onLibraryUpdated.emit();
+                                    }
+                                    else {
+                                        val id = StateDatabase.instance.addTrackToPlaylist(item.playlist.id, track.id);
+                                        if (id > 0) {
+                                            UIDialogs.appToast("Added to [${item.playlist.name}]");
+                                            item.added = true;
+
+                                            StateDatabase.instance.updatePlaylistMetadata(item.playlist.id);
+                                            StateDatabase.instance.onLibraryUpdated.emit();
+                                        }
+                                    }
+                                    withContext(Dispatchers.Main) {
+                                        view.updateAdded();
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+        }
+
+        fun showAdapterDialog(context: Context, title: String, textDetails: String, prepareRecycler: (RecyclerView)->Unit): AlertDialog {
+            val builder = AlertDialog.Builder(context);
+            val view = LayoutInflater.from(context).inflate(R.layout.dialog_select_adapter_item, null);
+            builder.setView(view);
+            builder.setCancelable(true);
+
+            val dialog = builder.create();
+            registerDialogOpened(dialog);
+
+            view.findViewById<TextView>(R.id.dialog_text).apply {
+                if (title == null)
+                    this.visibility = View.GONE;
+                else {
+                    this.text = title;
+                }
+            };
+            view.findViewById<TextView>(R.id.dialog_text_details).apply {
+                if (textDetails == null)
+                    this.visibility = View.GONE;
+                else {
+                    this.text = textDetails;
+                }
+            };
+            view.findViewById<RecyclerView>(R.id.recycler).apply {
+                prepareRecycler(this);
+            }
+
+
+            dialog.setOnDismissListener {
+                registerDialogClosed(dialog);
+            }
+            dialog.show();
+            return dialog;
+        }
+
+        fun showDialog(context: Context, icon: Int, text: String, textDetails: String? = null, code: String? = null, defaultCloseAction: Int, vararg actions: Action): AlertDialog {
+            return showDialog(context, icon, false, text, textDetails, code, defaultCloseAction, *actions);
+        }
+        fun showDialog(context: Context, icon: Int, animated: Boolean, text: String, textDetails: String? = null, code: String? = null, defaultCloseAction: Int, vararg actions: Action): AlertDialog
+                = showDialog(context, icon, animated, text, textDetails, code, null, null, defaultCloseAction, *actions);
+
+        fun showDialog(context: Context, icon: Int, animated: Boolean, text: String, textDetails: String? = null, code: String? = null, input: String?, placeholder: String?, defaultCloseAction: Int, vararg actions: Action): AlertDialog {
+            val builder = AlertDialog.Builder(context);
+            val view = LayoutInflater.from(context).inflate(R.layout.dialog_multi_button, null);
+            builder.setView(view);
+            builder.setCancelable(defaultCloseAction > -2);
+            val dialog = builder.create();
+            registerDialogOpened(dialog);
+
+            view.findViewById<ImageView>(R.id.dialog_icon).apply {
+                this.setImageResource(icon);
+                if(animated)
+                    this.drawable.assume<Animatable, Unit> { it.start() };
+            }
+            view.findViewById<TextView>(R.id.dialog_text).apply {
+                this.text = text;
+            };
+            view.findViewById<TextView>(R.id.dialog_text_details).apply {
+                if (textDetails == null)
+                    this.visibility = View.GONE;
+                else {
+                    this.text = textDetails;
+                }
+            };
+            var inputView = view.findViewById<TextView>(R.id.dialog_text_input);
+            inputView.apply {
+                if (input == null && placeholder == null) this.visibility = View.GONE;
+                else {
+                    this.text = input ?: "";
+                    this.hint = placeholder ?: "";
+                    this.visibility = View.VISIBLE;
+                    this.textAlignment = if(actions.any { it.center }) View.TEXT_ALIGNMENT_CENTER else View.TEXT_ALIGNMENT_TEXT_START
+                }
+            };
+            view.findViewById<TextView>(R.id.dialog_text_code).apply {
+                if (code == null) this.visibility = View.GONE;
+                else {
+                    this.text = code;
+                    this.movementMethod = ScrollingMovementMethod.getInstance();
+                    this.visibility = View.VISIBLE;
+                    this.textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                }
+            };
+            view.findViewById<LinearLayout>(R.id.dialog_buttons).apply {
+                val center = actions.any { it?.center == true };
+                val buttons = actions.map<Action, TextView> { act ->
+                    val buttonView = TextView(context);
+                    val dp10 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, resources.displayMetrics).toInt();
+                    val dp28 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 28f, resources.displayMetrics).toInt();
+                    val dp14 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14.0f, resources.displayMetrics).toInt();
+                    buttonView.layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                        this.marginStart = if(actions.size >= 2) dp14 / 2 else dp28 / 2;
+                        this.marginEnd = if(actions.size >= 2) dp14 / 2 else dp28 / 2;
+                    };
+                    buttonView.setTextColor(Color.WHITE);
+                    buttonView.textSize = 14f;
+                    buttonView.typeface = resources.getFont(R.font.inter_regular);
+                    buttonView.text = act.text;
+                    buttonView.setOnClickListener { act.invokeAction(DialogResult(inputView?.text?.toString())); dialog.dismiss(); };
+                    when(act.style) {
+                        ActionStyle.PRIMARY -> buttonView.setBackgroundResource(R.drawable.background_button_primary);
+                        ActionStyle.ACCENT -> buttonView.setBackgroundResource(R.drawable.background_button_accent);
+                        ActionStyle.DANGEROUS -> buttonView.setBackgroundResource(R.drawable.background_button_pred);
+                        ActionStyle.DANGEROUS_TEXT -> buttonView.setTextColor(ContextCompat.getColor(context, R.color.pastel_red))
+                        else -> buttonView.setTextColor(ContextCompat.getColor(context, R.color.white))
+                    }
+                    val paddingSpecialButtons = if(actions.size > 2) dp14 else dp28;
+                    if(act.style != ActionStyle.NONE && act.style != ActionStyle.DANGEROUS_TEXT)
+                        buttonView.setPadding(paddingSpecialButtons, dp10, paddingSpecialButtons, dp10);
+                    else
+                        buttonView.setPadding(dp10, dp10, dp10, dp10);
+
+                    return@map buttonView;
+                };
+                if(actions.size <= 1 || center)
+                    this.gravity = Gravity.CENTER;
+                else
+                    this.gravity = Gravity.END;
+                for(button in buttons)
+                    this.addView(button);
+            };
+            dialog.setOnCancelListener {
+                if(defaultCloseAction >= 0 && defaultCloseAction < actions.size)
+                    actions[defaultCloseAction].invokeAction(DialogResult(inputView?.text?.toString()));
+            }
+            dialog.setOnDismissListener {
+                registerDialogClosed(dialog);
+            }
+            dialog.show();
+            return dialog;
         }
     }
 

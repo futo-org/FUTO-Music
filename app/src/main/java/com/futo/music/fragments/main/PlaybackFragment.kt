@@ -21,16 +21,20 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.TransitionOptions
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.futo.music.R
+import com.futo.music.UIDialogs
 import com.futo.music.extensions.setAlbumArt
 import com.futo.music.fragments.MainFragView
 import com.futo.music.logic.PlayerManager
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.services.PlaybackService
+import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateQueue
+import com.futo.music.storage.db.DBTrack
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PlaybackFragment: MainFragment() {
     override val isMainView : Boolean = true;
@@ -93,10 +97,16 @@ class PlaybackFragment: MainFragment() {
         private val _buttonShuffle: ImageButton;
         private val _buttonRepeat: ImageButton;
 
+        private val _buttonStars: ImageButton;
+        private val _buttonQueue: ImageButton;
+        private val _buttonPlaylistAdd: ImageButton;
+
         private val _viewControls: PlayerControlView;
         private val _timeBar: TimeBar;
 
         private var _isPlaying: Boolean = false;
+
+        private var _trackCurrent: DBTrack? = null;
 
         private val _listener = object: PlayerManager.Listener {
             override fun onPlayingChanged(isPlaying: Boolean) {
@@ -107,7 +117,15 @@ class PlaybackFragment: MainFragment() {
                 this@FragView.onMediaMetadataChanged(player, mediaMetadata);
             }
 
-            override fun onMediaItemChanged(player: Player, mediaItem: MediaItem?, reason: Int) {}
+            override fun onMediaItemChanged(player: Player, mediaItem: MediaItem?, reason: Int) {
+                val id = mediaItem?.mediaId?.toLongOrNull();
+                if(id != null) {
+                    setCurrentTrack(id);
+                }
+            }
+
+            override fun onMediaClose() {
+            }
         }
 
         init {
@@ -123,6 +141,10 @@ class PlaybackFragment: MainFragment() {
 
             _buttonShuffle = findViewById(R.id.button_shuffle);
             _buttonRepeat = findViewById(R.id.button_loop);
+
+            _buttonStars = findViewById(R.id.button_stars);
+            _buttonQueue = findViewById(R.id.button_queue);
+            _buttonPlaylistAdd = findViewById(R.id.button_add_playlist);
 
             _buttonShuffle.setOnClickListener {
                 val player = frag?._player?.player ?: return@setOnClickListener;
@@ -161,8 +183,27 @@ class PlaybackFragment: MainFragment() {
                 }
             }
 
+            _buttonPlaylistAdd.setOnClickListener {
+                val track = _trackCurrent;
+                if(track != null) {
+                    fragment.lifecycleScope.launch(Dispatchers.IO) {
+                        withContext(Dispatchers.Main) {
+                            UIDialogs.showAddToPlaylistDialog(context, fragment.lifecycleScope, "Select which playlist you'd like to add this track to.", track);
+                        }
+                    }
+                }
+            }
+
+
             frag._player?.let {
                 onPlayerAvailable(it);
+            }
+        }
+
+        fun setCurrentTrack(id: Long) {
+            fragment.lifecycleScope.launch(Dispatchers.IO) {
+                val track = StateDatabase.instance.getTrack(id);
+                _trackCurrent = track;
             }
         }
 
@@ -173,10 +214,12 @@ class PlaybackFragment: MainFragment() {
             }
         }
         fun onMediaMetadataChanged(player: Player, mediaMetadata: MediaMetadata?) {
+            val abc = "";
             fragment.lifecycleScope.launch(Dispatchers.Main) {
                 if(mediaMetadata == null)
                     return@launch; //TODO: Clear;
                 try {
+
                     setPlaySkipButtonStates(player.hasPreviousMediaItem(), player.hasNextMediaItem());
                     _imageArt.setAlbumArt(mediaMetadata);
                     _textTitle.text = (mediaMetadata.title);
