@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="40dp"
     android:layout_gravity="top"
     android:layoutDirection="ltr"
     android:orientation="vertical">
@@ -24,8 +24,26 @@
         app:played_color="@color/colorPrimary"
         app:buffered_color="#333333"
         app:unplayed_color="#333333"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
+
+    <TextView android:id="@id/exo_position"
+        app:layout_constraintTop_toBottomOf="@id/time_progress"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginTop="2dp"
+        android:textColor="#999"
+        android:fontFamily="@font/inter_light"
+        android:textSize="11sp"
+        style="@style/ExoStyledControls.TimeText.Position"/>
+
+    <TextView android:id="@id/exo_duration"
+        app:layout_constraintTop_toBottomOf="@id/time_progress"
+        app:layout_constraintRight_toRightOf="@id/time_progress"
+        android:layout_marginTop="2dp"
+        android:textSize="11sp"
+        android:textColor="#999"
+        android:fontFamily="@font/inter_light"
+        style="@style/ExoStyledControls.TimeText.Duration"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

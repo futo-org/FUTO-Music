@@ -9,6 +9,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.fragments.main.MainFragment
@@ -37,6 +38,13 @@ class NavigationTopBarFragment : TopFragment() {
                 it.text = currentAnnouncements.size.toString();
                 it.visibility = View.GONE;
             }
+
+        _buttonNotifIcon?.let {
+            it.isVisible = false;
+        }
+        _buttonNotifCount?.let {
+            it.isVisible = false;
+        }
     }
 
     override fun onShown(parameter: Any?) {
@@ -62,6 +70,7 @@ class NavigationTopBarFragment : TopFragment() {
         _buttonBack = view.findViewById(R.id.button_back);
         _buttonNotifIcon = view.findViewById(R.id.button_notifs_icon);
         _buttonNotifCount = view.findViewById(R.id.button_notifs_count);
+
 
         _buttonBack?.setOnClickListener {
             closeSegment();

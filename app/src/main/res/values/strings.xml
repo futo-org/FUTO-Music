@@ -5,4 +5,19 @@
     <string name="no_playlists_text">You haven\'t created any playlists yet</string>
     <string name="hint_search_home">Song, Artist, Album, Playlist..</string>
     <string name="hint_filter">Filter</string>
+    <string name="app_error">App Error</string>
+    <string name="an_uncaught_exception_was_thrown_we_re_sorry_for_the_inconvenience">An uncaught exception was thrown, we\'re sorry for the inconvenience.</string>
+    <string name="to_help_us_solve_this_please_share_the_below_crash_report_with_us_and_perhaps_adds_some_context_on_what_you_were_doing">To help us solve this, please share the below crash report with us, and perhaps adds some context on what you were doing.</string>
+    <string name="lorem_ipsum" translatable="false">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</string>
+
+    <string name="unknown_context">Unknown Context</string>
+    <string name="something_went_wrong_missing_stack_trace">Something went wrong… missing stack trace?</string>
+    <string name="unhandled_exception_in_vs">Unhandled exception in VS</string>
+    <string name="send_exception_to_developers">Send exception to developers…</string>
+
+
+    <string name="share">Share</string>
+    <string name="submit">Submit</string>
+    <string name="restart">Restart</string>
+    <string name="close">Close</string>
 </resources>

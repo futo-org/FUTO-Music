@@ -6,6 +6,9 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -15,6 +18,10 @@ import com.futo.music.R
 import com.futo.music.constructs.Event0
 import com.futo.music.extensions.setAlbumArt
 import com.futo.music.logic.PlayerManager
+import com.futo.music.states.StateDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PlaybackPeekView: ConstraintLayout {
     private val _root: ConstraintLayout;
@@ -41,6 +48,8 @@ class PlaybackPeekView: ConstraintLayout {
         _buttonPlay = findViewById(R.id.button_play);
         _buttonNext = findViewById(R.id.button_next);
         _buttonClose = findViewById(R.id.button_close);
+
+        _textTitle.isSelected = true;
 
         setOnClickListener {
             onClick.emit();
@@ -74,18 +83,44 @@ class PlaybackPeekView: ConstraintLayout {
             }
             override fun onMediaMetadataChanged(player: Player, mediaMetadata: MediaMetadata?) {
                 if(mediaMetadata == null || mediaMetadata.title == null) {
-                    this@PlaybackPeekView.visibility = GONE;
-                    this@PlaybackPeekView._buttonNext.alpha = if(player.hasNextMediaItem()) 1f else 0.3f;
+                    if(player.currentMediaItem == null) {
+                        this@PlaybackPeekView.visibility = GONE;
+                        this@PlaybackPeekView._buttonNext.alpha =
+                            if (player.hasNextMediaItem()) 1f else 0.3f;
+                    }
                     return;
+
                 }
-                this@PlaybackPeekView._buttonNext.alpha = if(player.hasNextMediaItem()) 1f else 0.3f;
                 _imageArt.setAlbumArt(mediaMetadata);
-                _textTitle.text = mediaMetadata.title;
-                _textArtist.text = mediaMetadata.artist;
-                this@PlaybackPeekView.visibility = VISIBLE;
+                setTrackInfo(mediaMetadata?.title?.toString() ?: "", mediaMetadata?.artist?.toString() ?: "", player.hasNextMediaItem());
             }
 
-            override fun onMediaItemChanged(player: Player, mediaItem: MediaItem?, reason: Int) {}
+            override fun onMediaItemChanged(player: Player, mediaItem: MediaItem?, reason: Int) {
+                mediaItem?.mediaId?.toLongOrNull()?.let {
+                    val id = it;
+                    findViewTreeLifecycleOwner()?.lifecycleScope?.launch(Dispatchers.IO) {
+                        val track = StateDatabase.instance.getTrack(id);
+                        if(track != null) {
+                            withContext(Dispatchers.Main) {
+                                setTrackInfo(track.name, track.artistLine ?: "", player.hasNextMediaItem());
+                            }
+                        }
+                    }
+                }
+            }
+
+            fun setTrackInfo(name: String, artist: String?, hasNext: Boolean) {
+                this@PlaybackPeekView._buttonNext.alpha =
+                    if (hasNext) 1f else 0.3f;
+                _textTitle.text = name;
+                if(artist == null || artist.isBlank())
+                    _textArtist.isVisible = false;
+                else {
+                    _textArtist.text = artist
+                    _textArtist.isVisible = true;
+                }
+                this@PlaybackPeekView.visibility = VISIBLE;
+            }
 
             override fun onMediaClose() {
                 this@PlaybackPeekView.visibility = GONE;

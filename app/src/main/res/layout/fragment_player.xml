@@ -99,16 +99,22 @@
             android:textSize="16sp" />
         <TextView
             android:id="@+id/text_title"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/inter_medium"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:maxLines="2"
-            android:ellipsize="end"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:scrollHorizontally="true"
             android:gravity="center"
             android:textColor="@color/white"
             android:text="Revolution 909"
+            android:layout_gravity="center"
             android:textSize="23sp" />
         <TextView
             android:id="@+id/text_album"
@@ -117,6 +123,7 @@
             android:fontFamily="@font/inter_regular"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
+            android:layout_marginBottom="8dp"
             android:maxLines="1"
             android:ellipsize="end"
             android:gravity="center"
@@ -134,7 +141,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="5dp"
+        android:layout_marginBottom="0dp"
         android:gravity="center">
         <ImageButton
             android:id="@+id/button_left"
@@ -151,7 +158,7 @@
             android:layout_width="70dp"
             android:layout_height="70dp"
             android:src="@drawable/ic_play"
-            android:background="@drawable/background_round_35dp"
+            android:background="@drawable/background_round_play_button"
             android:layout_margin="10dp"
             android:scaleType="fitCenter"
             android:padding="20dp"
@@ -174,7 +181,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="10dp"
-        android:paddingTop="10dp"
+        android:paddingTop="5dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">

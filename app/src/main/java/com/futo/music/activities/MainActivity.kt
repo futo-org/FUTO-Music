@@ -2,6 +2,8 @@ package com.futo.music.activities
 
 import android.annotation.SuppressLint
 import android.content.ComponentName
+import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
@@ -63,6 +65,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Dispatcher
+import java.io.PrintWriter
+import java.io.StringWriter
+import java.lang.reflect.InvocationTargetException
 import java.util.LinkedList
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -113,7 +118,36 @@ class MainActivity : AppCompatActivity() {
     );
 
     init {
+        Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
+            val writer = StringWriter();
 
+            var excp = throwable;
+            Logger.e("Application", "Uncaught", excp);
+
+            //Resolve invocation chains
+            while (excp is InvocationTargetException || excp is java.lang.RuntimeException) {
+                val before = excp;
+
+                if (excp is InvocationTargetException)
+                    excp = excp.targetException ?: excp.cause ?: excp;
+                else if (excp is java.lang.RuntimeException)
+                    excp = excp.cause ?: excp;
+
+                if (excp == before)
+                    break;
+            }
+            writer.write((excp.message ?: "Empty error") + "\n\n");
+            excp.printStackTrace(PrintWriter(writer));
+            val message = writer.toString();
+            Logger.e(TAG, message, excp);
+
+            val exIntent = Intent(this, ExceptionActivity::class.java);
+            exIntent.addFlags(FLAG_ACTIVITY_NEW_TASK);
+            exIntent.putExtra(ExceptionActivity.EXTRA_STACK, message);
+            startActivity(exIntent);
+
+            Runtime.getRuntime().exit(0);
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

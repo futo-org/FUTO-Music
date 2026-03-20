@@ -142,6 +142,9 @@ class PlaybackFragment: MainFragment() {
             _textAlbum = findViewById(R.id.text_album);
             _textArtist = findViewById(R.id.text_artist);
 
+            _textTitle.isSelected = true;
+
+
             _buttonLeft = findViewById(R.id.button_left);
             _buttonRight = findViewById(R.id.button_right);
             _buttonPlay = findViewById(R.id.button_play);
@@ -253,7 +256,6 @@ class PlaybackFragment: MainFragment() {
                     _textTitle.text = (track?.name ?: mediaMetadata.title);
                     _textArtist.text = (track?.artistLine ?: mediaMetadata.artist);
                     _textAlbum.text = (track?.albumLine ?: mediaMetadata.albumTitle);
-
 
                 }
                 catch(ex: Throwable) {
