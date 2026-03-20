@@ -94,9 +94,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    implementation("androidx.media3:media3-exoplayer:1.9.0")
-    implementation("androidx.media3:media3-ui:1.9.0")
-    implementation("androidx.media3:media3-session:1.9.0")
+    implementation("androidx.media3:media3-exoplayer:1.10.0-rc02")
+    implementation("androidx.media3:media3-ui:1.10.0-rc02")
+    implementation("androidx.media3:media3-session:1.10.0-rc02")
 
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 

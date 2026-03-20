@@ -8,8 +8,14 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.UIDialogs
+import com.futo.music.UIDialogs.ActionStyle
+import com.futo.music.activities.MainActivity
+import com.futo.music.extensions.assume
 import com.futo.music.fragments.MainFragView
+import com.futo.music.fragments.top.GeneralTopBarFragment
+import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.models.playable.Vibe
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
 import com.futo.music.storage.db.DBAlbum
@@ -35,6 +41,7 @@ class HomeFragment: MainFragment() {
     private var _dataArtists: List<DBArtist>? = null;
     private var _dataRecent: List<IPlayable>? = null;
     private var _dataPlaylists: List<DBPlaylist>? = null;
+    private var _dataVibeWeighted: Vibe? = null;
 
     fun clearCache() {
         _dataAlbums = null;
@@ -65,6 +72,9 @@ class HomeFragment: MainFragment() {
         _view?.onShown(parameter);
     }
 
+    override fun onShown(parameter: Any?, isBack: Boolean) {
+        super.onShown(parameter, isBack);
+    }
     override fun onHide() {
         super.onHide();
         _view?.onHide();
@@ -180,10 +190,18 @@ class HomeFragment: MainFragment() {
                 val recent = fragment._dataRecent ?: StateDatabase.instance.getRecentPlays();
                 val artists = fragment._dataArtists ?: StateDatabase.instance.getArtistsByRecent();
                 val albums = fragment._dataAlbums ?:  StateDatabase.instance.getAlbumsByRecent();
-                val playlists = fragment._dataPlaylists ?: StateDatabase.instance.getPlaylistsByRecent();
+                var playlists = (fragment._dataPlaylists ?: StateDatabase.instance.getPlaylistsByRecent()).map { it as IPlayable };
+
+                val vibeWeighted = fragment._dataVibeWeighted ?: Vibe("Suggested", ImageVariable.fromResource(R.drawable.ic_playlist), listOf(), listOf(), StateDatabase.instance.getTrackListWeighted(100));
+
                 //fragment._dataRecent = recent;
                 fragment._dataArtists = artists;
                 fragment._dataAlbums = albums;
+                fragment._dataVibeWeighted = vibeWeighted;
+
+                if(vibeWeighted != null && vibeWeighted.singles.size > 5)
+                    playlists = listOf(vibeWeighted) + (playlists);
+
                 //fragment._dataPlaylists = playlists;
                 withContext(Dispatchers.Main) {
                     if(recent.isNullOrEmpty())

@@ -31,6 +31,8 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.futo.music.R
 import com.futo.music.RootInsetsController
+import com.futo.music.UIDialogs
+import com.futo.music.UIDialogs.ActionStyle
 import com.futo.music.constructs.Event1
 import com.futo.music.fragments.bottom.MenuBottomBarFragment
 import com.futo.music.fragments.main.ContentsFragment
@@ -143,6 +145,13 @@ class MainActivity : AppCompatActivity() {
             frag.value.get().botBar = frag.value.botbar;
         }
 
+        _fragTopGeneral.setTitleLongPress {
+            UIDialogs.showDialogVertical(this, 0, false, "Hidden Menu", "Some hidden options for testing", null, null, null, -1,
+                UIDialogs.Action("Rescan", {
+                    sync(true)
+                }, ActionStyle.PRIMARY));
+        }
+
         createPlayer {
             it.subscribe("main", object: PlayerManager.Listener {
                 override fun onPlayingChanged(isPlaying: Boolean) {
@@ -214,10 +223,11 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    fun sync() {
-        if(StateLibrary.instance.requireSync(this)) {
+    fun sync(force: Boolean = false) {
+        if(force || StateLibrary.instance.requireSync(this)) {
             val announce = StateAnnouncement.instance.registerLoading("Syncing Mediastore", "Importing new music from your phone", null,
                 "importing", true);
+            UIDialogs.appToast("We're importing your music!\nGive us a minute.")
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
                     val results = StateLibrary.instance.syncDatabase(applicationContext, { max, progress, type, text ->

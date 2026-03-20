@@ -25,6 +25,7 @@ class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?): 
             PlayableType.Artist.value -> ViewHolder(ContentArtistGridView(parent))
             PlayableType.Album.value -> ViewHolder(ContentAlbumGridView(parent))
             PlayableType.Playlist.value -> ViewHolder(ContentPlaylistGridView(parent))
+            PlayableType.Vibe.value -> ViewHolder(ContentAlbumGridView(parent))
             else -> throw NotImplementedError();
         }
         onCreate?.invoke(result);

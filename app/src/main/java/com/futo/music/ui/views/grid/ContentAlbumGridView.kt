@@ -12,6 +12,7 @@ import com.futo.music.constructs.Event1
 import com.futo.music.dp
 import com.futo.music.models.playable.Album
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.models.playable.Vibe
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.ui.views.AutoSizeLayout
 import com.google.android.material.imageview.ShapeableImageView
@@ -61,7 +62,7 @@ class ContentAlbumGridView(viewGroup: ViewGroup) : IContentGridView {
                 textMeta.isVisible = true;
             }
         }
-        if(playable is DBAlbum) {
+        else if(playable is DBAlbum) {
             if(playable.authors.isNotBlank()) {
                 textMeta.text = playable.authors;
                 textMeta.isVisible = true;
@@ -78,6 +79,14 @@ class ContentAlbumGridView(viewGroup: ViewGroup) : IContentGridView {
                 textCount.text = "";
                 textCount.isVisible = false;
             }
+        }
+        else if(playable is Vibe) {
+            textCount.text = playable.singles.size.toString();
+            textMeta.isVisible = false;
+        }
+        else {
+            textCount.isVisible = false;
+            textMeta.isVisible = false;
         }
     }
 

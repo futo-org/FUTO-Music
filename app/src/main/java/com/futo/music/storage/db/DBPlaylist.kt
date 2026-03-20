@@ -22,7 +22,7 @@ import java.time.OffsetDateTime
 class DBPlaylist(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
     override val name: String,
-    val score: Int = 0,
+    override val score: Int = 0,
 
     var artUri1: String? = null,
     var artUriTrack1: Long? = null,
@@ -99,8 +99,11 @@ interface DBPlaylistDao {
     @Query("SELECT * FROM playlist_tracks WHERE playlistId = :playlistId AND trackId = :trackId")
     fun getPlaylistTrackRef(playlistId: Long, trackId: Long): DBPlaylistTrack?;
 
-    @Update(entity = DBAlbum::class)
+    @Update(entity = DBPlaylist::class)
     fun setPlayed(update: DBPlaylistUpdatePlayed)
+
+    @Update(entity = DBPlaylist::class)
+    fun setRating(update: DBPlaylistUpdateRating): Int
 
     @Update(entity = DBPlaylist::class)
     fun setTrackMetadata(update: DBPlaylistUpdateTrackMetadata)
@@ -112,6 +115,11 @@ interface DBPlaylistDao {
 class DBPlaylistUpdatePlayed(
     val id: Long,
     val datePlayed: OffsetDateTime
+)
+@Entity
+class DBPlaylistUpdateRating(
+    val id: Long,
+    val score: Int
 )
 @Entity
 class DBPlaylistUpdateTrackMetadata(

@@ -192,16 +192,11 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center">
-                <ImageButton
+                <com.futo.music.ui.buttons.RatingButton
                     android:id="@+id/button_stars"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:src="@drawable/ic_stars"
                     android:background="@color/transparent"
-                    android:scaleType="fitCenter"
-                    android:padding="10dp"
-                    android:alpha="0.5"
-                    android:layout_weight="1"
                     />
             </LinearLayout>
             <LinearLayout

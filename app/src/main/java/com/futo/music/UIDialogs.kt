@@ -10,17 +10,24 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.collection.emptyLongSet
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.extensions.assume
 import com.futo.music.logging.Logger
+import com.futo.music.models.playable.IPlayable
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
+import com.futo.music.storage.db.DBAlbum
+import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.AnyAdapterView.Companion.asAny
@@ -82,6 +89,157 @@ class UIDialogs {
         fun appToast(toast: ToastView.Toast) {
             StateApp.instance.activity()?.let {
                 it.showAppToast(toast);
+            }
+        }
+
+        fun showRatingDialog(context: Context, scope: CoroutineScope, track: DBTrack? = null, playlist: DBPlaylist? = null, album: DBAlbum? = null, artist: DBArtist? = null, onDismissed: (()->Unit)? = null) {
+            scope.launch(Dispatchers.IO) {
+                if(track == null && playlist == null && album == null && artist == null) {
+                    appToast("Unknown Item");
+                    return@launch;
+                }
+                withContext(Dispatchers.Main) {
+                    val builder = AlertDialog.Builder(context);
+                    val view = LayoutInflater.from(context).inflate(R.layout.dialog_rating, null);
+                    builder.setView(view);
+                    builder.setCancelable(true);
+
+                    val dialog = builder.create();
+                    registerDialogOpened(dialog);
+
+
+                    var item = if(track !=  null)
+                        track
+                    else if(playlist != null)
+                        playlist
+                    else if(album != null)
+                        album
+                    else if(artist != null)
+                        artist;
+                    else throw IllegalStateException("No item to rate?");
+
+                    val textItem = view.findViewById<TextView>(R.id.text_item);
+
+                    val buttonTrack = view.findViewById<Button>(R.id.button_track);
+                    val buttonPlaylist = view.findViewById<Button>(R.id.button_playlist);
+                    val buttonAlbum = view.findViewById<Button>(R.id.button_album);
+                    val buttonArtist = view.findViewById<Button>(R.id.button_artist);
+                    val buttonsTypes = listOf(buttonTrack, buttonPlaylist, buttonAlbum, buttonArtist);
+
+                    val buttonStars = listOf(
+                        view.findViewById<ImageButton>(R.id.button_star_1),
+                        view.findViewById<ImageButton>(R.id.button_star_2),
+                        view.findViewById<ImageButton>(R.id.button_star_3),
+                        view.findViewById<ImageButton>(R.id.button_star_4),
+                        view.findViewById<ImageButton>(R.id.button_star_5),
+                    )
+
+                    fun updateStarUI(rating: Int) {
+                        buttonStars.forEachIndexed { index, button ->
+                            button.apply {
+                                if (rating > 0 && rating > index * 20)
+                                    button.setImageResource(androidx.media3.session.R.drawable.media3_icon_star_filled);
+                                else
+                                    button.setImageResource(androidx.media3.session.R.drawable.media3_icon_star_unfilled);
+                            }
+                        }
+                    }
+                    fun updateSelectUI() {
+                        val toSelect = if(item is DBTrack)
+                            buttonTrack;
+                        else if(item is DBPlaylist)
+                            buttonPlaylist;
+                        else if(item is DBAlbum)
+                            buttonAlbum;
+                        else if(item is DBArtist)
+                            buttonArtist
+                        else null;
+                        buttonsTypes.forEach {
+                            if(it == toSelect)
+                                it.setBackgroundResource(R.drawable.background_button_accent);
+                            else
+                                it.setBackgroundResource(R.drawable.background_button_black);
+                        }
+                        textItem.text = item.name;
+                    }
+
+                    if(track == null)
+                        buttonTrack.isVisible = false;
+                    else
+                    {
+                        buttonTrack.isVisible = true;
+                        buttonTrack.setOnClickListener {
+                            item = track;
+                            updateSelectUI();
+                            updateStarUI(item.score ?: 0);
+                        }
+                    }
+                    if(playlist == null)
+                        buttonPlaylist.isVisible = false;
+                    else
+                    {
+                        buttonPlaylist.isVisible = true;
+                        buttonPlaylist.setOnClickListener {
+                            item = playlist;
+                            updateSelectUI();
+                            updateStarUI(item.score ?: 0);
+                        }
+                    }
+                    if(album == null)
+                        buttonAlbum.isVisible = false;
+                    else
+                    {
+                        buttonAlbum.isVisible = true;
+                        buttonAlbum.setOnClickListener {
+                            item = album;
+                            updateSelectUI();
+                            updateStarUI(item.score ?: 0);
+                        }
+                    }
+                    if(artist == null)
+                        buttonArtist.isVisible = false;
+                    else
+                    {
+                        buttonArtist.isVisible = true;
+                        buttonArtist.setOnClickListener {
+                            item = artist;
+                            updateSelectUI();
+                            updateStarUI(item.score ?: 0);
+                        }
+                    }
+
+                    updateSelectUI();
+                    updateStarUI(item.score ?: 0);
+                    buttonStars.forEachIndexed { index, button ->
+                        button.apply {
+                            this.setOnClickListener {
+                                val rating = (index + 1) * 20;
+                                updateStarUI(rating);
+                                val currentItem = item;
+
+                                scope.launch(Dispatchers.IO) {
+                                    val result = if (currentItem is DBAlbum)
+                                        StateDatabase.instance.setRatingAlbum(currentItem.id, rating);
+                                    else if (currentItem is DBArtist)
+                                        StateDatabase.instance.setRatingArtist(currentItem.id, rating);
+                                    else if (currentItem is DBPlaylist)
+                                        StateDatabase.instance.setRatingPlaylist(currentItem.id, rating);
+                                    else if (currentItem is DBTrack)
+                                        StateDatabase.instance.setRatingTrack(currentItem.id, rating);
+                                    else false
+                                    if(result) {
+                                        appToast("Rating updated to ${index + 1} stars");
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    dialog.setOnDismissListener {
+                        registerDialogClosed(dialog);
+                    }
+                    dialog.show();
+                }
             }
         }
 
@@ -242,6 +400,97 @@ class UIDialogs {
                     this.gravity = Gravity.CENTER;
                 else
                     this.gravity = Gravity.END;
+                for(button in buttons)
+                    this.addView(button);
+            };
+            dialog.setOnCancelListener {
+                if(defaultCloseAction >= 0 && defaultCloseAction < actions.size)
+                    actions[defaultCloseAction].invokeAction(DialogResult(inputView?.text?.toString()));
+            }
+            dialog.setOnDismissListener {
+                registerDialogClosed(dialog);
+            }
+            dialog.show();
+            return dialog;
+        }
+        fun showDialogVertical(context: Context, icon: Int, animated: Boolean, text: String, textDetails: String? = null, code: String? = null, input: String?, placeholder: String?, defaultCloseAction: Int, vararg actions: Action): AlertDialog {
+            val builder = AlertDialog.Builder(context);
+            val view = LayoutInflater.from(context).inflate(R.layout.dialog_multi_button, null);
+            builder.setView(view);
+            builder.setCancelable(defaultCloseAction > -2);
+            val dialog = builder.create();
+            registerDialogOpened(dialog);
+
+            view.findViewById<ImageView>(R.id.dialog_icon).apply {
+                this.setImageResource(icon);
+                if(animated)
+                    this.drawable.assume<Animatable, Unit> { it.start() };
+                if(icon <= 0)
+                    this.isVisible = false;
+            }
+            view.findViewById<TextView>(R.id.dialog_text).apply {
+                this.text = text;
+            };
+            view.findViewById<TextView>(R.id.dialog_text_details).apply {
+                if (textDetails == null)
+                    this.visibility = View.GONE;
+                else {
+                    this.text = textDetails;
+                }
+            };
+            var inputView = view.findViewById<TextView>(R.id.dialog_text_input);
+            inputView.apply {
+                if (input == null && placeholder == null) this.visibility = View.GONE;
+                else {
+                    this.text = input ?: "";
+                    this.hint = placeholder ?: "";
+                    this.visibility = View.VISIBLE;
+                    this.textAlignment = if(actions.any { it.center }) View.TEXT_ALIGNMENT_CENTER else View.TEXT_ALIGNMENT_TEXT_START
+                }
+            };
+            view.findViewById<TextView>(R.id.dialog_text_code).apply {
+                if (code == null) this.visibility = View.GONE;
+                else {
+                    this.text = code;
+                    this.movementMethod = ScrollingMovementMethod.getInstance();
+                    this.visibility = View.VISIBLE;
+                    this.textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                }
+            };
+            view.findViewById<LinearLayout>(R.id.dialog_buttons).apply {
+
+                val center = actions.any { it?.center == true };
+                val buttons = actions.map<UIDialogs.Action, TextView> { act ->
+                    val buttonView = TextView(context);
+                    val dp10 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, resources.displayMetrics).toInt();
+                    val dp28 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 28f, resources.displayMetrics).toInt();
+                    val dp14 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14.0f, resources.displayMetrics).toInt();
+                    buttonView.layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                        this.marginStart = if(actions.size >= 2) dp14 / 2 else dp28 / 2;
+                        this.marginEnd = if(actions.size >= 2) dp14 / 2 else dp28 / 2;
+                    };
+                    buttonView.setTextColor(Color.WHITE);
+                    buttonView.textSize = 14f;
+                    buttonView.typeface = resources.getFont(R.font.inter_regular);
+                    buttonView.text = act.text;
+                    buttonView.setOnClickListener { act.invokeAction(DialogResult(inputView?.text?.toString())); dialog.dismiss(); };
+                    when(act.style) {
+                        UIDialogs.ActionStyle.PRIMARY -> buttonView.setBackgroundResource(R.drawable.background_button_primary);
+                        UIDialogs.ActionStyle.ACCENT -> buttonView.setBackgroundResource(R.drawable.background_button_accent);
+                        UIDialogs.ActionStyle.DANGEROUS -> buttonView.setBackgroundResource(R.drawable.background_button_pred);
+                        UIDialogs.ActionStyle.DANGEROUS_TEXT -> buttonView.setTextColor(ContextCompat.getColor(context, R.color.pastel_red))
+                        else -> buttonView.setTextColor(ContextCompat.getColor(context, R.color.white))
+                    }
+                    val paddingSpecialButtons = if(actions.size > 2) dp14 else dp28;
+                    if(act.style != UIDialogs.ActionStyle.NONE && act.style != UIDialogs.ActionStyle.DANGEROUS_TEXT)
+                        buttonView.setPadding(paddingSpecialButtons, dp10, paddingSpecialButtons, dp10);
+                    else
+                        buttonView.setPadding(dp10, dp10, dp10, dp10);
+
+                    return@map buttonView;
+                };
+                this.orientation = LinearLayout.VERTICAL;
+                this.gravity = Gravity.CENTER;
                 for(button in buttons)
                     this.addView(button);
             };

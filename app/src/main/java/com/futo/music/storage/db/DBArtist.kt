@@ -21,7 +21,7 @@ import java.time.OffsetDateTime
 class DBArtist(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
     override val name: String,
-    val score: Int = 0,
+    override val score: Int = 0,
 
     val artUri: String? = null,
 
@@ -91,6 +91,10 @@ interface DBArtistDao {
 
     @Update(entity = DBArtist::class)
     fun setPlayed(update: DBArtistUpdatePlayed)
+
+    @Update(entity = DBArtist::class)
+    fun setRating(update: DBArtistUpdateRating): Int
+
     @Update(entity = DBArtist::class)
     fun setTrackMetadata(update: DBArtistUpdateTrackMetadata)
 }
@@ -98,6 +102,12 @@ interface DBArtistDao {
 class DBArtistUpdatePlayed(
     val id: Long,
     val datePlayed: OffsetDateTime
+)
+
+@Entity
+class DBArtistUpdateRating(
+    val id: Long,
+    val score: Int
 )
 
 @Entity

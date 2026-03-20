@@ -29,12 +29,14 @@ class DBTrack(
 
     val artistId: Long? = null,
     val artistLine: String? = null,
+    val albumLine: String? = null,
 
     val contentUrl: String? = null,
 
     override val datePlayed: OffsetDateTime = OffsetDateTime.MIN,
     val dateAdded: OffsetDateTime = OffsetDateTime.MIN,
-    val score: Int = 0,
+    override val score: Int = 0,
+    val scoreLevel: Int = 0,
     val scoreCalculated: Int = 0,
 
     val skips: Int = 0,
@@ -115,6 +117,10 @@ interface DBTrackDao {
     fun getPlaylistTracks(playlistId: Long): List<DBTrack>
 
 
+    @Query("SELECT t.* FROM tracks t WHERE t.scoreCalculated > 0 ORDER BY (ABS(RANDOM())/ 9223372036854775808.0) * t.scoreCalculated / 100 DESC LIMIT :count")
+    fun getRandomWeightedTracks(count: Int): List<DBTrack>
+
+
     @Query("SELECT COUNT(*) FROM tracks")
     fun count(): Int;
 
@@ -123,10 +129,30 @@ interface DBTrackDao {
 
     @Update(entity = DBTrack::class)
     fun setPlayed(update: DBTrackUpdatePlayed)
+
+    @Update(entity = DBTrack::class)
+    fun setRating(update: DBTrackUpdateRating): Int
+
+    @Update(entity = DBTrack::class)
+    fun setRatingCalculated(update: DBTrackUpdateRatingCalculated): Int
 }
 
 @Entity
 class DBTrackUpdatePlayed(
     val id: Long,
     val datePlayed: OffsetDateTime
+)
+
+@Entity
+class DBTrackUpdateRating(
+    val id: Long,
+    val score: Int
+)
+
+
+@Entity
+class DBTrackUpdateRatingCalculated(
+    val id: Long,
+    val scoreLevel: Int,
+    val scoreCalculated: Int
 )

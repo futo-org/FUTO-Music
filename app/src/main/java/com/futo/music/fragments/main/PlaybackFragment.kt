@@ -29,7 +29,11 @@ import com.futo.music.models.playable.IPlayable
 import com.futo.music.services.PlaybackService
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateQueue
+import com.futo.music.storage.db.DBAlbum
+import com.futo.music.storage.db.DBArtist
+import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
+import com.futo.music.ui.buttons.RatingButton
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
@@ -97,7 +101,7 @@ class PlaybackFragment: MainFragment() {
         private val _buttonShuffle: ImageButton;
         private val _buttonRepeat: ImageButton;
 
-        private val _buttonStars: ImageButton;
+        private val _buttonStars: RatingButton;
         private val _buttonQueue: ImageButton;
         private val _buttonPlaylistAdd: ImageButton;
 
@@ -114,13 +118,16 @@ class PlaybackFragment: MainFragment() {
             }
 
             override fun onMediaMetadataChanged(player: Player, mediaMetadata: MediaMetadata?) {
-                this@FragView.onMediaMetadataChanged(player, mediaMetadata);
+                //this@FragView.onMediaMetadataChanged(player, mediaMetadata);
             }
 
             override fun onMediaItemChanged(player: Player, mediaItem: MediaItem?, reason: Int) {
                 val id = mediaItem?.mediaId?.toLongOrNull();
                 if(id != null) {
                     setCurrentTrack(id);
+                }
+                if(mediaItem != null && mediaItem.mediaMetadata.title != null) {
+                    this@FragView.onMediaMetadataChanged(player, mediaItem.mediaMetadata, );
                 }
             }
 
@@ -183,14 +190,28 @@ class PlaybackFragment: MainFragment() {
                 }
             }
 
+            _buttonStars.onClick.subscribe {
+                val trackNow = _trackCurrent;
+                if(trackNow != null) {
+                    val queued = StateQueue.instance.getQueuePlayable();
+
+                    fragment.lifecycleScope.launch(Dispatchers.IO) {
+                        val track = StateDatabase.instance.getTrack(trackNow.id);
+                        val playlist = if(queued is DBPlaylist) StateDatabase.instance.getPlaylist(queued.id) else null;
+                        val album = if(queued is DBAlbum) StateDatabase.instance.getAlbum(queued.id) else null;
+                        val artist = if(queued is DBArtist) StateDatabase.instance.getArtist(queued.id) else null;
+
+                        withContext(Dispatchers.Main) {
+                            UIDialogs.showRatingDialog(context, fragment.lifecycleScope, track, playlist, album, artist);
+                        }
+                    }
+                }
+            }
+
             _buttonPlaylistAdd.setOnClickListener {
                 val track = _trackCurrent;
                 if(track != null) {
-                    fragment.lifecycleScope.launch(Dispatchers.IO) {
-                        withContext(Dispatchers.Main) {
-                            UIDialogs.showAddToPlaylistDialog(context, fragment.lifecycleScope, "Select which playlist you'd like to add this track to.", track);
-                        }
-                    }
+                    UIDialogs.showAddToPlaylistDialog(context, fragment.lifecycleScope, "Select which playlist you'd like to add this track to.", track);
                 }
                 else UIDialogs.appToast("No current track set?");
             }
@@ -205,6 +226,12 @@ class PlaybackFragment: MainFragment() {
             fragment.lifecycleScope.launch(Dispatchers.IO) {
                 val track = StateDatabase.instance.getTrack(id);
                 _trackCurrent = track;
+
+                withContext(Dispatchers.Main) {
+                    _buttonStars.setRating(track?.score ?: 0);
+                    if(track != null)
+                        setTrackMetadata(track);
+                }
             }
         }
 
@@ -214,7 +241,7 @@ class PlaybackFragment: MainFragment() {
                 setPlayButtonState(isPlaying);
             }
         }
-        fun onMediaMetadataChanged(player: Player, mediaMetadata: MediaMetadata?) {
+        fun onMediaMetadataChanged(player: Player, mediaMetadata: MediaMetadata?, track: DBTrack? = null) {
             val abc = "";
             fragment.lifecycleScope.launch(Dispatchers.Main) {
                 if(mediaMetadata == null)
@@ -223,9 +250,9 @@ class PlaybackFragment: MainFragment() {
 
                     setPlaySkipButtonStates(player.hasPreviousMediaItem(), player.hasNextMediaItem());
                     _imageArt.setAlbumArt(mediaMetadata);
-                    _textTitle.text = (mediaMetadata.title);
-                    _textArtist.text = (mediaMetadata.artist);
-                    _textAlbum.text = (mediaMetadata.albumTitle);
+                    _textTitle.text = (track?.name ?: mediaMetadata.title);
+                    _textArtist.text = (track?.artistLine ?: mediaMetadata.artist);
+                    _textAlbum.text = (track?.albumLine ?: mediaMetadata.albumTitle);
 
 
                 }
@@ -234,6 +261,12 @@ class PlaybackFragment: MainFragment() {
                 }
             }
         }
+        fun setTrackMetadata(track: DBTrack) {
+            _textTitle.text = track.name;
+            _textArtist.text = track.artistLine;
+            _textAlbum.text = track.albumLine;
+        }
+
 
         fun setRepeatButtonState(repeat: Int) {
             if(repeat == Player.REPEAT_MODE_OFF)

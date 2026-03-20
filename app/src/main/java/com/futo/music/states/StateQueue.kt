@@ -51,6 +51,7 @@ class StateQueue {
 
     val onQueueChanged = Event1<List<IPlayableTrack>>();
 
+    private var _lastSetQueuePlayable: IPlayable? = null;
     private var _lastSetMediaItems: List<MediaItem>? = null;
 
     fun setLastMediaItems(items: List<MediaItem>) {
@@ -68,6 +69,7 @@ class StateQueue {
         return item;
     }
 
+    fun getQueuePlayable(): IPlayable? = _lastSetQueuePlayable;
     fun getQueue(): List<IPlayableTrack> {
         synchronized(_queue) {
             return _queue.toList();
@@ -91,6 +93,7 @@ class StateQueue {
             synchronized(_queue) {
                 _queue.clear();
                 _queue.addAll(items);
+                _lastSetQueuePlayable = playable;
                 newQueue = _queue.toList();
             }
             onQueueChanged.emit(newQueue);

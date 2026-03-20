@@ -22,6 +22,8 @@ class Track: IPlayable, IPlayableTrack {
 
     var duration: Int = 0;
 
+    override var score: Int = 0;
+
     override val datePlayed: OffsetDateTime? = null;
 
     constructor(name: String, uri: Uri, id: String? = null) {

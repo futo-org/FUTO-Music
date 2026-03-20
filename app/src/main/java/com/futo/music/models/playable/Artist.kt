@@ -13,6 +13,8 @@ class Artist: IPlayable {
     override val name: String;
     val art: ImageVariable?;
 
+    override var score: Int = 0;
+
     override val datePlayed: OffsetDateTime? = null;
 
     constructor(name: String, art: ImageVariable?, id: String? = null) {

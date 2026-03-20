@@ -12,15 +12,28 @@ import com.futo.music.models.playable.IPlayable
 import com.futo.music.storage.db.AppDatabase
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBAlbumUpdatePlayed
+import com.futo.music.storage.db.DBAlbumUpdateRating
+import com.futo.music.storage.db.DBAlbumUpdateTrackMetadata
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBArtistUpdatePlayed
+import com.futo.music.storage.db.DBArtistUpdateRating
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBPlaylistTrack
 import com.futo.music.storage.db.DBPlaylistUpdatePlayed
+import com.futo.music.storage.db.DBPlaylistUpdateRating
 import com.futo.music.storage.db.DBPlaylistUpdateTrackMetadata
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.storage.db.DBTrackUpdatePlayed
+import com.futo.music.storage.db.DBTrackUpdateRating
+import com.futo.music.storage.db.DBTrackUpdateRatingCalculated
 import java.time.OffsetDateTime
+
+enum class DBPlayableType(val value: Int) {
+    Track(1),
+    Playlist(2),
+    Album(3),
+    Artist(4);
+}
 
 class StateDatabase(
     val context: Context
@@ -132,6 +145,70 @@ class StateDatabase(
     fun setPlayedPlaylist(playlistId: Long) {
         return db.playlistDao().setPlayed(DBPlaylistUpdatePlayed(playlistId, OffsetDateTime.now()))
     }
+
+
+    fun getTrackListWeighted(count: Int): List<DBTrack> {
+        val tracks = db.tracksDao().getRandomWeightedTracks(count);
+
+        return tracks;
+    }
+
+
+    fun setRatingAlbum(albumId: Long, rating: Int): Boolean {
+        val result = db.albumDao().setRating(DBAlbumUpdateRating(albumId, rating)) > 0;
+
+        if(result) {
+            val tracks = db.tracksDao().getAlbumTracks(albumId);
+            updateTrackScores(tracks, DBPlayableType.Album, rating);
+        }
+        return result;
+    }
+    fun setRatingArtist(artistId: Long, rating: Int): Boolean {
+        val result = db.artistDao().setRating(DBArtistUpdateRating(artistId, rating)) > 0;
+
+        if(result) {
+            val tracks = db.tracksDao().getArtistTracks(artistId);
+            updateTrackScores(tracks, DBPlayableType.Artist, rating);
+        }
+
+        return result;
+    }
+    fun setRatingPlaylist(playlistId: Long, rating: Int): Boolean {
+        val result = db.playlistDao().setRating(DBPlaylistUpdateRating(playlistId, rating)) > 0;
+
+        if(result) {
+            val tracks = db.tracksDao().getPlaylistTracks(playlistId);
+            updateTrackScores(tracks, DBPlayableType.Playlist, rating);
+        }
+
+        return result;
+    }
+    fun setRatingTrack(trackId: Long, rating: Int): Boolean {
+        val result = db.tracksDao().setRating(DBTrackUpdateRating(trackId, rating)) > 0;
+
+        val track = db.tracksDao().get(trackId);
+        if(track != null)
+            updateTrackScores(listOf(track), DBPlayableType.Track, rating);
+
+        return result;
+    }
+
+    fun updateTrackScores(tracks: List<DBTrack>, newScoreType: DBPlayableType, newScore: Int): Int {
+        var count = 0;
+        for(track in tracks) {
+            if(track.scoreLevel == newScoreType.value && track.scoreCalculated != newScore) {
+                db.tracksDao().setRatingCalculated(DBTrackUpdateRatingCalculated(track.id, newScoreType.value, newScore));
+                count++;
+            }
+            else if(track.scoreLevel > newScoreType.value || track.scoreLevel <= 0) {
+                db.tracksDao().setRatingCalculated(DBTrackUpdateRatingCalculated(track.id, newScoreType.value, newScore));
+                count++;
+            }
+        }
+        return count;
+    }
+
+
 
     fun getTrackAlbumArt(id: Long): String? {
         return db.albumDao().getTrackAlbumArts(id).firstOrNull()

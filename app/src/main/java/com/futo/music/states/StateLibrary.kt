@@ -71,6 +71,8 @@ class StateLibrary {
     fun requireSync(context: Context): Boolean {
         if(_mediaStoreVersions.map.count() == 0)
             return true;
+
+        val generalMediaStoreVersion = MediaStore.getVersion(context);
         for(version in _mediaStoreVersions.map.toList()) {
             if(MediaStore.getVersion(context, version.first) != version.second)
                 return true;
@@ -273,6 +275,7 @@ class StateLibrary {
             author = track.artist?.name ?: track.name,
             artistId = dbArtist?.id ?: -1,
             artistLine = dbArtist?.name ?: existing?.artistLine,
+            albumLine = dbAlbum?.name ?: existing?.albumLine,
             contentUrl = track.uri.toString(),
             dateAdded = if(existing != null) existing.dateAdded else OffsetDateTime.now(),
             datePlayed = if(existing != null) existing.datePlayed else OffsetDateTime.MIN,

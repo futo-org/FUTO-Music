@@ -26,12 +26,22 @@ class GeneralTopBarFragment : TopFragment() {
 
     private var _title: String = "";
 
+    private var _titleLongPress: (()->Unit)? = null;
+
     init {
         StateAnnouncement.instance.onAnnouncementChanged.subscribe {
             lifecycleScope?.launch(Dispatchers.Main) {
                 updateNotifCount();
             }
         }
+    }
+
+    fun setTitleLongPress(handler: (()->Unit)?) {
+        _titleLongPress = handler;
+        if(handler == null)
+            _textTitle?.setOnLongClickListener { return@setOnLongClickListener false};
+        else
+            _textTitle?.setOnLongClickListener { handler!!(); return@setOnLongClickListener true };
     }
 
     fun updateNotifCount() {
@@ -85,6 +95,9 @@ class GeneralTopBarFragment : TopFragment() {
         _buttonNotifs = view.findViewById(R.id.button_notifs);
         _buttonNotifIcon = view.findViewById(R.id.button_notifs_icon);
         _buttonNotifCount = view.findViewById(R.id.button_notifs_count);
+
+        if(_titleLongPress != null)
+            _textTitle?.setOnLongClickListener { _titleLongPress?.invoke(); return@setOnLongClickListener true };
 
         _textTitle?.let {
             it.text = _title;

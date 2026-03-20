@@ -17,6 +17,8 @@ class Album: IPlayable {
 
     val artist: Artist?;
 
+    override var score: Int = 0;
+
     override val datePlayed: OffsetDateTime? = null;
 
     constructor(name: String, art: ImageVariable?, tracks: List<Track>?, artist: Artist?, id: String? = null) {

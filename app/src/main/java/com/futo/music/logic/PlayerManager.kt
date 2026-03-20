@@ -15,6 +15,7 @@ class PlayerManager {
     val player: Player
 
     var lastMediaMetadata: MediaMetadata? = null;
+    var lastMediaItem: MediaItem? = null;
     var isPlaying: Boolean = false;
 
     val onPlayingChanged = Event1<Boolean>();
@@ -43,6 +44,7 @@ class PlayerManager {
 
             //TODO: Remove this hackfix once metadata restore is fixed
             val mediaItem = StateQueue.instance.restoreMediaItem(mediaItemOriginal) ?: mediaItemOriginal;
+            lastMediaItem = mediaItem;
             onMediaItemChanged.emit(mediaItem, reason);
             if(mediaItem?.mediaMetadata != null && mediaItem?.mediaMetadata?.title?.isNotEmpty() == true)
                 onMediaMetadataChanged.emit(mediaItem.mediaMetadata);
@@ -93,6 +95,7 @@ class PlayerManager {
         }
         listener.onPlayingChanged(isPlaying);
         listener.onMediaMetadataChanged(player, lastMediaMetadata);
+        listener.onMediaItemChanged(player, lastMediaItem, -1);
     }
     fun unsubscribe(tag: Any) {
         synchronized(_listeners) {

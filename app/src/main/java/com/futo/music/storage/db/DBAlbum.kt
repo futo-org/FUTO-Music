@@ -22,7 +22,7 @@ class DBAlbum(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
     override val name: String,
     val authors: String,
-    val score: Int = 0,
+    override val score: Int = 0,
 
     val artUri: String? = null,
 
@@ -126,12 +126,20 @@ interface DBAlbumDao {
     fun setPlayed(update: DBAlbumUpdatePlayed)
 
     @Update(entity = DBAlbum::class)
+    fun setRating(update: DBAlbumUpdateRating): Int
+
+    @Update(entity = DBAlbum::class)
     fun setTrackMetadata(update: DBAlbumUpdateTrackMetadata)
 }
 @Entity
 class DBAlbumUpdatePlayed(
     val id: Long,
     val datePlayed: OffsetDateTime
+)
+@Entity
+class DBAlbumUpdateRating(
+    val id: Long,
+    val score: Int
 )
 
 @Entity
