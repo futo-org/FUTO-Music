@@ -34,6 +34,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activities.ExceptionActivity"
+            android:screenOrientation="sensorPortrait"
+            android:theme="@style/Theme.FUTOMusic" />
 
         <service
             android:name=".services.PlaybackService"

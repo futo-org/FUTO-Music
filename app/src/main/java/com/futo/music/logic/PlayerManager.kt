@@ -8,6 +8,7 @@ import androidx.media3.common.Timeline
 import com.futo.music.constructs.Event0
 import com.futo.music.constructs.Event1
 import com.futo.music.constructs.Event2
+import com.futo.music.services.PlaybackService
 import com.futo.music.states.StateQueue
 
 class PlayerManager {
@@ -42,6 +43,7 @@ class PlayerManager {
         override fun onMediaItemTransition(mediaItemOriginal: MediaItem?, reason: Int) {
             super.onMediaItemTransition(mediaItemOriginal, reason)
 
+            val currentMediaItem = player.currentMediaItem;
             //TODO: Remove this hackfix once metadata restore is fixed
             val mediaItem = StateQueue.instance.restoreMediaItem(mediaItemOriginal) ?: mediaItemOriginal;
             lastMediaItem = mediaItem;
@@ -82,6 +84,7 @@ class PlayerManager {
         player.addListener(_listenerPlayer);
         this.isPlaying = player.isPlaying;
         this.lastMediaMetadata = player.mediaMetadata;
+        this.lastMediaItem = PlaybackService.getCurrentMediaItem() //Temporary workaround
     }
 
     fun subscribe(tag: Any, listener: Listener) {

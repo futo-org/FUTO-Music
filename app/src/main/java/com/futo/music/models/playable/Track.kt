@@ -32,6 +32,10 @@ class Track: IPlayable, IPlayableTrack {
         this.id = id ?: UUID.randomUUID().toString();
     }
 
+    override fun getItemId(): String {
+        return id;
+    }
+
     fun withAlbum(album: Album?): Track  {
         if(album == null)
             return this;

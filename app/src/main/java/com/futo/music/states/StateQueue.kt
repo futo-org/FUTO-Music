@@ -19,13 +19,16 @@ import com.futo.music.models.playable.Album
 import com.futo.music.models.playable.Artist
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
+import com.futo.music.models.playable.PlayableDescriptor
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.models.playable.Track
+import com.futo.music.services.PlaybackService
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.storage.file.FragmentedStorage
+import com.futo.music.storage.file.ManagedStore
 import com.futo.music.storage.file.StringArrayStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,6 +57,39 @@ class StateQueue {
     private var _lastSetQueuePlayable: IPlayable? = null;
     private var _lastSetMediaItems: List<MediaItem>? = null;
 
+    private val _lastSetQueuePlayableDescriptor: ManagedStore<PlayableDescriptor?> = FragmentedStorage.storeJson<PlayableDescriptor?>("lastPlayable").load();
+
+
+    fun restoreQueue(context: Context) {
+        val item = _lastSetQueuePlayableDescriptor.getItems().firstOrNull();
+        if(item != null)
+        {
+            val restored = item.restore(context);
+            if(restored != null) {
+                _lastSetQueuePlayable = restored.item;
+                if(restored.tracks.size > 0)
+                    _lastSetMediaItems = restored.tracks.map { it.getMediaItem() };
+            }
+        }
+    }
+    fun setPersistentQueue(playable: IPlayable, tracks: List<IPlayableTrack>) {
+        _lastSetQueuePlayableDescriptor.saveAllAsync(listOf(PlayableDescriptor(
+            playable.type,
+            tracks.mapNotNull { it.getItemId()?.toLongOrNull() },
+            if(playable is DBAlbum)
+                playable.id
+            else if(playable is DBArtist)
+                playable.id
+            else if(playable is DBTrack)
+                playable.id
+            else if(playable is DBPlaylist)
+                playable.id
+            else
+                -1
+        )));
+    }
+
+
     fun setLastMediaItems(items: List<MediaItem>) {
         _lastSetMediaItems = items;
     }
@@ -62,7 +98,9 @@ class StateQueue {
         if(item == null)
             return null;
         if(item.localConfiguration?.uri != null) {
-            val original = _lastSetMediaItems?.find { it.localConfiguration?.uri != null && it.localConfiguration?.uri == item.localConfiguration?.uri };
+            val original =
+                PlaybackService.getLastMediaItems().find { it.localConfiguration?.uri != null && it.localConfiguration?.uri == item.localConfiguration?.uri } ?:
+                _lastSetMediaItems?.find { it.localConfiguration?.uri != null && it.localConfiguration?.uri == item.localConfiguration?.uri };
             if(original != null)
                 return original;
         }
@@ -88,6 +126,8 @@ class StateQueue {
 
 
             val items = playable.getTracks(context);
+
+            setPersistentQueue(playable, items)
 
             val newQueue: List<IPlayableTrack>;
             synchronized(_queue) {

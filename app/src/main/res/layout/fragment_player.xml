@@ -95,7 +95,7 @@
             android:textColor="@color/white"
             android:maxLines="1"
             android:ellipsize="end"
-            android:text="Daft Punk"
+            android:text=""
             android:textSize="16sp" />
         <TextView
             android:id="@+id/text_title"
@@ -113,7 +113,7 @@
             android:scrollHorizontally="true"
             android:gravity="center"
             android:textColor="@color/white"
-            android:text="Revolution 909"
+            android:text=""
             android:layout_gravity="center"
             android:textSize="23sp" />
         <TextView
@@ -127,7 +127,7 @@
             android:maxLines="1"
             android:ellipsize="end"
             android:gravity="center"
-            android:text="Some Album Name"
+            android:text=""
             android:textColor="#AAAAAAAA"
             android:textSize="17sp" />
 

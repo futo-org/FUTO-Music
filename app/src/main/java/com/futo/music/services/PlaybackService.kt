@@ -2,8 +2,10 @@ package com.futo.music.services
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.ExoPlayer
@@ -37,15 +39,40 @@ class PlaybackService: MediaLibraryService() {
         }
 
         /*
-        @OptIn(UnstableApi::class)
-        override fun onSetMediaItems(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>, startIndex: Int, startPositionMs: Long): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-            val newItems = mediaItems.map {
-                it.buildUpon().setUri(it.mediaId).build()
-            }.toMutableList()
+        override fun onAddMediaItems(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            mediaItems: List<MediaItem>
+        ): ListenableFuture<List<MediaItem>> {
 
-            return super.onSetMediaItems(mediaSession, controller, newItems, startIndex, startPositionMs)
+            val mediaItemsUpdated = mediaItems.map {
+                it.buildUpon()
+                    .setMediaMetadata(it.mediaMetadata
+                        .buildUpon()
+                        .setTitle(it.mediaMetadata.title ?: "Temp")
+                        .setExtras(Bundle().apply {
+                            this.putString("mediaId", it.mediaId)
+                        })
+                        .build())
+                    .setRequestMetadata(MediaItem.RequestMetadata.Builder()
+                        .setExtras(Bundle().apply {
+                            this.putString("mediaId", it.mediaId)
+                        })
+                        .build())
+                    .build();
+            }
+
+            return Futures.immediateFuture(mediaItemsUpdated);
         }
         */
+
+        @OptIn(UnstableApi::class)
+        override fun onSetMediaItems(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>, startIndex: Int, startPositionMs: Long): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            _lastMediaItems = mediaItems;
+
+
+            return super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
+        }
 
         /*//TODO: Get queue
         override fun onPlaybackResumption(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, isForPlayback: Boolean,): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
@@ -96,6 +123,19 @@ class PlaybackService: MediaLibraryService() {
             .setMediaSourceFactory(mediaFactory)
             .build();
 
+        player.addListener(object: Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                super.onMediaItemTransition(mediaItem, reason);
+                if(mediaItem?.localConfiguration?.uri != null)
+                    _currentMediaItem = getLastMediaItems().find { it.localConfiguration?.uri == mediaItem?.localConfiguration?.uri };
+                else
+                    _currentMediaItem = null;
+            }
+        });
+
+        //Workaround for sanitization for now.
+        _lastPlayer = player;
+
         _mediaSession = MediaLibrarySession.Builder(this, player, _callback)
             .build();
     }
@@ -117,5 +157,18 @@ class PlaybackService: MediaLibraryService() {
 
     companion object {
         val TAG = "PlaybackService";
+
+        var _currentMediaItem: MediaItem? = null;
+        var _lastMediaItems: List<MediaItem>? = null;
+        var _lastPlayer: Player? = null;
+
+        fun getLastPlayer(): Player? {
+            return _lastPlayer;
+        }
+
+        fun getLastMediaItems(): List<MediaItem> {
+            return _lastMediaItems ?: listOf();
+        }
+        fun getCurrentMediaItem(): MediaItem? = _currentMediaItem;
     }
 }

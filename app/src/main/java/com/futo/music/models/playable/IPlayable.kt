@@ -22,4 +22,7 @@ interface IPlayable {
 interface IPlayableTrack {
 
     fun getMediaItem(): MediaItem;
+
+
+    fun getItemId(): String?;
 }

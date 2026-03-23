@@ -50,6 +50,11 @@ class DBTrack(
 ): IPlayable, IPlayableTrack {
     override val type: PlayableType get() = PlayableType.Track;
 
+    override fun getItemId(): String {
+        return id.toString();
+    }
+
+
     override fun getImage(): ImageVariable? {
         return null;
     }
@@ -62,6 +67,7 @@ class DBTrack(
     override fun getMediaItem(): MediaItem {
         val mediaItemBuilder = MediaItem.Builder()
             .setMediaId(id.toString())
+            .setTag(id.toString())
             .setUri(contentUrl);
 
 

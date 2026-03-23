@@ -162,6 +162,10 @@ class MainActivity : AppCompatActivity() {
         StateApp.instance.registerContext(this);
         StateApp.instance.registerScope(lifecycleScope);
 
+        lifecycleScope.launch(Dispatchers.IO) {
+            StateQueue.instance.restoreQueue(this@MainActivity);
+        }
+
         setContentView(R.layout.activity_main);
 
         _rootView = findViewById(R.id.rootView);
@@ -502,7 +506,9 @@ class MainActivity : AppCompatActivity() {
 
         mediacontrollerFuture.addListener({
             val player = mediacontrollerFuture.get();
-            playerCallback.invoke(PlayerManager(player));
+            val fullPlayer = PlaybackService.getLastPlayer();
+
+            playerCallback.invoke(PlayerManager(fullPlayer ?: player));
             StateQueue.instance.onQueueChanged.subscribe {
                 lifecycleScope.launch(Dispatchers.IO) {
                     val mediaItems = it.map { it.getMediaItem() }
