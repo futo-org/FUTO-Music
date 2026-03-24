@@ -140,6 +140,10 @@ class StateQueue {
         }
     }
 
+    fun setQueuePlayNext(context: Context, playable: IPlayable) {
+        //TODO: Implement
+    }
+
 
     companion object {
 

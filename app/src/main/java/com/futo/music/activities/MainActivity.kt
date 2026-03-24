@@ -49,6 +49,7 @@ import com.futo.music.fragments.top.NavigationTopBarFragment
 import com.futo.music.fragments.top.TopFragment
 import com.futo.music.logging.Logger
 import com.futo.music.logic.PlayerManager
+import com.futo.music.models.playable.IPlayable
 import com.futo.music.services.PlaybackService
 import com.futo.music.states.AnnouncementType
 import com.futo.music.states.StateAnnouncement
@@ -56,6 +57,7 @@ import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
 import com.futo.music.states.StateQueue
+import com.futo.music.ui.views.playback.PlayableOptionOverlay
 import com.futo.music.ui.views.toasts.ToastView
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
@@ -82,6 +84,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var _fragContainerMain: FragmentContainerView;
     private lateinit var _fragContainerBotBar: FragmentContainerView;
     private lateinit var _toastView: ToastView;
+    private lateinit var _overlayPlayable: PlayableOptionOverlay;
 
     //Topbar
     private val _fragTopGeneral = GeneralTopBarFragment();
@@ -173,6 +176,7 @@ class MainActivity : AppCompatActivity() {
         _fragContainerMain = findViewById(R.id.fragment_main);
         _fragContainerBotBar = findViewById(R.id.fragment_bottom_bar);
         _toastView = findViewById(R.id.toast_view);
+        _overlayPlayable = findViewById(R.id.overlay_playable)
 
 
         _rootInsetsController = RootInsetsController.attach(this, _rootView);
@@ -307,6 +311,13 @@ class MainActivity : AppCompatActivity() {
 
 
     //#region Navigation
+
+    inline fun <reified T : Fragment> navigate(parameter: Any? = null, withHistory: Boolean = true, isBack: Boolean = false) {
+        val fragment = getFragment<T>();
+        if(fragment is MainFragment)
+            navigate(fragment, parameter, withHistory, isBack);
+    }
+
     /**
      * Navigate takes a MainFragment, and makes them the current main visible view
      * A parameter can be provided which becomes available in the onShow of said fragment
@@ -457,6 +468,12 @@ class MainActivity : AppCompatActivity() {
     //#endregion
 
     //#region Overlay
+
+    fun showPlayableOverlay(playable: IPlayable) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            _overlayPlayable.show(playable);
+        }
+    }
 
     private val _toastQueue = ConcurrentLinkedQueue<ToastView.Toast>();
     private var _toastJob: Job? = null;

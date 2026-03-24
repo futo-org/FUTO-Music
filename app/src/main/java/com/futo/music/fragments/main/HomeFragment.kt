@@ -24,6 +24,7 @@ import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.ui.buttons.RoundButton
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
+import com.futo.music.ui.views.playback.PlayableOptionOverlay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -144,7 +145,8 @@ class HomeFragment: MainFragment() {
                 fragment.navigate<PlaybackFragment>(it);
             }
             gridRecent.onClick.subscribe {
-                fragment.navigate<PlaybackFragment>(it);
+                UIDialogs.overlayPlayable(it);
+                //fragment.navigate<PlaybackFragment>(it);
             }
 
 

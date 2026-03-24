@@ -67,6 +67,18 @@
         android:elevation="15dp">
     </FrameLayout>
 
+
+    <com.futo.music.ui.views.playback.PlayableOptionOverlay
+        android:id="@+id/overlay_playable"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:elevation="29dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <com.futo.music.ui.views.toasts.ToastView
         android:id="@+id/toast_view"
         android:layout_width="match_parent"

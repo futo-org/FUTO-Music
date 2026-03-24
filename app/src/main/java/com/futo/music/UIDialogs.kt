@@ -63,6 +63,11 @@ class UIDialogs {
             _openDialogs.clear();
         }
 
+        fun overlayPlayable(playable: IPlayable) {
+            StateApp.instance.activity()?.let {
+                it.showPlayableOverlay(playable);
+            }
+        }
 
         fun toast(context : Context, text : String, long : Boolean = false) {
             Toast.makeText(context, text, if(long) Toast.LENGTH_LONG else Toast.LENGTH_SHORT).show();
