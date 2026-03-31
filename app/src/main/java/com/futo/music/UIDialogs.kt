@@ -185,7 +185,7 @@ class UIDialogs {
                     {
                         buttonPlaylist.isVisible = true;
                         buttonPlaylist.setOnClickListener {
-                            item = playlist;
+                            item = playlist
                             updateSelectUI();
                             updateStarUI(item.score ?: 0);
                         }
@@ -221,7 +221,7 @@ class UIDialogs {
                                 val rating = (index + 1) * 20;
                                 updateStarUI(rating);
                                 val currentItem = item;
-
+                                currentItem.score = rating;
                                 scope.launch(Dispatchers.IO) {
                                     val result = if (currentItem is DBAlbum)
                                         StateDatabase.instance.setRatingAlbum(currentItem.id, rating);
@@ -232,8 +232,8 @@ class UIDialogs {
                                     else if (currentItem is DBTrack)
                                         StateDatabase.instance.setRatingTrack(currentItem.id, rating);
                                     else false
-                                    if(result) {
-                                        appToast("Rating updated to ${index + 1} stars");
+                                    if(!result) {
+                                        appToast("Failed to update rating");
                                     }
                                 }
                             }

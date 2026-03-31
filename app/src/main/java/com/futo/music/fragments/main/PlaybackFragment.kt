@@ -1,13 +1,19 @@
 package com.futo.music.fragments.main
 
+import android.animation.Animator
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -26,6 +32,7 @@ import com.futo.music.extensions.setAlbumArt
 import com.futo.music.fragments.MainFragView
 import com.futo.music.logic.PlayerManager
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.services.PlaybackService
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateQueue
@@ -34,6 +41,7 @@ import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.buttons.RatingButton
+import com.futo.music.ui.views.playback.QueueOverlay
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
@@ -105,6 +113,8 @@ class PlaybackFragment: MainFragment() {
         private val _buttonQueue: ImageButton;
         private val _buttonPlaylistAdd: ImageButton;
 
+        private val _queueOverlay: QueueOverlay;
+
         private val _viewControls: PlayerControlView;
         private val _timeBar: TimeBar;
 
@@ -155,6 +165,7 @@ class PlaybackFragment: MainFragment() {
             _buttonStars = findViewById(R.id.button_stars);
             _buttonQueue = findViewById(R.id.button_queue);
             _buttonPlaylistAdd = findViewById(R.id.button_add_playlist);
+            _queueOverlay = findViewById(R.id.overlay_queue);
 
             _buttonShuffle.setOnClickListener {
                 val player = frag?._player?.player ?: return@setOnClickListener;
@@ -211,6 +222,29 @@ class PlaybackFragment: MainFragment() {
                 }
             }
 
+            _buttonQueue.setOnClickListener {
+                val currentPlayable = StateQueue.instance.getQueuePlayable() ?: return@setOnClickListener;
+                val currentTracks = StateQueue.instance.getQueue();
+
+                showQueue(currentPlayable, currentTracks);
+            }
+            _queueOverlay.onClose.subscribe {
+                hideQueue();
+            }
+            _queueOverlay.onTrackClicked.subscribe {
+                StateQueue.instance.setQueueCurrent(it);
+                hideQueue();
+            }
+            _queueOverlay.onTrackRemoved.subscribe {
+                StateQueue.instance.removeQueueItem(it);
+                val currentPlayable = StateQueue.instance.getQueuePlayable() ?: return@subscribe;
+                val currentTracks = StateQueue.instance.getQueue();
+                _queueOverlay.setPlayable(currentPlayable, currentTracks);
+            }
+            _queueOverlay.onTracksOrderChanged.subscribe {
+                StateQueue.instance.setQueueModify(context, it);
+            }
+
             _buttonPlaylistAdd.setOnClickListener {
                 val track = _trackCurrent;
                 if(track != null) {
@@ -223,6 +257,37 @@ class PlaybackFragment: MainFragment() {
             frag._player?.let {
                 onPlayerAvailable(it);
             }
+        }
+
+        fun showQueue(playable: IPlayable, tracks: List<IPlayableTrack>) {
+            _queueOverlay.setPlayable(playable, tracks);
+
+            _queueOverlay.translationY = 1f;
+            _queueOverlay.visibility = VISIBLE;
+
+            val animations = arrayListOf<Animator>();
+            animations.add(ObjectAnimator.ofFloat(_queueOverlay, "translationY", _queueOverlay.measuredHeight.toFloat(), 0.0f)
+                .setDuration(200L).apply {
+                    this.interpolator = AccelerateDecelerateInterpolator()
+                })
+
+            val animatorSet = AnimatorSet();
+            animatorSet.playTogether(animations);
+            animatorSet.start();
+        }
+        fun hideQueue() {
+
+            _queueOverlay.translationY = 0f;
+
+            val animations = arrayListOf<Animator>();
+            animations.add(ObjectAnimator.ofFloat(_queueOverlay, "translationY", 0.0f, _queueOverlay.measuredHeight.toFloat())
+                .setDuration(200L).apply {
+                    this.interpolator = AccelerateDecelerateInterpolator()
+                })
+
+            val animatorSet = AnimatorSet();
+            animatorSet.playTogether(animations);
+            animatorSet.start();
         }
 
         fun setCurrentTrack(id: Long) {

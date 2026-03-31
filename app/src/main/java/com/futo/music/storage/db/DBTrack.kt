@@ -35,7 +35,7 @@ class DBTrack(
 
     override val datePlayed: OffsetDateTime = OffsetDateTime.MIN,
     val dateAdded: OffsetDateTime = OffsetDateTime.MIN,
-    override val score: Int = 0,
+    override var score: Int = 0,
     val scoreLevel: Int = 0,
     val scoreCalculated: Int = 0,
 
@@ -61,6 +61,10 @@ class DBTrack(
 
     override fun getTracks(context: Context): List<IPlayableTrack> {
         return listOf(this);
+    }
+
+    fun refetch(context: Context): DBTrack {
+        return StateDatabase.instance.getTrack(id) ?: throw IllegalStateException("Track was deleted or never existed");
     }
 
 

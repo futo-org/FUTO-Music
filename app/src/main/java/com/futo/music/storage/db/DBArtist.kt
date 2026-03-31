@@ -21,7 +21,7 @@ import java.time.OffsetDateTime
 class DBArtist(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
     override val name: String,
-    override val score: Int = 0,
+    override var score: Int = 0,
 
     val artUri: String? = null,
 

@@ -43,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                app:IconButton_background="@drawable/background_round_playable_primary_35dp"
+                app:IconButton_background="@drawable/background_round_playable_primary"
                 app:IconButton_image="@drawable/ic_play"
                 app:IconButton_text="Play" />
             <com.futo.music.ui.buttons.IconButton
@@ -51,17 +51,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                app:IconButton_background="@drawable/background_round_playable_primary_35dp"
-                app:IconButton_image="@drawable/media3_icon_queue_next"
+                app:IconButton_background="@drawable/background_round_playable_primary"
+                app:IconButton_image="@drawable/ic_queue_play_next"
                 app:IconButton_text="Play Next" />
             <com.futo.music.ui.buttons.IconButton
                 android:id="@+id/button_queue_add"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                app:IconButton_background="@drawable/background_round_playable_primary_35dp"
-                app:IconButton_image="@drawable/media3_icon_queue_add"
+                app:IconButton_background="@drawable/background_round_playable_primary"
+                app:IconButton_image="@drawable/ic_add_to_queue"
                 app:IconButton_text="Queue Add" />
+            <!--
             <com.futo.music.ui.buttons.IconButton
                 android:id="@+id/button_add_playlist"
                 android:layout_width="wrap_content"
@@ -70,15 +71,38 @@
                 app:IconButton_background="@drawable/background_round_playable_primary_35dp"
                 app:IconButton_image="@drawable/ic_playlist_add"
                 app:IconButton_text="Add to Playlist" />
+            -->
         </LinearLayout>
         <LinearLayout
             android:id="@+id/buttons_secondary"
             android:background="#111111"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:orientation="vertical">
 
+            <com.futo.music.ui.buttons.ListButton
+                android:id="@+id/button_add_playlist"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                app:ListButton_image="@drawable/ic_playlist_add"
+                app:ListButton_text="Add to Playlist" />
 
+            <com.futo.music.ui.buttons.ListButton
+                android:id="@+id/button_artist"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                app:ListButton_image="@drawable/ic_artist"
+                app:ListButton_text="Go to Artist" />
+
+            <com.futo.music.ui.buttons.ListButton
+                android:id="@+id/button_rate"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                app:ListButton_image="@drawable/ic_stars"
+                app:ListButton_text="Rate" />
 
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

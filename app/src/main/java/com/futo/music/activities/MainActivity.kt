@@ -525,18 +525,9 @@ class MainActivity : AppCompatActivity() {
             val player = mediacontrollerFuture.get();
             val fullPlayer = PlaybackService.getLastPlayer();
 
-            playerCallback.invoke(PlayerManager(fullPlayer ?: player));
-            StateQueue.instance.onQueueChanged.subscribe {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val mediaItems = it.map { it.getMediaItem() }
-                    StateQueue.instance.setLastMediaItems(mediaItems);
-                    withContext(Dispatchers.Main) {
-                        player.setMediaItems(mediaItems);
-                        player.prepare();
-                        player.play();
-                    }
-                }
-            }
+            val playerManager = PlayerManager(fullPlayer ?: player);
+            StateQueue.instance.setPlayer(playerManager);
+            playerCallback.invoke(playerManager);
         }, MoreExecutors.directExecutor());
 
     }

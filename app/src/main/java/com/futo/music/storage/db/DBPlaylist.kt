@@ -22,7 +22,7 @@ import java.time.OffsetDateTime
 class DBPlaylist(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
     override val name: String,
-    override val score: Int = 0,
+    override var score: Int = 0,
 
     var artUri1: String? = null,
     var artUriTrack1: Long? = null,
@@ -50,6 +50,11 @@ class DBPlaylist(
 
     override fun getTracks(context: Context): List<IPlayableTrack> {
         return StateDatabase.instance.getPlaylistTracks(id);
+    }
+
+
+    fun refetch(context: Context): DBPlaylist {
+        return StateDatabase.instance.getPlaylist(id) ?: throw IllegalStateException("Playlist was deleted or never existed");
     }
 }
 

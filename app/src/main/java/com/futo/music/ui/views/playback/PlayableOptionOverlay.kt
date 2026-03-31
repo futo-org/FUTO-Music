@@ -18,9 +18,15 @@ import com.futo.music.UIDialogs
 import com.futo.music.fragments.main.PlaybackFragment
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.states.StateApp
+import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateQueue
+import com.futo.music.storage.db.DBAlbum
+import com.futo.music.storage.db.DBArtist
+import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.buttons.IconButton
+import com.futo.music.ui.buttons.ListButton
+import kotlinx.coroutines.CoroutineScope
 
 class PlayableOptionOverlay: ConstraintLayout {
 
@@ -34,7 +40,10 @@ class PlayableOptionOverlay: ConstraintLayout {
     private val _buttonPlay: IconButton;
     private val _buttonPlayNext: IconButton;
     private val _buttonQueueAdd: IconButton;
-    private val _buttonPlaylistAdd: IconButton;
+
+    private val _buttonPlaylistAdd: ListButton;
+    private val _buttonArtist: ListButton;
+    private val _buttonRate: ListButton;
 
     private val _textTitle: TextView;
 
@@ -44,10 +53,14 @@ class PlayableOptionOverlay: ConstraintLayout {
         _buttonPlay = findViewById(R.id.button_play);
         _buttonPlayNext = findViewById(R.id.button_play_next);
         _buttonQueueAdd = findViewById(R.id.button_queue_add);
-        _buttonPlaylistAdd = findViewById(R.id.button_add_playlist);
         _viewBackground = findViewById(R.id.view_background);
         _overlayContainer = findViewById(R.id.overlay_container);
         _textTitle = findViewById(R.id.text_title);
+
+
+        _buttonPlaylistAdd = findViewById(R.id.button_add_playlist);
+        _buttonArtist = findViewById(R.id.button_artist);
+        _buttonRate = findViewById(R.id.button_rate);
 
         //this.translationY = 1f;
         this.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -67,18 +80,47 @@ class PlayableOptionOverlay: ConstraintLayout {
         }
         _buttonPlayNext.onClick.subscribe {
             _currentPlayable?.let {
-                StateQueue.instance.setQueuePlayNext(context, it);
+                if(it is DBTrack)
+                    StateQueue.instance.setQueuePlayNext(context, it);
             }
             hide();
         }
         _buttonPlaylistAdd.onClick.subscribe {
             _currentPlayable?.let {
                 if(it is DBTrack) {
-                    UIDialogs.showAddToPlaylistDialog(context, findViewTreeLifecycleOwner()?.lifecycleScope ?: StateApp.instance.scopeOrNull!!, "Add to playlist", it);
+                    UIDialogs.showAddToPlaylistDialog(context, getScope(), "Add to playlist", it);
                 }
             }
             hide();
         }
+        _buttonRate.onClick.subscribe {
+            _currentPlayable?.let {
+                if(it is DBTrack)
+                    UIDialogs.showRatingDialog(context, getScope(), it, null, null, null);
+                else if(it is DBPlaylist)
+                    UIDialogs.showRatingDialog(context, getScope(), null, it, null, null);
+                else if(it is DBAlbum)
+                    UIDialogs.showRatingDialog(context, getScope(), null, null, it, null);
+                else if(it is DBArtist)
+                    UIDialogs.showRatingDialog(context, getScope(), null, null, null, it);
+            }
+            hide();
+        }
+        _buttonArtist.onClick.subscribe {
+            _currentPlayable?.let {
+                if(it is DBTrack) {
+                    val artist = StateDatabase.instance.getArtist(it.artistId ?: return@let);
+                    //
+                }
+                else if(it is DBArtist) {
+
+                }
+            }
+        }
+    }
+
+    fun getScope(): CoroutineScope {
+        return findViewTreeLifecycleOwner()?.lifecycleScope ?: StateApp.instance.scopeOrNull!!
     }
 
     fun show(playable: IPlayable) {
@@ -141,6 +183,17 @@ class PlayableOptionOverlay: ConstraintLayout {
             _buttonPlaylistAdd.isVisible = false;
             _buttonPlayNext.isVisible = false;
         }
+
+
+        if(playable is DBTrack || playable is DBPlaylist || playable is DBAlbum || playable is DBArtist)
+            _buttonRate.isVisible = true;
+        else
+            _buttonRate.isVisible = false;
+
+        if(playable is DBTrack || playable is DBArtist)
+            _buttonArtist.isVisible = true;
+        else
+            _buttonArtist.isVisible = false;
     }
 
 

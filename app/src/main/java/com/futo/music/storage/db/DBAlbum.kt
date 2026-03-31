@@ -22,7 +22,7 @@ class DBAlbum(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
     override val name: String,
     val authors: String,
-    override val score: Int = 0,
+    override var score: Int = 0,
 
     val artUri: String? = null,
 

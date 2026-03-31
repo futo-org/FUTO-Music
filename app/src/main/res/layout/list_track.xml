@@ -1,0 +1,90 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_marginRight="5dp"
+    android:layout_marginLeft="5dp"
+    android:layout_marginTop="5dp">
+
+    <ImageButton
+        android:id="@+id/image_drag_drop"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:srcCompat="@drawable/ic_dragdrop_white"
+        android:scaleType="fitCenter"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingStart="12dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/image_thumbnail"
+        app:layout_constraintBottom_toBottomOf="@id/image_thumbnail" />
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/image_thumbnail"
+        android:layout_height="50dp"
+        android:layout_width="50dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="3dp"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/roundedCorners_4dp"
+        app:srcCompat="@drawable/unknown_music"
+        app:layout_constraintLeft_toRightOf="@id/image_drag_drop"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:fontFamily="@font/inter_regular"
+        android:textAlignment="textStart"
+        android:maxLines="1"
+        app:layout_constraintTop_toTopOf="@id/image_thumbnail"
+        app:layout_constraintLeft_toRightOf="@id/image_thumbnail"
+        app:layout_constraintRight_toLeftOf="@id/button_delete"
+        android:layout_marginLeft="15dp"
+        android:textSize="13dp"
+        android:text="Testing"
+        android:layout_marginTop="5dp"
+        />
+
+    <TextView
+        android:id="@+id/text_metadata"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:textColor="#75FFFFFF"
+        android:fontFamily="@font/inter_regular"
+        android:textAlignment="textStart"
+        android:maxLines="1"
+        android:text="Some Artist"
+        app:layout_constraintTop_toBottomOf="@id/text_name"
+        app:layout_constraintLeft_toLeftOf="@id/text_name"
+        app:layout_constraintRight_toRightOf="@id/text_name"  />
+
+    <ImageButton
+        android:id="@+id/button_delete"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:padding="15dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintRight_toLeftOf="@id/button_more"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:src="@drawable/ic_close"
+        />
+    <ImageButton
+        android:id="@+id/button_more"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:padding="10dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:src="@drawable/ic_dots"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

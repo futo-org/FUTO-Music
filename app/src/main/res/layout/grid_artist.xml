@@ -17,7 +17,7 @@
         android:layout_marginRight="5dp"
         android:scaleType="centerCrop"
         app:shapeAppearanceOverlay="@style/roundedCorners_60dp"
-        app:srcCompat="@drawable/ic_artist"
+        app:srcCompat="@drawable/ic_artist_thumbnail"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent" />
 

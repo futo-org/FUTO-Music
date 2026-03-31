@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ListButton">
+        <attr name="ListButton_image" format="reference" />
+        <attr name="ListButton_text" format="string" />
+    </declare-styleable>
+</resources>

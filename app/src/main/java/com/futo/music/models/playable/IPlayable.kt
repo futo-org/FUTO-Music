@@ -10,7 +10,7 @@ interface IPlayable {
 
     val name: String;
 
-    val score: Int?;
+    var score: Int;
 
     val datePlayed: OffsetDateTime?
 

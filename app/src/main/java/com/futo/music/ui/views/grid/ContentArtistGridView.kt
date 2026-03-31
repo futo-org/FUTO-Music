@@ -1,29 +1,17 @@
 package com.futo.music.ui.views.grid
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import androidx.lifecycle.findViewTreeLifecycleOwner
-import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import com.futo.music.R
 import com.futo.music.constructs.Event1
 import com.futo.music.dp
-import com.futo.music.logging.Logger
 import com.futo.music.models.playable.IPlayable
-import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
-import com.futo.music.storage.db.DBArtistUpdatePlayed
-import com.futo.music.ui.views.AutoSizeLayout
 import com.google.android.material.imageview.ShapeableImageView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class ContentArtistGridView(viewGroup: ViewGroup) : IContentGridView {
 
@@ -57,9 +45,9 @@ class ContentArtistGridView(viewGroup: ViewGroup) : IContentGridView {
 
         val image = playable.getImage();
         if(image != null)
-            image.setImageView(imageThumbnail, R.drawable.ic_artist);
+            image.setImageView(imageThumbnail, R.drawable.ic_artist_thumbnail);
         else
-            imageThumbnail.setImageResource(R.drawable.ic_artist);
+            imageThumbnail.setImageResource(R.drawable.ic_artist_thumbnail);
 
         textMeta.isVisible = false;
 
