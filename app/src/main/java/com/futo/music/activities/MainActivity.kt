@@ -37,6 +37,7 @@ import com.futo.music.UIDialogs
 import com.futo.music.UIDialogs.ActionStyle
 import com.futo.music.constructs.Event1
 import com.futo.music.fragments.bottom.MenuBottomBarFragment
+import com.futo.music.fragments.main.ArtistFragment
 import com.futo.music.fragments.main.ContentsFragment
 import com.futo.music.fragments.main.HomeFragment
 import com.futo.music.fragments.main.MainFragment
@@ -98,6 +99,7 @@ class MainActivity : AppCompatActivity() {
     private val _fragContents = ContentsFragment();
     private val _fragPlayer = PlaybackFragment();
     private val _fragNotifs = NotificationOverlayView.Frag();
+    private val _fragArtist = ArtistFragment();
 
     //Main
 
@@ -117,7 +119,8 @@ class MainActivity : AppCompatActivity() {
         Pair(SearchFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu) { _fragSearch }),
         Pair(ContentsFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu) { _fragContents }),
         Pair(PlaybackFragment::class, FragmentDefinition(_fragTopNavigation, null) { _fragPlayer }),
-        Pair(NotificationOverlayView.Frag::class, FragmentDefinition(_fragTopGeneral, null, { _fragNotifs }))
+        Pair(NotificationOverlayView.Frag::class, FragmentDefinition(_fragTopGeneral, null, { _fragNotifs })),
+        Pair(ArtistFragment::class, FragmentDefinition(null, null, { _fragArtist }))
     );
 
     init {
@@ -538,7 +541,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     class FragmentDefinition(
-        val topbar: TopFragment,
+        val topbar: TopFragment?,
         val botbar: MenuBottomBarFragment?,
         val get: ()-> MainFragment
     )

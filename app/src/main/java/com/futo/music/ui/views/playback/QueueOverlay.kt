@@ -12,6 +12,7 @@ import com.futo.music.constructs.Event0
 import com.futo.music.constructs.Event1
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
+import com.futo.music.states.StateQueue
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.views.lists.TrackListEditorView
 
@@ -53,5 +54,9 @@ class QueueOverlay: ConstraintLayout {
     fun setPlayable(item: IPlayable, tracks: List<IPlayableTrack>) {
         _textTitle.text = item.name;
         _trackEditor.setTracks(tracks, true);
+    }
+
+    fun setCurrentTrack(track: IPlayableTrack?) {
+        _trackEditor.setCurrentTrack(track);
     }
 }

@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.compose.ui.graphics.Color
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
@@ -27,12 +28,16 @@ class TrackListEditorViewHolder : ViewHolder {
     var track: DBTrack? = null
         private set;
 
+    private var _isSelected: Boolean = false;
+    private var trackCurrent: IPlayableTrack? = null;
+    private val trackCurrentChanged: Event1<IPlayableTrack?>?;
+
     val onClick = Event1<DBTrack>();
     val onRemove = Event1<DBTrack>();
     val onOptions = Event1<DBTrack>();
 
     @SuppressLint("ClickableViewAccessibility")
-    constructor(view: View, touchHelper: ItemTouchHelper? = null) : super(view) {
+    constructor(view: View, touchHelper: ItemTouchHelper? = null, currentTrackChanged: Event1<IPlayableTrack?>? = null, currentTrack: IPlayableTrack? = null) : super(view) {
         _root = view.findViewById(R.id.root);
 
         _textName = view.findViewById(R.id.text_name);
@@ -42,6 +47,8 @@ class TrackListEditorViewHolder : ViewHolder {
         _buttonDelete = view.findViewById(R.id.button_delete);
         _buttonMore = view.findViewById(R.id.button_more);
 
+        trackCurrent = currentTrack;
+        trackCurrentChanged = currentTrackChanged;
 
         _imageDragDrop.setOnTouchListener { _, event ->
             if (touchHelper != null && event.action == MotionEvent.ACTION_DOWN) {
@@ -63,6 +70,15 @@ class TrackListEditorViewHolder : ViewHolder {
             val v = track ?: return@setOnClickListener;
             onOptions.emit(v);
         }
+
+        trackCurrentChanged?.subscribe {
+            val isSelected = trackCurrent?.getItemId()?.toLongOrNull() == it?.getItemId()?.toLongOrNull();
+            trackCurrent = it;
+            if(_isSelected != isSelected) {
+                _isSelected = isSelected;
+                setSelected(_isSelected);
+            }
+        }
     }
 
     fun bind(t: IPlayableTrack, canEdit: Boolean) {
@@ -81,7 +97,20 @@ class TrackListEditorViewHolder : ViewHolder {
                 _imageDragDrop.visibility = View.GONE;
             }
 
+            if(t.id == trackCurrent?.getItemId()?.toLongOrNull())
+                _isSelected = true;
+            else
+                _isSelected = false;
+            setSelected(_isSelected);
+
             track = t;
         }
+    }
+
+    fun setSelected(selected: Boolean) {
+        if(selected)
+            _root.setBackgroundColor(android.graphics.Color.argb(0.1f, 1f, 1f, 1f));
+        else
+            _root.setBackgroundColor(android.graphics.Color.TRANSPARENT);
     }
 }

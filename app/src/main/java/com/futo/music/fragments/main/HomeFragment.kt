@@ -145,7 +145,10 @@ class HomeFragment: MainFragment() {
                 fragment.navigate<PlaybackFragment>(it);
             }
             gridRecent.onClick.subscribe {
-                UIDialogs.overlayPlayable(it);
+                if(it is DBArtist)
+                    fragment.navigate<ArtistFragment>(it);
+                else
+                    UIDialogs.overlayPlayable(it);
                 //fragment.navigate<PlaybackFragment>(it);
             }
 

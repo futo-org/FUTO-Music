@@ -109,6 +109,7 @@ dependencies {
     //Images
     annotationProcessor("com.github.bumptech.glide:compiler:5.0.5")
     implementation("com.github.bumptech.glide:glide:5.0.5")
+    implementation ("jp.wasabeef:glide-transformations:4.3.0")
 
     //Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")

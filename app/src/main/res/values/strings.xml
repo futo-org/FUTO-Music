@@ -16,6 +16,9 @@
     <string name="unhandled_exception_in_vs">Unhandled exception in VS</string>
     <string name="send_exception_to_developers">Send exception to developers…</string>
 
+    <string name="play">Play</string>
+    <string name="play_all">Play All</string>
+    <string name="shuffle">Shuffle</string>
 
     <string name="share">Share</string>
     <string name="submit">Submit</string>

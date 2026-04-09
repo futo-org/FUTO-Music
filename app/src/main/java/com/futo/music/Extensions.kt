@@ -1,5 +1,6 @@
 package com.futo.music
 
+import com.futo.music.models.playable.IPlayable
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -46,4 +47,15 @@ fun levenshteinDistance(a: String, b: String): Int {
         }
     }
     return diffMat[a.length][b.length]
+}
+
+class IPlayableWithPlaySettings(
+    val playable: IPlayable,
+    val playSettings: PlaySettings);
+
+class PlaySettings(
+    val shuffle: Boolean = false
+)
+fun IPlayable.withSettings(settings: PlaySettings): IPlayableWithPlaySettings {
+    return IPlayableWithPlaySettings(this, settings);
 }

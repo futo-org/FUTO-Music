@@ -16,6 +16,9 @@ import kotlin.ranges.downTo
 import kotlin.ranges.until
 
 class TrackListEditorView : FrameLayout {
+    private var _trackCurrent: IPlayableTrack? = null;
+    private val _trackCurrentChanged = Event1<IPlayableTrack?>();
+
     private val _tracks : ArrayList<IPlayableTrack> = ArrayList();
 
     private var _adapterTracks: TrackListEditorAdapter? = null;
@@ -36,7 +39,7 @@ class TrackListEditorView : FrameLayout {
 
         itemMoveCallback = ItemMoveCallback();
         val touchHelper = ItemTouchHelper(itemMoveCallback);
-        val adapterVideos = TrackListEditorAdapter(touchHelper);
+        val adapterVideos = TrackListEditorAdapter(touchHelper, _trackCurrentChanged, _trackCurrent);
         recyclerPlaylist.adapter = adapterVideos;
         recyclerPlaylist.layoutManager = LinearLayoutManager(context);
         touchHelper.attachToRecyclerView(recyclerPlaylist);
@@ -76,6 +79,11 @@ class TrackListEditorView : FrameLayout {
         adapterVideos.onClick.subscribe(onTrackClicked::emit);
 
         _adapterTracks = adapterVideos;
+    }
+
+    fun setCurrentTrack(track: IPlayableTrack?) {
+        _trackCurrent = track;
+        _trackCurrentChanged.emit(track);
     }
 
     fun setTracks(tracks: List<IPlayableTrack>?, canEdit: Boolean) {

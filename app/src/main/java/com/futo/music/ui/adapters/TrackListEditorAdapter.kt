@@ -20,15 +20,22 @@ class TrackListEditorAdapter : RecyclerView.Adapter<TrackListEditorViewHolder> {
     var canEdit = false
         private set;
 
-    constructor(touchHelper: ItemTouchHelper) : super() {
+    private var _trackCurrent: IPlayableTrack? = null;
+    private val _trackCurrentChanged: Event1<IPlayableTrack?>;
+
+    constructor(touchHelper: ItemTouchHelper, trackChanged: Event1<IPlayableTrack?>, trackCurrent: IPlayableTrack? = null) : super() {
         _touchHelper = touchHelper;
+        _trackCurrentChanged  = trackChanged;
+        trackChanged.subscribe {
+            _trackCurrent = it;
+        }
     }
 
     override fun getItemCount() = _tracks?.size ?: 0;
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): TrackListEditorViewHolder {
         val view = LayoutInflater.from(viewGroup.context).inflate(R.layout.list_track, viewGroup, false);
-        val holder = TrackListEditorViewHolder(view, _touchHelper);
+        val holder = TrackListEditorViewHolder(view, _touchHelper, _trackCurrentChanged, _trackCurrent);
 
         holder.onRemove.subscribe { v -> onRemove.emit(v); };
         holder.onOptions.subscribe { v -> onOptions.emit(v); };

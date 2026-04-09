@@ -26,6 +26,7 @@ import androidx.media3.ui.TimeBar
 import com.bumptech.glide.Glide
 import com.bumptech.glide.TransitionOptions
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.futo.music.IPlayableWithPlaySettings
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.extensions.setAlbumArt
@@ -299,6 +300,7 @@ class PlaybackFragment: MainFragment() {
                     _buttonStars.setRating(track?.score ?: 0);
                     if(track != null)
                         setTrackMetadata(track);
+                    _queueOverlay.setCurrentTrack(track);
                 }
             }
         }
@@ -398,7 +400,22 @@ class PlaybackFragment: MainFragment() {
 
         fun onShown(parameter: Any? = null) {
             if(parameter is IPlayable) {
+                val player = fragment?._player?.player;
+                if(player != null) {
+                    player.shuffleModeEnabled = false;
+                    setShuffleButtonState(player.shuffleModeEnabled);
+                }
                 StateQueue.instance.setQueue(context, parameter);
+            }
+            if(parameter is IPlayableWithPlaySettings) {
+                if(parameter.playSettings.shuffle) {
+                    val player = fragment?._player?.player;
+                    if(player != null) {
+                        player.shuffleModeEnabled = true;
+                        setShuffleButtonState(player.shuffleModeEnabled);
+                    }
+                }
+                StateQueue.instance.setQueue(context, parameter.playable);
             }
         }
 

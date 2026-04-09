@@ -191,7 +191,7 @@ class PlayableOptionOverlay: ConstraintLayout {
         else
             _buttonRate.isVisible = false;
 
-        if(playable is DBTrack || playable is DBArtist)
+        if((playable is DBTrack && playable.artistId != null) || playable is DBArtist)
             _buttonArtist.isVisible = true;
         else
             _buttonArtist.isVisible = false;
