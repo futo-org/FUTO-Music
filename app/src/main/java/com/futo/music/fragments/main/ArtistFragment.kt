@@ -12,6 +12,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
+import com.futo.music.UIDialogs
 import com.futo.music.fragments.MainFragView
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.states.ArtistOrdering
@@ -56,22 +57,26 @@ class ArtistFragment: MainFragment() {
     }
 
 
-    class FragView(frag: ArtistFragment, inflater: LayoutInflater): MainFragView<ArtistFragment>(frag, inflater, R.layout.fragment_search) {
+    class FragView(frag: ArtistFragment, inflater: LayoutInflater): MainFragView<ArtistFragment>(frag, inflater, R.layout.fragment_artist) {
 
         val search: SearchBarView;
-        val gridSearch: ContentGrid;
+        val gridSongs: ContentGrid;
+        val gridAlbums: ContentGrid;
         val emptyView: NoResultsView;
 
 
         init {
             search = findViewById(R.id.view_search);
-            gridSearch = findViewById(R.id.grid_search);
+            gridAlbums = findViewById(R.id.grid_albums);
+            gridSongs = findViewById(R.id.grid_songs);
             emptyView = findViewById(R.id.view_empty);
 
-            gridSearch.onClick.subscribe {
-                fragment.navigate<PlaybackFragment>(it);
+            gridAlbums.onClick.subscribe {
+                UIDialogs.overlayPlayable(it);
             }
-
+            gridSongs.onClick.subscribe {
+                UIDialogs.overlayPlayable(it);
+            }
         }
 
         fun updateContent(artistId: Long) {

@@ -15,6 +15,7 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.UIDialogs
+import com.futo.music.fragments.main.ArtistFragment
 import com.futo.music.fragments.main.PlaybackFragment
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.states.StateApp
@@ -110,10 +111,10 @@ class PlayableOptionOverlay: ConstraintLayout {
             _currentPlayable?.let {
                 if(it is DBTrack) {
                     val artist = StateDatabase.instance.getArtist(it.artistId ?: return@let);
-                    //
+                    StateApp.instance.activity()?.navigate<ArtistFragment>(artist);
                 }
                 else if(it is DBArtist) {
-
+                    StateApp.instance.activity()?.navigate<ArtistFragment>(it);
                 }
             }
         }
@@ -174,7 +175,6 @@ class PlayableOptionOverlay: ConstraintLayout {
 
 
     fun setButtons(playable: IPlayable) {
-        return;
         if(playable is DBTrack) {
             _buttonPlaylistAdd.isVisible = true;
             _buttonPlayNext.isVisible = true;
