@@ -28,6 +28,7 @@ import com.futo.music.storage.db.DBArtistTrack
 import com.futo.music.storage.db.DBArtistUpdateTrackMetadata
 import com.futo.music.storage.db.DBPlaylistUpdateTrackMetadata
 import com.futo.music.storage.db.DBTrack
+import com.futo.music.storage.db.MetadataType
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.StringArrayStorage
 import com.futo.music.storage.file.StringStringMapStorage
@@ -217,6 +218,8 @@ class StateLibrary {
         if(!checkAlbumArt(album.id.toLong()))
             album.thumbnail = null;
 
+        val hasMediaStoreData = album.artistId != null;
+
         val dbEntry = DBAlbum(
             id = existing?.id ?: 0,
             name = album.name,
@@ -226,6 +229,7 @@ class StateLibrary {
             dateAdded = if(existing != null) existing.dateAdded else OffsetDateTime.now(),
             datePlayed = if(existing != null) existing.datePlayed else OffsetDateTime.MIN,
             plays = if(existing != null) existing.plays else 0,
+            metadataType = if(hasMediaStoreData) MetadataType.MEDIASTORE else MetadataType.UNKNOWN,
             mediaStoreId = album?.id?.toLongOrNull() ?: existing?.mediaStoreId ?: -1,
             mediaStoreArtistId = album.artistId ?: existing?.mediaStoreArtistId ?: -1
         )
@@ -250,6 +254,7 @@ class StateLibrary {
             dateAdded = if(existing != null) existing.dateAdded else OffsetDateTime.now(),
             datePlayed = if(existing != null) existing.datePlayed else OffsetDateTime.MIN,
             plays = if(existing != null) existing.plays else 0,
+            metadataType = if(artist.id?.toLongOrNull() != null) MetadataType.MEDIASTORE else MetadataType.UNKNOWN,
             mediaStoreId = artist.id?.toLongOrNull() ?: existing?.mediaStoreId ?: -1,
         );
 
@@ -269,6 +274,8 @@ class StateLibrary {
         val dbArtist = if(artistId != null) StateDatabase.instance.getArtistByMSID(artistId) else null;
         val dbAlbum = if(albumId != null) StateDatabase.instance.getAlbumByMSID(albumId) else null;
 
+        val hasMediaStoreData = track.artist?.id?.toLongOrNull() != null || track.album?.id?.toLongOrNull() != null;
+
         val dbEntry = DBTrack(
             id = existing?.id ?: 0,
             name = track.name,
@@ -284,6 +291,7 @@ class StateLibrary {
             score = existing?.score ?: -1,
             scoreCalculated = existing?.scoreCalculated ?: -1,
             duration = track.duration ?: 0,
+            metadataType = if(hasMediaStoreData) MetadataType.MEDIASTORE else MetadataType.UNKNOWN,
             mediaStoreId = id,
             mediaStoreArtistId = track.artist?.id?.toLongOrNull() ?: existing?.mediaStoreArtistId ?: -1,
             mediaStoreAlbumId = track.album?.id?.toLongOrNull() ?: existing?.mediaStoreAlbumId ?: -1,
@@ -292,7 +300,7 @@ class StateLibrary {
         Logger.i(TAG, "Inserting track [${track.name}] (new: ${existing == null})")
         dbEntry.id = StateDatabase.instance.insertOrUpdate(dbEntry);
 ;        if(dbAlbum != null)
-            StateDatabase.instance.db.albumDao().insert(DBAlbumTrack(dbAlbum.id, dbEntry.id));
+            StateDatabase.instance.db.albumDao().insert(DBAlbumTrack(dbAlbum.id, dbEntry.id, track.albumOrder));
         if(dbArtist != null)
             StateDatabase.instance.db.artistDao().insert(DBArtistTrack(dbArtist.id, dbEntry.id));
         return existing == null;
@@ -446,7 +454,8 @@ class StateLibrary {
             MediaStore.Audio.Media.DATE_ADDED, //6
             MediaStore.Audio.Media.MIME_TYPE, //7
             MediaStore.Audio.Media.BUCKET_DISPLAY_NAME, //8
-            MediaStore.Audio.Media.TITLE //9
+            MediaStore.Audio.Media.TITLE, //9
+            MediaStore.Audio.Media.TRACK //10
         );
 
         fun getDocumentTrack(context: Context, url: String): Track? {
@@ -521,6 +530,7 @@ class StateLibrary {
             val contentType = cursor.getString(7);
             val category = cursor.getString(8);
             val title = cursor.getString(9);
+            val albumOrder = cursor.getInt(10);
 
             val idLong = id.toLongOrNull();
             val contentUrl = if(idLong != null )

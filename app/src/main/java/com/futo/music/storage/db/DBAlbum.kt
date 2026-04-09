@@ -33,6 +33,8 @@ class DBAlbum(
     val trackCount: Int = -1,
     val trackDurations: Int = -1,
 
+    val metadataType: MetadataType = MetadataType.UNKNOWN,
+
     val mediaStoreId: Long = -1,
     val mediaStoreArtistId: Long = -1
 ): IPlayable {
@@ -55,7 +57,8 @@ class DBAlbum(
     primaryKeys = ["albumId", "trackId"])
 class DBAlbumTrack(
     val albumId: Long,
-    val trackId: Long
+    val trackId: Long,
+    val ordering: Int
 )
 
 @Entity(tableName = "album_artists",

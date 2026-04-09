@@ -33,6 +33,8 @@ class DBArtist(
     val trackCount: Int = 0,
     val trackDurations: Int = 0,
 
+    val metadataType: MetadataType = MetadataType.UNKNOWN,
+
     val mediaStoreId: Long = -1
 ): IPlayable {
     override val type: PlayableType get() = PlayableType.Artist;

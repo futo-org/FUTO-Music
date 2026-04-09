@@ -22,6 +22,8 @@ class Track: IPlayable, IPlayableTrack {
 
     var duration: Int = 0;
 
+    var albumOrder: Int = 999;
+
     override var score: Int = 0;
 
     override val datePlayed: OffsetDateTime? = null;
@@ -46,6 +48,11 @@ class Track: IPlayable, IPlayableTrack {
         if(artist == null)
             return this;
         this.artist = artist;
+        return this;
+    }
+
+    fun withAlbumOrder(order: Int): Track {
+        albumOrder = order;
         return this;
     }
 

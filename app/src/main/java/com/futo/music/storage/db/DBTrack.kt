@@ -44,6 +44,8 @@ class DBTrack(
 
     val duration: Int = 0,
 
+    val metadataType: MetadataType = MetadataType.UNKNOWN,
+
     val mediaStoreId: Long = -1,
     val mediaStoreArtistId: Long = -1,
     val mediaStoreAlbumId: Long = -1
@@ -119,7 +121,7 @@ interface DBTrackDao {
     @Query("SELECT * FROM tracks WHERE INSTR(lower(name), lower(:str))")
     fun search(str: String): List<DBTrack>;
 
-    @Query("SELECT t.* FROM tracks t INNER JOIN album_tracks at ON t.id = at.trackId WHERE at.albumId = :albumId")
+    @Query("SELECT t.* FROM tracks t INNER JOIN album_tracks at ON t.id = at.trackId WHERE at.albumId = :albumId ORDER BY at.ordering")
     fun getAlbumTracks(albumId: Long): List<DBTrack>
     @Query("SELECT t.* FROM tracks t INNER JOIN artist_tracks at ON t.id = at.trackId WHERE at.artistId = :artistId")
     fun getArtistTracks(artistId: Long): List<DBTrack>

@@ -1,13 +1,11 @@
 package com.futo.music.ui.views.general
 
+import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View
-import android.view.inputmethod.InputMethod
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
-import androidx.compose.ui.platform.ComposeView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.addTextChangedListener
 import com.futo.music.R
@@ -20,6 +18,7 @@ class SearchBarView: ConstraintLayout {
 
     val onFocusChange = Event1<Boolean>();
     val onChange = Event1<String>();
+    val onEnter = Event1<String>();
 
     constructor(context: Context, attrs: AttributeSet? = null): super(context, attrs) {
         inflate(context, R.layout.view_search_bar, this);
@@ -46,14 +45,28 @@ class SearchBarView: ConstraintLayout {
         });
 
         _text.addTextChangedListener {
+            if(it == null)
+                return@addTextChangedListener;
+            for (i in it.length - 1 downTo 0) {
+                if (it[i] === '\n') {
+                    it.delete(i, i + 1)
+                    onEnter.emit(it?.toString() ?: "");
+                    return@addTextChangedListener;
+                }
+            }
             onChange.emit(it?.toString() ?: "");
         }
     }
 
+    fun focus(activity: Activity?) = focus(activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?);
     fun focus(inputManager: InputMethodManager? = null) {
         _text.requestFocus();
         if(inputManager != null)
             inputManager.showSoftInput(_text, InputMethodManager.SHOW_IMPLICIT);
+    }
+    fun closeKeyboard(activity: Activity?) = closeKeyboard(activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?);
+    fun closeKeyboard(inputManager: InputMethodManager? = null) {
+        inputManager?.hideSoftInputFromWindow(_text.windowToken, 0);
     }
 
     fun setText(str: String) {

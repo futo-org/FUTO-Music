@@ -2,6 +2,7 @@ package com.futo.music.states
 
 import android.annotation.SuppressLint
 import android.content.Context
+import com.futo.music.BuildConfig
 import com.futo.music.activities.MainActivity
 import com.futo.music.logging.Logger
 import com.futo.music.storage.file.FragmentedStorage
@@ -43,6 +44,17 @@ class StateApp {
         _scope = scope;
     }
 
+    fun mainAppStarting(context: Context) {
+        Logger.i(TAG, "MainApp Starting");
+
+
+        Logger.i(TAG, "MainApp Starting: Initializing [Telemetry]");
+        if (!BuildConfig.DEBUG) {
+            StateTelemetry.instance.initialize();
+            StateTelemetry.instance.upload();
+        }
+
+    }
 
 
     companion object {

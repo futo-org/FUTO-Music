@@ -11,6 +11,7 @@ import androidx.compose.animation.core.updateTransition
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
+import com.futo.music.UIDialogs
 import com.futo.music.fragments.MainFragView
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.states.ArtistOrdering
@@ -67,11 +68,15 @@ class SearchFragment: MainFragment() {
             emptyView = findViewById(R.id.view_empty);
 
             gridSearch.onClick.subscribe {
-                fragment.navigate<PlaybackFragment>(it);
+                //fragment.navigate<PlaybackFragment>(it);
+                UIDialogs.overlayPlayable(it);
             }
 
             search.onChange.subscribe {
                 updateContent(it);
+            }
+            search.onEnter.subscribe {
+                search.closeKeyboard(fragment?.activity);
             }
 
             updateContent("");
