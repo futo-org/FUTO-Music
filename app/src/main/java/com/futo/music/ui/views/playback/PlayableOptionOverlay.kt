@@ -174,16 +174,16 @@ class PlayableOptionOverlay: ConstraintLayout {
 
 
     fun setButtons(playable: IPlayable) {
-        return;
         if(playable is DBTrack) {
             _buttonPlaylistAdd.isVisible = true;
             _buttonPlayNext.isVisible = true;
+            _buttonQueueAdd.isVisible = true;
         }
         else {
             _buttonPlaylistAdd.isVisible = false;
             _buttonPlayNext.isVisible = false;
+            _buttonQueueAdd.isVisible = false;
         }
-
 
         if(playable is DBTrack || playable is DBPlaylist || playable is DBAlbum || playable is DBArtist)
             _buttonRate.isVisible = true;

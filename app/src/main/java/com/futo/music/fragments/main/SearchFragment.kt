@@ -73,6 +73,9 @@ class SearchFragment: MainFragment() {
             search.onChange.subscribe {
                 updateContent(it);
             }
+            search.onEnter.subscribe {
+                search.closeKeyboard(fragment?.activity);
+            }
 
             updateContent("");
         }
