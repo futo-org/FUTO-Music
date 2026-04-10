@@ -242,6 +242,7 @@ class UIDialogs {
 
                     dialog.setOnDismissListener {
                         registerDialogClosed(dialog);
+                        onDismissed?.invoke();
                     }
                     dialog.show();
                 }

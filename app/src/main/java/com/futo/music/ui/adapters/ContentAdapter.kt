@@ -2,12 +2,15 @@ package com.futo.music.ui.adapters
 
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Filter
+import androidx.collection.emptyLongSet
 import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.constructs.Event1
 import com.futo.music.models.playable.Album
 import com.futo.music.models.playable.Artist
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.PlayableType
+import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.views.grid.ContentAlbumGridView
 import com.futo.music.ui.views.grid.ContentArtistGridView
 import com.futo.music.ui.views.grid.ContentPlaylistGridView
@@ -16,6 +19,8 @@ import com.futo.music.ui.views.grid.IContentGridView
 
 class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?): RecyclerView.Adapter<ContentAdapter.ViewHolder>() {
     val data: MutableList<IPlayable> = mutableListOf();
+    val dataAll: MutableList<IPlayable> = mutableListOf();
+    var filter: String? = null;
 
     val onClick = Event1<IPlayable>();
 
@@ -49,6 +54,35 @@ class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?): 
         return data.size;
     }
 
+    fun setData(items: List<IPlayable>) {
+        data.clear();
+        data.addAll(items);
+        dataAll.clear();
+        dataAll.addAll(items);
+
+        val currentFilter = filter;
+        if(currentFilter != null)
+            search(currentFilter);
+        else
+            notifyDataSetChanged();
+    }
+
+    fun clearSearch() {
+        filter = null;
+        if(data.size != dataAll.size) {
+            data.clear();
+            data.addAll(dataAll);
+            notifyDataSetChanged();
+        }
+    }
+    fun search(str: String) { //TODO: Optimize
+        filter = str;
+        val query = str.lowercase().trim();
+        val newList = dataAll.filter { it.name.lowercase().contains(query) || (it is DBTrack && it.artistLine != null && it.artistLine.contains(query)) };
+        data.clear();
+        data.addAll(newList);
+        notifyDataSetChanged()
+    }
 
     class ViewHolder: RecyclerView.ViewHolder {
         val view: IContentGridView;

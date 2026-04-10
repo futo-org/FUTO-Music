@@ -27,6 +27,7 @@ import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
 import com.futo.music.storage.db.DBArtist
+import com.futo.music.ui.buttons.RatingButton
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
@@ -40,7 +41,7 @@ import kotlinx.coroutines.withContext
 class ArtistFragment: MainFragment() {
     override val isMainView : Boolean = true;
     override val isTab: Boolean = true;
-    override val hasBottomBar: Boolean get() = false;
+    override val hasBottomBar: Boolean get() = true;
 
     override val fragmentTitle: String = "Artist";
 
@@ -85,6 +86,8 @@ class ArtistFragment: MainFragment() {
 
         var artistCurrent: DBArtist? = null;
 
+        val buttonRating: RatingButton;
+
 
         init {
             search = findViewById(R.id.view_search);
@@ -96,8 +99,10 @@ class ArtistFragment: MainFragment() {
             textMetadata = findViewById(R.id.text_metadata);
             imageHeader = findViewById(R.id.image_header);
 
-            buttonPlayAll = findViewById(R.id.button_play_all)
-            buttonShuffle = findViewById(R.id.button_shuffle)
+            buttonPlayAll = findViewById(R.id.button_play_all);
+            buttonShuffle = findViewById(R.id.button_shuffle);
+
+            buttonRating = findViewById(R.id.button_rating);
 
             gridAlbums.onClick.subscribe {
                 UIDialogs.overlayPlayable(it);
@@ -120,6 +125,21 @@ class ArtistFragment: MainFragment() {
             findViewById<ImageButton>(R.id.button_back).setOnClickListener {
                 fragment.closeSegment();
             }
+
+            search.onChange.subscribe {
+                if(it.isEmpty())
+                    gridSongs.clearSearch();
+                else
+                    gridSongs.search(it);
+            }
+
+            buttonRating.onClick.subscribe {
+                artistCurrent?.let {
+                    UIDialogs.showRatingDialog(context, fragment.lifecycleScope, null, null, null, it, {
+                       buttonRating.setRating(it.score);
+                    });
+                }
+            }
         }
 
         fun updateContent(artistId: Long) {
@@ -139,6 +159,7 @@ class ArtistFragment: MainFragment() {
                     it.setTitle(artist.name)
                 }
             }
+            buttonRating.setRating(artist.score);
             Glide.with(imageHeader)
                 .load(artist.artUri)
                 .fallback(R.drawable.background_button_black)

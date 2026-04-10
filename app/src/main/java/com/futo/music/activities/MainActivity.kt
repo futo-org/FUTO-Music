@@ -115,12 +115,12 @@ class MainActivity : AppCompatActivity() {
     val onNavigated = Event1<MainFragment>();
 
     val fragmentsMain = mapOf<KClassifier, FragmentDefinition>(
-        Pair(HomeFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu) { _fragHome }),
-        Pair(SearchFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu) { _fragSearch }),
-        Pair(ContentsFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu) { _fragContents }),
-        Pair(PlaybackFragment::class, FragmentDefinition(_fragTopNavigation, null) { _fragPlayer }),
+        Pair(HomeFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragHome })),
+        Pair(SearchFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragSearch })),
+        Pair(ContentsFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragContents })),
+        Pair(PlaybackFragment::class, FragmentDefinition(null, null, { _fragPlayer }, animExit = R.anim.slide_down)),
         Pair(NotificationOverlayView.Frag::class, FragmentDefinition(_fragTopGeneral, null, { _fragNotifs })),
-        Pair(ArtistFragment::class, FragmentDefinition(null, null, { _fragArtist }))
+        Pair(ArtistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragArtist }))
     );
 
     init {
@@ -348,6 +348,11 @@ class MainActivity : AppCompatActivity() {
                     it.onShowFragment(segment);
                 }
 
+                val definitionOld = fragmentsMain.values.find { it.get() == fragCurrent };
+                val definitionNew = fragmentsMain.values.find { it.get() == segment };
+                //if(definitionOld?.animExit != null || definitionNew?.animEnter != null)
+                //    transaction = transaction.setCustomAnimations(definitionNew?.animEnter ?: 0, definitionOld?.animExit ?: 0);
+
                 transaction = transaction.replace(R.id.fragment_main, segment);
 
                 if(!segment.hasBottomBar) {
@@ -543,6 +548,10 @@ class MainActivity : AppCompatActivity() {
     class FragmentDefinition(
         val topbar: TopFragment?,
         val botbar: MenuBottomBarFragment?,
-        val get: ()-> MainFragment
+        val get: ()-> MainFragment,
+        val animEnter: Int? = null,
+        val animExit: Int? = null,
+        val animePopEnter: Int? = null,
+        val animPopExit: Int? = null
     )
 }

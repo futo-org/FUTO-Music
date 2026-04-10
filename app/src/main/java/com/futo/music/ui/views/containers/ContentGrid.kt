@@ -85,11 +85,15 @@ class ContentGrid: ConstraintLayout {
     }
 
     fun setData(items: List<IPlayable>) {
-        adapter.data.clear();
-        adapter.data.addAll(items);
-        adapter.notifyDataSetChanged();
+        adapter.setData(items);
     }
 
+    fun search(query: String) {
+        adapter.search(query);
+    }
+    fun clearSearch(){
+        adapter.clearSearch();
+    }
 
     fun getAutoSizeColumns(rowHeight: Int): Int {
         val aspectRatio = 1f;

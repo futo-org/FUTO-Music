@@ -31,6 +31,7 @@ import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.extensions.setAlbumArt
 import com.futo.music.fragments.MainFragView
+import com.futo.music.gestures.OnSwipeTouchListener
 import com.futo.music.logic.PlayerManager
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
@@ -253,6 +254,12 @@ class PlaybackFragment: MainFragment() {
                 }
                 else UIDialogs.appToast("No current track set?");
             }
+            _imageArt.setOnTouchListener(object: OnSwipeTouchListener(context) {
+                override fun onSwipeBottom() {
+                    super.onSwipeBottom();
+                    fragment.closeSegment();
+                }
+            })
 
 
             frag._player?.let {
