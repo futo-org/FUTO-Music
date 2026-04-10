@@ -19,6 +19,7 @@ import com.futo.music.constructs.Event0
 import com.futo.music.extensions.setAlbumArt
 import com.futo.music.logic.PlayerManager
 import com.futo.music.states.StateDatabase
+import com.futo.music.states.StateQueue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,6 +69,7 @@ class PlaybackPeekView: ConstraintLayout {
         }
         _buttonClose.setOnClickListener {
             _player?.player?.stop();
+            StateQueue.instance.clearQueue();
             this@PlaybackPeekView.visibility = GONE;
         }
     }

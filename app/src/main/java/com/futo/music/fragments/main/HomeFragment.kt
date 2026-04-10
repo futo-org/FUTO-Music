@@ -16,6 +16,7 @@ import com.futo.music.fragments.top.GeneralTopBarFragment
 import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.Vibe
+import com.futo.music.openPlayable
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
 import com.futo.music.storage.db.DBAlbum
@@ -136,20 +137,16 @@ class HomeFragment: MainFragment() {
             }
 
             gridArtists.onClick.subscribe {
-                fragment.navigate<PlaybackFragment>(it);
+                it.openPlayable(fragment);
             }
             gridAlbums.onClick.subscribe {
-                fragment.navigate<PlaybackFragment>(it);
+                it.openPlayable(fragment);
             }
             gridPlaylists.onClick.subscribe {
-                fragment.navigate<PlaybackFragment>(it);
+                it.openPlayable(fragment);
             }
             gridRecent.onClick.subscribe {
-                if(it is DBArtist)
-                    fragment.navigate<ArtistFragment>(it);
-                else
-                    UIDialogs.overlayPlayable(it);
-                //fragment.navigate<PlaybackFragment>(it);
+                it.openPlayable(fragment);
             }
 
 

@@ -23,6 +23,7 @@ import com.futo.music.UIDialogs
 import com.futo.music.fragments.MainFragView
 import com.futo.music.fragments.top.NavigationTopBarFragment
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.openPlayable
 import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
@@ -108,7 +109,7 @@ class ArtistFragment: MainFragment() {
                 UIDialogs.overlayPlayable(it);
             }
             gridSongs.onClick.subscribe {
-                UIDialogs.overlayPlayable(it);
+                it.openPlayable(fragment);
             }
 
             buttonPlayAll.setOnClickListener {

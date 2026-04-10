@@ -96,5 +96,4 @@ abstract class MainFragment : MainActivityFragment() {
             (activity as MainActivity).closeSegment(this);
     }
 
-
 }

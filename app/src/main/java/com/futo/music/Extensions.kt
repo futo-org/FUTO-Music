@@ -1,6 +1,12 @@
 package com.futo.music
 
+import com.futo.music.fragments.main.ArtistFragment
+import com.futo.music.fragments.main.MainFragment
+import com.futo.music.fragments.main.PlaybackFragment
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.states.StateQueue
+import com.futo.music.storage.db.DBAlbum
+import com.futo.music.storage.db.DBArtist
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -58,4 +64,17 @@ class PlaySettings(
 )
 fun IPlayable.withSettings(settings: PlaySettings): IPlayableWithPlaySettings {
     return IPlayableWithPlaySettings(this, settings);
+}
+
+
+fun IPlayable.openPlayable(fragment: MainFragment, preferMenu: Boolean = false) {
+    if(this is DBArtist && !preferMenu)
+        fragment.navigate<ArtistFragment>(this);
+    else {
+        if (preferMenu || StateQueue.instance.getCurrentTrack() != null) {
+            UIDialogs.overlayPlayable(this);
+        } else {
+            fragment.navigate<PlaybackFragment>(this);
+        }
+    }
 }

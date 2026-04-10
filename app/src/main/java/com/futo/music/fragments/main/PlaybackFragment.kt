@@ -104,6 +104,8 @@ class PlaybackFragment: MainFragment() {
         private val _textArtist: TextView;
         private val _textAlbum: TextView;
 
+        private val _buttonBack: ImageButton;
+
         private val _buttonPlay: ImageButton;
         private val _buttonLeft: ImageButton;
         private val _buttonRight: ImageButton;
@@ -156,6 +158,7 @@ class PlaybackFragment: MainFragment() {
 
             _textTitle.isSelected = true;
 
+            _buttonBack = findViewById(R.id.button_back);
 
             _buttonLeft = findViewById(R.id.button_left);
             _buttonRight = findViewById(R.id.button_right);
@@ -168,6 +171,10 @@ class PlaybackFragment: MainFragment() {
             _buttonQueue = findViewById(R.id.button_queue);
             _buttonPlaylistAdd = findViewById(R.id.button_add_playlist);
             _queueOverlay = findViewById(R.id.overlay_queue);
+
+            _buttonBack.setOnClickListener {
+                fragment.closeSegment();
+            }
 
             _buttonShuffle.setOnClickListener {
                 val player = frag?._player?.player ?: return@setOnClickListener;

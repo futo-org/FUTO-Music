@@ -67,6 +67,7 @@ class SearchBarView: ConstraintLayout {
     fun closeKeyboard(activity: Activity?) = closeKeyboard(activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?);
     fun closeKeyboard(inputManager: InputMethodManager? = null) {
         inputManager?.hideSoftInputFromWindow(_text.windowToken, 0);
+        _text.clearFocus();
     }
 
     fun setText(str: String) {

@@ -17,6 +17,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.BuildCompat
@@ -114,8 +115,10 @@ class MainActivity : AppCompatActivity() {
 
     val onNavigated = Event1<MainFragment>();
 
+    var isConnectedTop: Boolean = false;
+
     val fragmentsMain = mapOf<KClassifier, FragmentDefinition>(
-        Pair(HomeFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragHome })),
+        Pair(HomeFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragHome }, connectTop = true)),
         Pair(SearchFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragSearch })),
         Pair(ContentsFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragContents })),
         Pair(PlaybackFragment::class, FragmentDefinition(null, null, { _fragPlayer }, animExit = R.anim.slide_down)),
@@ -245,6 +248,23 @@ class MainActivity : AppCompatActivity() {
 
                 _fragTopGeneral.onShowFragment(_fragHome);
 
+                val definitionNew = fragmentsMain.values.find { it.get() == _fragHome };
+                if(isConnectedTop != definitionNew?.connectTop) {
+                    isConnectedTop = !isConnectedTop;
+                    if(isConnectedTop) {
+                        val constraintSet = ConstraintSet();
+                        constraintSet.clone(_rootView);
+                        constraintSet.connect(R.id.fragment_main, ConstraintSet.TOP, ConstraintSet.PARENT_ID,ConstraintSet.TOP, 0);
+                        constraintSet.applyTo(_rootView);
+                    }
+                    else {
+                        val constraintSet = ConstraintSet();
+                        constraintSet.clone(_rootView);
+                        constraintSet.connect(R.id.fragment_main, ConstraintSet.TOP, R.id.fragment_top_bar,ConstraintSet.BOTTOM, 0);
+                        constraintSet.applyTo(_rootView);
+                    }
+                }
+
                 sync();
             }
             else {
@@ -371,6 +391,22 @@ class MainActivity : AppCompatActivity() {
                             .replace(R.id.fragment_bottom_bar, segment.botBar!!)
                 }
                 transaction.commitNow();
+
+                if(isConnectedTop != definitionNew?.connectTop) {
+                    isConnectedTop = !isConnectedTop;
+                    if(isConnectedTop) {
+                        val constraintSet = ConstraintSet();
+                        constraintSet.clone(_rootView);
+                        constraintSet.connect(R.id.fragment_main, ConstraintSet.TOP, ConstraintSet.PARENT_ID,ConstraintSet.TOP, 0);
+                        constraintSet.applyTo(_rootView);
+                    }
+                    else {
+                        val constraintSet = ConstraintSet();
+                        constraintSet.clone(_rootView);
+                        constraintSet.connect(R.id.fragment_main, ConstraintSet.TOP, R.id.fragment_top_bar,ConstraintSet.BOTTOM, 0);
+                        constraintSet.applyTo(_rootView);
+                    }
+                }
             } else {
 
                 if (!segment.hasBottomBar) {
@@ -552,6 +588,7 @@ class MainActivity : AppCompatActivity() {
         val animEnter: Int? = null,
         val animExit: Int? = null,
         val animePopEnter: Int? = null,
-        val animPopExit: Int? = null
+        val animPopExit: Int? = null,
+        val connectTop: Boolean = false
     )
 }

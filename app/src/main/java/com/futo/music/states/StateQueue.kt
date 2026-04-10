@@ -97,6 +97,9 @@ class StateQueue {
                 -1
         )));
     }
+    fun clearPersistentQueue() {
+        _lastSetQueuePlayableDescriptor.saveAllAsync(listOf());
+    }
 
 
     fun setLastMediaItems(items: List<MediaItem>) {
@@ -164,6 +167,15 @@ class StateQueue {
         }
     }
 
+    fun clearQueue() {
+        synchronized(_queue) {
+            _queue.clear();
+            _lastSetQueuePlayable = null;
+            setLastMediaItems(listOf());
+            clearPersistentQueue();
+        }
+        onQueueChanged.emit(listOf());
+    }
 
     fun removeQueueItem(item: IPlayableTrack) {
         val player = _player?: return;
