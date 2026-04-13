@@ -244,7 +244,7 @@ class HomeFragment: MainFragment() {
         }
 
         fun onShown(paramter: Any? = null) {
-            StateApp.instance.activity()?.setBackgroundTopGradient(Color.argb(128, 20, 10, 255, ), 1.5f, 0.3f)
+            StateApp.instance.activity()?.setBackgroundTopGradient(Color.rgb(10, 9, 39), 2f, 1f)
         }
 
         fun onHide() {
