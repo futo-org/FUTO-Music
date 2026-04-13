@@ -1,6 +1,7 @@
 package com.futo.music.fragments.main
 
 import android.content.Context
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,22 +13,30 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.collection.emptyLongSet
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.ui.graphics.Color
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.futo.music.GradientType
 import com.futo.music.PlaySettings
 import com.futo.music.R
 import com.futo.music.UIDialogs
+import com.futo.music.colorIntensity
+import com.futo.music.extractColor
 import com.futo.music.fragments.MainFragView
 import com.futo.music.fragments.top.NavigationTopBarFragment
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.openPlayable
 import com.futo.music.states.ArtistOrdering
+import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
 import com.futo.music.storage.db.DBArtist
+import com.futo.music.toGradient
+import com.futo.music.toGradientDrawable
 import com.futo.music.ui.buttons.RatingButton
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.ContentGrid
@@ -72,6 +81,8 @@ class ArtistFragment: MainFragment() {
 
     class FragView(frag: ArtistFragment, inflater: LayoutInflater): MainFragView<ArtistFragment>(frag, inflater, R.layout.fragment_artist) {
 
+        val root: ConstraintLayout;
+
         val search: SearchBarView;
 
         val textName: TextView;
@@ -91,6 +102,7 @@ class ArtistFragment: MainFragment() {
 
 
         init {
+            root = findViewById(R.id.root);
             search = findViewById(R.id.view_search);
             gridAlbums = findViewById(R.id.grid_albums);
             gridSongs = findViewById(R.id.grid_songs);
@@ -164,6 +176,17 @@ class ArtistFragment: MainFragment() {
             Glide.with(imageHeader)
                 .load(artist.artUri)
                 .fallback(R.drawable.background_button_black)
+                .extractColor { pal ->
+                    StateApp.instance.activity()?.let {
+                        if(pal != null && (pal.dominant ?: pal.darkVibrant) != null) {
+                            val color = (pal.dominant ?: pal.darkVibrant!!);
+                            val intensity = 1f / color.colorIntensity(255);
+                            it.setBackgroundBottomGradient(color, 0.5f, Math.min(1f, intensity));
+                        }
+                        else
+                            it.hideBackgroundBottom();
+                    }
+                }
                 .into(imageHeader);
 
             fragment.lifecycleScope.launch(Dispatchers.IO) {

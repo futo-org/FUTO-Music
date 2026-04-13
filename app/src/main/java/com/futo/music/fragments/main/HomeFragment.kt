@@ -1,5 +1,6 @@
 package com.futo.music.fragments.main
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +18,7 @@ import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.Vibe
 import com.futo.music.openPlayable
+import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
 import com.futo.music.storage.db.DBAlbum
@@ -242,7 +244,7 @@ class HomeFragment: MainFragment() {
         }
 
         fun onShown(paramter: Any? = null) {
-
+            StateApp.instance.activity()?.setBackgroundTopGradient(Color.argb(128, 20, 10, 255, ), 1.5f, 0.3f)
         }
 
         fun onHide() {

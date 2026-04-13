@@ -15,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat.Type
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.doOnAttach
 import androidx.core.view.updatePadding
+import com.futo.music.constructs.Event2
 import kotlin.apply
 import kotlin.math.max
 
@@ -32,6 +33,8 @@ class RootInsetsController private constructor(
 
     private var currentInsets: WindowInsetsCompat = WindowInsetsCompat.CONSUMED
     private var fullscreen = false
+
+    val onPaddingChanged = Event2<Int, Int>();
 
     init {
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -69,6 +72,7 @@ class RootInsetsController private constructor(
             right = basePaddingRight + e.right,
             bottom = basePaddingBottom + e.bottom
         )
+        onPaddingChanged.emit(basePaddingTop + e.top, basePaddingBottom + e.bottom);
     }
 
     private fun forceRelayoutAndInsets() {

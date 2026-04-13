@@ -16,7 +16,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
+<!--
             <ImageView
                 android:id="@+id/background_gradient"
                 android:layout_width="match_parent"
@@ -27,7 +27,7 @@
                 />
             <ImageView
                 android:layout_width="0dp"
-                android:layout_height="50dp"
+                android:layout_height="100dp"
                 android:src="@drawable/gradient_black_transparent"
                 app:layout_constraintLeft_toLeftOf="@id/background_gradient"
                 app:layout_constraintRight_toRightOf="@id/background_gradient"
@@ -41,6 +41,7 @@
                 app:layout_constraintRight_toRightOf="@id/background_gradient"
                 app:layout_constraintBottom_toBottomOf="@id/background_gradient"
                 />
+            -->
 
 
             <LinearLayout

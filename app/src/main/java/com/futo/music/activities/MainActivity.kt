@@ -1,5 +1,6 @@
 package com.futo.music.activities
 
+import android.animation.Animator
 import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
@@ -7,9 +8,17 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import android.view.ViewPropertyAnimator
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.ImageView
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.SystemBarStyle
 import androidx.activity.addCallback
@@ -32,6 +41,9 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.DrawableTransformation
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.futo.music.R
 import com.futo.music.RootInsetsController
 import com.futo.music.UIDialogs
@@ -78,6 +90,10 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.max
 import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.view.updateLayoutParams
+import com.bumptech.glide.RequestBuilder
+import com.futo.music.toGradientDrawable
 
 class MainActivity : AppCompatActivity() {
 
@@ -87,6 +103,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var _fragContainerBotBar: FragmentContainerView;
     private lateinit var _toastView: ToastView;
     private lateinit var _overlayPlayable: PlayableOptionOverlay;
+
+    private lateinit var _backgroundTop: ImageView;
+    private lateinit var _backgroundBottom: ImageView;
 
     //Topbar
     private val _fragTopGeneral = GeneralTopBarFragment();
@@ -184,9 +203,29 @@ class MainActivity : AppCompatActivity() {
         _toastView = findViewById(R.id.toast_view);
         _overlayPlayable = findViewById(R.id.overlay_playable)
 
+        _backgroundTop = findViewById(R.id.image_background_top);
+        _backgroundTop.post {
+            _backgroundTop.pivotY = 0f;
+        }
+        _backgroundBottom = findViewById(R.id.image_background_bottom);
+        _backgroundBottom.post {
+            _backgroundBottom.pivotY = _backgroundBottom.height.toFloat();
+        }
 
         _rootInsetsController = RootInsetsController.attach(this, _rootView);
         _rootInsetsController.setLightSystemBarAppearance(lightStatus = false, lightNav = false);
+        _rootInsetsController.onPaddingChanged.subscribe { top, bottom ->
+            _backgroundTop.updateLayoutParams {
+                if(this is ViewGroup.MarginLayoutParams) {
+                    this.topMargin = top * -1;
+                }
+            }
+            _backgroundBottom.updateLayoutParams {
+                if(this is ViewGroup.MarginLayoutParams) {
+                    this.bottomMargin = bottom * -1;
+                }
+            }
+        }
 
         for(frag in fragmentsMain) {
             frag.value.get().topBar = frag.value.topbar;
@@ -247,6 +286,7 @@ class MainActivity : AppCompatActivity() {
                     .commitNow();
 
                 _fragTopGeneral.onShowFragment(_fragHome);
+                _fragHome.onShown(null, false);
 
                 val definitionNew = fragmentsMain.values.find { it.get() == _fragHome };
                 if(isConnectedTop != definitionNew?.connectTop) {
@@ -321,6 +361,185 @@ class MainActivity : AppCompatActivity() {
         handleBack();
     }
 
+    private val _backgroundTransitionDuration = 1000L;
+    private var _lastTopAnimation: ViewPropertyAnimator? = null;
+    fun setBackgroundTopGradient(color: Int, heightScale: Float = 0.5f, opacity: Float = 1.0f)
+            = setBackgroundTop(color.toGradientDrawable(Color.BLACK,
+        GradientDrawable.Orientation.TOP_BOTTOM), heightScale, opacity)
+    fun setBackgroundTop(drawable: Drawable, heightScale: Float = 1f, opacity: Float = 1f, glideBuilder: ((RequestBuilder<Drawable>)->RequestBuilder<Drawable>)? = null) {
+        _lastTopAnimation?.cancel();
+
+
+        if(drawable is BitmapDrawable && _backgroundTop.scaleY != heightScale) {
+            _lastTopAnimation = _backgroundTop.animate()
+                .alpha(0f)
+                .setDuration(_backgroundTransitionDuration)
+                .setListener(object: Animator.AnimatorListener {
+                    override fun onAnimationCancel(p0: Animator) { }
+                    override fun onAnimationEnd(p0: Animator) {
+                        _lastTopAnimation?.setListener(null);
+                        Logger.i(TAG, "setBackgroundTop clear animation ended");
+                        _backgroundTop.scaleY = heightScale;
+                        _backgroundTop.setBackgroundColor(Color.BLACK);
+                        setBackgroundTop(drawable, heightScale, opacity, glideBuilder);
+                    }
+                    override fun onAnimationRepeat(p0: Animator) {}
+                    override fun onAnimationStart(p0: Animator) {}
+                })
+                .let {
+                    it.start();
+                    return@let it;
+                }
+        }
+        else {
+            var builder =  Glide.with(_backgroundTop)
+                .load(drawable);
+
+            if(glideBuilder != null)
+                builder = glideBuilder(builder);
+            builder
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .into(_backgroundTop);
+            if(_backgroundTop.scaleY != heightScale || _backgroundTop.alpha != opacity)
+                _lastTopAnimation = _backgroundTop.animate()
+                    .scaleY(heightScale)
+                    .setDuration(_backgroundTransitionDuration)
+                    .alpha(opacity)
+                    .setInterpolator(AccelerateDecelerateInterpolator())
+                    .let {
+                        it.start();
+                        return@let it;
+                    }
+        }
+    }
+    fun setBackgroundTopColor(color: Int, heightScale: Float = 1f) {
+        if(heightScale == 0f && color == Color.BLACK) {
+            hideBackgroundTop();
+        }
+        else {
+            _lastTopAnimation?.cancel();
+            Glide.with(_backgroundTop)
+                .load(color.toDrawable())
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .into(_backgroundTop);
+
+            _lastTopAnimation = _backgroundTop.animate()
+                .scaleY(heightScale)
+                .setDuration(500)
+                .alpha(1f)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .let {
+                    it.start();
+                    return@let it;
+                }
+        }
+    }
+    fun hideBackgroundTop() {
+        _lastTopAnimation?.cancel();
+        if(_backgroundTop.scaleY != 0f) {
+            if(_backgroundTop.scaleY <= 0.5f) {
+                _backgroundTop.animate()
+                    .scaleY(0f)
+                    .alpha(0f)
+                    .setListener(object : Animator.AnimatorListener {
+                        override fun onAnimationCancel(p0: Animator) {}
+                        override fun onAnimationEnd(p0: Animator) {
+                            _lastTopAnimation?.setListener(null);
+                            _backgroundTop.setBackgroundColor(Color.BLACK);
+                        }
+
+                        override fun onAnimationRepeat(p0: Animator) {}
+                        override fun onAnimationStart(p0: Animator) {}
+                    })
+                    .setDuration(_backgroundTransitionDuration)
+                    .setInterpolator(AccelerateDecelerateInterpolator())
+                    .start();
+            }
+            else {
+                _backgroundTop.animate()
+                    .alpha(0f)
+                    .setListener(object : Animator.AnimatorListener {
+                        override fun onAnimationCancel(p0: Animator) {}
+                        override fun onAnimationEnd(p0: Animator) {
+                            _lastTopAnimation?.setListener(null);
+                            _backgroundTop.scaleY = 0f;
+                            _backgroundTop.setBackgroundColor(Color.BLACK);
+                        }
+
+                        override fun onAnimationRepeat(p0: Animator) {}
+                        override fun onAnimationStart(p0: Animator) {}
+                    })
+                    .setDuration(_backgroundTransitionDuration)
+                    .setInterpolator(AccelerateDecelerateInterpolator())
+                    .start();
+            }
+        }
+    }
+    private var _lastBottomAnimation: ViewPropertyAnimator? = null;
+    fun setBackgroundBottomGradient(color: Int, heightScale: Float = 0.5f, opacity: Float = 1f)
+        = setBackgroundBottom(android.graphics.Color.TRANSPARENT.toGradientDrawable(color,
+        GradientDrawable.Orientation.TOP_BOTTOM), heightScale, opacity)
+    fun setBackgroundBottom(drawable: Drawable, heightScale: Float = 1f, opacity: Float = 1f) {
+        _lastBottomAnimation?.cancel();
+        Glide.with(_backgroundBottom)
+            .load(drawable)
+            .transition(DrawableTransitionOptions.withCrossFade())
+            .into(_backgroundBottom);
+
+       _lastBottomAnimation =  _backgroundBottom.animate()
+            .scaleY(heightScale)
+            .setDuration(_backgroundTransitionDuration)
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .alpha(opacity)
+            .let {
+                it.start();
+                return@let it;
+            }
+    }
+    fun setBackgroundBottomColor(color: Int, heightScale: Float = 1f) {
+        if(heightScale == 0f && color == Color.BLACK) {
+            hideBackgroundBottom();
+        }
+        else {
+            _lastBottomAnimation?.cancel();
+            Glide.with(_backgroundBottom)
+                .load(color.toDrawable())
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .into(_backgroundBottom);
+            _lastBottomAnimation = _backgroundBottom.animate()
+                .scaleY(heightScale)
+                .setDuration(_backgroundTransitionDuration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .let {
+                    it.start();
+                    return@let it;
+                }
+        }
+    }
+    fun hideBackgroundBottom() {
+        _lastBottomAnimation?.cancel();
+        if(_backgroundBottom.scaleY != 0f)
+            _lastBottomAnimation = _backgroundBottom.animate()
+                .scaleY(0f)
+                .alpha(0f)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setListener(object: Animator.AnimatorListener {
+                    override fun onAnimationCancel(p0: Animator) { }
+                    override fun onAnimationEnd(p0: Animator) {
+                        _lastBottomAnimation?.setListener(null);
+                        _backgroundBottom.setBackgroundColor(Color.BLACK);
+                    }
+                    override fun onAnimationRepeat(p0: Animator) {}
+                    override fun onAnimationStart(p0: Animator) {}
+                })
+                .setDuration(500)
+                .let {
+                    it.start();
+                    return@let it;
+                }
+    }
+
+
     fun handleBack() {
         Logger.i(TAG, "onBackPressed")
 
@@ -352,6 +571,9 @@ class MainActivity : AppCompatActivity() {
         if (segment != fragCurrent) {
             fragCurrent?.onHide();
 
+            setBackgroundTopColor(Color.BLACK, 0f);
+            setBackgroundBottomColor(Color.BLACK, 0f);
+
             if (segment.isMainView) {
                 var transaction = supportFragmentManager.beginTransaction();
                 if (segment.topBar != null) {
@@ -371,7 +593,7 @@ class MainActivity : AppCompatActivity() {
                 val definitionOld = fragmentsMain.values.find { it.get() == fragCurrent };
                 val definitionNew = fragmentsMain.values.find { it.get() == segment };
                 //if(definitionOld?.animExit != null || definitionNew?.animEnter != null)
-                //    transaction = transaction.setCustomAnimations(definitionNew?.animEnter ?: 0, definitionOld?.animExit ?: 0);
+                 transaction = transaction.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
 
                 transaction = transaction.replace(R.id.fragment_main, segment);
 

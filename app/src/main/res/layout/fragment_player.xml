@@ -2,12 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
 
-    <!--
+
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/image_art"
         android:layout_width="0dp"
@@ -17,13 +16,15 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintDimensionRatio="1"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="70dp"
+        android:layout_marginRight="70dp"
         android:src="#111111"
+        android:scaleType="centerCrop"
         app:shapeAppearanceOverlay="@style/roundedCorners_8dp"
 
-        /> -->
+        />
+    <!--
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/image_art"
         android:layout_width="0dp"
@@ -32,10 +33,13 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintDimensionRatio="1"
+        android:scaleType="centerCrop"
         android:layout_marginTop="0dp"
         android:layout_marginLeft="0dp"
         android:layout_marginRight="0dp"
-        android:src="#111111" />
+        android:src="#111111" /> -->
+
+<!--
     <ImageView
         android:layout_width="0dp"
         android:layout_height="100dp"
@@ -53,7 +57,7 @@
         app:layout_constraintLeft_toLeftOf="@id/image_art"
         app:layout_constraintRight_toRightOf="@id/image_art"
         app:layout_constraintBottom_toBottomOf="@id/image_art"
-        />
+        />-->
 
     <ImageButton
         android:id="@+id/button_back"
@@ -72,7 +76,7 @@
         android:id="@+id/view_control"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="-50dp"
+        android:layout_marginTop="20dp"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         app:show_timeout="-1"

@@ -5,6 +5,7 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.ComponentName
 import android.content.Context
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -36,6 +38,7 @@ import com.futo.music.logic.PlayerManager
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.services.PlaybackService
+import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateQueue
 import com.futo.music.storage.db.DBAlbum
@@ -46,6 +49,7 @@ import com.futo.music.ui.buttons.RatingButton
 import com.futo.music.ui.views.playback.QueueOverlay
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.common.util.concurrent.MoreExecutors
+import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -333,7 +337,19 @@ class PlaybackFragment: MainFragment() {
                 try {
 
                     setPlaySkipButtonStates(player.hasPreviousMediaItem(), player.hasNextMediaItem());
-                    _imageArt.setAlbumArt(mediaMetadata);
+                    /*_imageArt.setAlbumArt(mediaMetadata, colorIntercept = {
+                        if((it?.dominant ?: it?.darkVibrant) != null)
+                        StateApp.instance.activity()?.setBackgroundBottomGradient((it!!.dominant ?: it.darkVibrant!!), 0.5f, 0.6f);
+                    })*/
+                    _imageArt.setAlbumArt(mediaMetadata, bitmapIntercept = {
+                        if(it != null)
+                            StateApp.instance.activity()?.let { act ->
+                                act.setBackgroundTop(BitmapDrawable(it), 2.3f, 0.2f, {
+                                    it.transform(BlurTransformation(25, 3))
+                                });
+                                //act.setBackgroundBottomGradient(android.graphics.Color.BLACK, 0.3f);
+                            };
+                    })
                     _textTitle.text = (track?.name ?: mediaMetadata.title);
                     _textArtist.text = (track?.artistLine ?: mediaMetadata.artist);
                     _textAlbum.text = (track?.albumLine ?: mediaMetadata.albumTitle);
