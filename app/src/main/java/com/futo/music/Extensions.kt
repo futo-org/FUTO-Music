@@ -15,12 +15,14 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.futo.music.fragments.main.AlbumFragment
 import com.futo.music.fragments.main.ArtistFragment
 import com.futo.music.fragments.main.MainFragment
 import com.futo.music.fragments.main.PlaybackFragment
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateQueue
+import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import jp.wasabeef.glide.transformations.BitmapTransformation
 import kotlinx.serialization.Serializable
@@ -91,6 +93,8 @@ fun IPlayable.withSettings(settings: PlaySettings): IPlayableWithPlaySettings {
 fun IPlayable.openPlayable(fragment: MainFragment, preferMenu: Boolean = false) {
     if(this is DBArtist && !preferMenu)
         fragment.navigate<ArtistFragment>(this);
+    else if(this is DBAlbum && !preferMenu)
+        fragment.navigate<AlbumFragment>(this);
     else {
         if (preferMenu || StateQueue.instance.getCurrentTrack() != null) {
             UIDialogs.overlayPlayable(this);

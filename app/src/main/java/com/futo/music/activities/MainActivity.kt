@@ -93,6 +93,7 @@ import kotlin.reflect.KClassifier
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.RequestBuilder
+import com.futo.music.fragments.main.AlbumFragment
 import com.futo.music.toGradientDrawable
 
 class MainActivity : AppCompatActivity() {
@@ -120,6 +121,7 @@ class MainActivity : AppCompatActivity() {
     private val _fragPlayer = PlaybackFragment();
     private val _fragNotifs = NotificationOverlayView.Frag();
     private val _fragArtist = ArtistFragment();
+    private val _fragAlbum = AlbumFragment();
 
     //Main
 
@@ -142,7 +144,8 @@ class MainActivity : AppCompatActivity() {
         Pair(ContentsFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragContents })),
         Pair(PlaybackFragment::class, FragmentDefinition(null, null, { _fragPlayer }, animExit = R.anim.slide_down)),
         Pair(NotificationOverlayView.Frag::class, FragmentDefinition(_fragTopGeneral, null, { _fragNotifs })),
-        Pair(ArtistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragArtist }))
+        Pair(ArtistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragArtist })),
+        Pair(AlbumFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragAlbum }))
     );
 
     init {
