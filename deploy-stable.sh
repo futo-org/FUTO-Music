@@ -34,7 +34,7 @@ upload_apk_latest_and_versioned() {
 }
 
 echo "Building content..."
-./gradlew --stacktrace assembleRelease
+./gradlew --stacktrace --info assembleRelease
 
 VERSION="$(git describe --tags)"
 
