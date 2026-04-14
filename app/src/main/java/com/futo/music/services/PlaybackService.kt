@@ -1,5 +1,6 @@
 package com.futo.music.services
 
+import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -16,8 +17,10 @@ import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import com.futo.music.activities.MainActivity
 import com.futo.music.logging.Logger
 import com.futo.music.models.playable.Track
+import com.futo.music.states.StateApp
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -138,6 +141,9 @@ class PlaybackService: MediaLibraryService() {
 
         _mediaSession = MediaLibrarySession.Builder(this, player, _callback)
             .build();
+        _mediaSession?.setSessionActivity(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT));
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? = _mediaSession;

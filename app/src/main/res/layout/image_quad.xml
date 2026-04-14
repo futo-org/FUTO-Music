@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/image_thumbnail"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:scaleType="centerCrop"
+        android:background="@drawable/unknown_music"
+        app:shapeAppearanceOverlay="@style/roundedCorners_4dp"
+        app:srcCompat="@drawable/unknown_music"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <ImageView
+        android:id="@+id/image_thumbnail1"
+        android:background="@color/black"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintWidth_percent="0.5"
+        app:layout_constraintTop_toTopOf="@id/image_thumbnail"
+        app:layout_constraintLeft_toLeftOf="@id/image_thumbnail" />
+    <ImageView
+        android:id="@+id/image_thumbnail2"
+        android:background="@color/black"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintWidth_percent="0.5"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toTopOf="@id/image_thumbnail"
+        app:layout_constraintRight_toRightOf="@id/image_thumbnail" />
+    <ImageView
+        android:id="@+id/image_thumbnail3"
+        android:background="@color/black"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintWidth_percent="0.5"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="@id/image_thumbnail"
+        app:layout_constraintRight_toRightOf="@id/image_thumbnail" />
+    <ImageView
+        android:id="@+id/image_thumbnail4"
+        android:background="@color/black"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintWidth_percent="0.5"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="@id/image_thumbnail"
+        app:layout_constraintLeft_toLeftOf="@id/image_thumbnail"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

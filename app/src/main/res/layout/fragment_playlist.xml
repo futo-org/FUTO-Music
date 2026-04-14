@@ -15,7 +15,7 @@
         android:background="#000">
 
 
-        <ImageView
+        <com.futo.music.ui.views.images.QuadImageView
             android:id="@+id/image_header"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -62,11 +62,19 @@
             app:layout_constraintTop_toTopOf="parent"
             android:scaleType="fitCenter" />
 
+        <ImageButton
+            android:id="@+id/button_delete"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/button_rating"
+            android:src="@drawable/ic_trash" />
+
         <com.futo.music.ui.buttons.RatingButton
             android:id="@+id/button_rating"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintRight_toLeftOf="@id/button_delete"
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="5dp" />
 

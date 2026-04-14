@@ -98,6 +98,9 @@ interface DBPlaylistDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg atrack: DBPlaylistTrack): Array<Long>
 
+    @Query("DELETE FROM playlists WHERE id = :playlistId")
+    fun deletePlaylist(playlistId: Long);
+
     @Query("DELETE FROM playlist_tracks WHERE playlistId = :playlistId AND trackId = :trackId")
     fun deletePlaylistTrack(playlistId: Long, trackId: Long);
 

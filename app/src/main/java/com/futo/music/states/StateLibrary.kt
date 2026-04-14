@@ -295,6 +295,8 @@ class StateLibrary {
             mediaStoreId = id,
             mediaStoreArtistId = track.artist?.id?.toLongOrNull() ?: existing?.mediaStoreArtistId ?: -1,
             mediaStoreAlbumId = track.album?.id?.toLongOrNull() ?: existing?.mediaStoreAlbumId ?: -1,
+            mimeType = track.mimeType,
+            fileName = track.fileName
         )
 
         Logger.i(TAG, "Inserting track [${track.name}] (new: ${existing == null})")
@@ -455,7 +457,8 @@ class StateLibrary {
             MediaStore.Audio.Media.MIME_TYPE, //7
             MediaStore.Audio.Media.BUCKET_DISPLAY_NAME, //8
             MediaStore.Audio.Media.TITLE, //9
-            MediaStore.Audio.Media.TRACK //10
+            MediaStore.Audio.Media.TRACK, //10
+            MediaStore.Audio.Media.MIME_TYPE //11
         );
 
         fun getDocumentTrack(context: Context, url: String): Track? {
@@ -531,6 +534,7 @@ class StateLibrary {
             val category = cursor.getString(8);
             val title = cursor.getString(9);
             val albumOrder = cursor.getInt(10);
+            val mimeType = cursor.getString(11);
 
             val idLong = id.toLongOrNull();
             val contentUrl = if(idLong != null )
@@ -565,7 +569,10 @@ class StateLibrary {
             return Track(if(title.isNullOrBlank()) displayName else title, contentUrl.toUri(), id)
                 .withArtist(artist)
                 .withAlbum(album)
-                .withDuration(duration.toInt());
+                .withDuration(duration.toInt())
+                .withAlbumOrder(albumOrder)
+                .withMimeType(mimeType)
+                .withFileName(displayName);
         }
 
         private var _instance : StateLibrary? = null;

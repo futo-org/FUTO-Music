@@ -29,6 +29,7 @@ class ContentGrid: ConstraintLayout {
     val adapter: ContentAdapter;
 
     val onClick = Event1<IPlayable>();
+    val onLongClick = Event1<IPlayable>();
 
     constructor(context: Context, attrs: AttributeSet? = null): super(context, attrs) {
         val attrArr = context.obtainStyledAttributes(attrs, R.styleable.ContentGrid, 0, 0);
@@ -65,6 +66,9 @@ class ContentGrid: ConstraintLayout {
             it.setSize(rowHeight, rowHeight);
             it.view.onClick.subscribe {
                 onClick.emit(it);
+            }
+            it.view.onLongClick.subscribe {
+                onLongClick.emit(it);
             }
         }
         recycler.adapter = adapter;

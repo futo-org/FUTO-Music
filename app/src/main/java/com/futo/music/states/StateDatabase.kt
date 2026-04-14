@@ -228,6 +228,7 @@ class StateDatabase(
         return db.playlistDao().insert(playlist).first();
     }
 
+
     fun createPlaylist(name: String): Long {
         val result = insertOrUpdate(DBPlaylist(
             name = name,
@@ -247,6 +248,10 @@ class StateDatabase(
     }
     fun removeTrackFromPlaylist(playlistId: Long, trackId: Long) {
         return db.playlistDao().deletePlaylistTrack(playlistId, trackId);
+    }
+
+    fun deletePlaylist(id: Long) {
+        return db.playlistDao().deletePlaylist(id);
     }
 
     fun getAlbumByMSID(id: Long): DBAlbum? {

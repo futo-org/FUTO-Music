@@ -15,6 +15,7 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.UIDialogs
+import com.futo.music.audioContainerToExtension
 import com.futo.music.fragments.main.ArtistFragment
 import com.futo.music.fragments.main.PlaybackFragment
 import com.futo.music.models.playable.IPlayable
@@ -25,9 +26,15 @@ import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
+import com.futo.music.toSafeFileName
 import com.futo.music.ui.buttons.IconButton
 import com.futo.music.ui.buttons.ListButton
+import com.futo.music.zipArrays
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.jvm.Throws
 
 class PlayableOptionOverlay: ConstraintLayout {
 
@@ -45,6 +52,7 @@ class PlayableOptionOverlay: ConstraintLayout {
     private val _buttonPlaylistAdd: ListButton;
     private val _buttonArtist: ListButton;
     private val _buttonRate: ListButton;
+    private val _buttonShare: ListButton;
 
     private val _textTitle: TextView;
 
@@ -62,6 +70,7 @@ class PlayableOptionOverlay: ConstraintLayout {
         _buttonPlaylistAdd = findViewById(R.id.button_add_playlist);
         _buttonArtist = findViewById(R.id.button_artist);
         _buttonRate = findViewById(R.id.button_rate);
+        _buttonShare = findViewById(R.id.button_share);
 
         //this.translationY = 1f;
         this.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
@@ -110,11 +119,72 @@ class PlayableOptionOverlay: ConstraintLayout {
         _buttonArtist.onClick.subscribe {
             _currentPlayable?.let {
                 if(it is DBTrack) {
-                    val artist = StateDatabase.instance.getArtist(it.artistId ?: return@let);
-                    StateApp.instance.activity()?.navigate<ArtistFragment>(artist);
+                    getScope().launch(Dispatchers.IO) {
+                        val artist = StateDatabase.instance.getArtist(it.artistId ?: return@launch);
+                        withContext(Dispatchers.Main) {
+                            StateApp.instance.activity()?.navigate<ArtistFragment>(artist);
+                        }
+                    }
                 }
                 else if(it is DBArtist) {
                     StateApp.instance.activity()?.navigate<ArtistFragment>(it);
+                }
+            }
+            hide();
+        }
+        _buttonShare.onClick.subscribe {
+            hide();
+            _currentPlayable?.let {
+                val fileName = if(it is DBTrack)
+                    it.getShareFileName()
+                else
+                    it.name.toSafeFileName() + ".zip";
+
+                val shareFile = StateApp.instance.getShareFile(fileName);
+                shareFile.delete();
+                shareFile.createNewFile();
+                if(it is DBTrack) {
+                    shareFile.outputStream().use { output ->
+                        it.getStream(context).use {
+                            it?.copyTo(output);
+                        }
+                    }
+                    StateApp.instance.shareFile(fileName, it.mimeType ?: "application/octet-stream", shareFile);
+                }
+                else {
+                    UIDialogs.showDialogProgress(context) { dialog ->
+                        dialog.setText("Zipping your files..")
+                        val scope = findViewTreeLifecycleOwner()?.lifecycleScope;
+                        if(scope == null)
+                        {
+                            dialog.dismiss();
+                            return@showDialogProgress;
+                        }
+                        scope.launch(Dispatchers.IO) {
+                            try {
+                                val tracks = it.getTracks(context);
+                                shareFile.outputStream().use {
+                                    zipArrays(
+                                        tracks.filterIsInstance<DBTrack>()
+                                            .map { Pair(it.getShareFileName(), it.getStream(context)) }
+                                            .filter { it.second != null }
+                                            .map { Pair(it.first, it.second!!) }, it, true, { progress, max ->
+                                                scope.launch(Dispatchers.Main) {
+                                                    dialog.setProgress(progress.toFloat() / max.coerceAtLeast(1));
+                                                }
+                                        }
+                                    );
+                                }
+                                StateApp.instance.shareFile(fileName, "application/octet-stream", shareFile);
+                            }
+                            catch(ex: Throwable) {
+                                UIDialogs.toast(ex.message ?: "Error in zipping");
+                            }
+                            finally {
+                                dialog.dismiss();
+                            }
+                        }
+                    }
                 }
             }
         }

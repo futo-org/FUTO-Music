@@ -109,6 +109,7 @@ class PlaybackFragment: MainFragment() {
         private val _textAlbum: TextView;
 
         private val _buttonBack: ImageButton;
+        private val _buttonOptions: ImageButton;
 
         private val _buttonPlay: ImageButton;
         private val _buttonLeft: ImageButton;
@@ -163,6 +164,7 @@ class PlaybackFragment: MainFragment() {
             _textTitle.isSelected = true;
 
             _buttonBack = findViewById(R.id.button_back);
+            _buttonOptions = findViewById(R.id.button_options);
 
             _buttonLeft = findViewById(R.id.button_left);
             _buttonRight = findViewById(R.id.button_right);
@@ -179,6 +181,8 @@ class PlaybackFragment: MainFragment() {
             _buttonBack.setOnClickListener {
                 fragment.closeSegment();
             }
+
+            _buttonOptions.isVisible = false;
 
             _buttonShuffle.setOnClickListener {
                 val player = frag?._player?.player ?: return@setOnClickListener;
@@ -229,7 +233,14 @@ class PlaybackFragment: MainFragment() {
                         val artist = if(queued is DBArtist) StateDatabase.instance.getArtist(queued.id) else null;
 
                         withContext(Dispatchers.Main) {
-                            UIDialogs.showRatingDialog(context, fragment.lifecycleScope, track, playlist, album, artist);
+                            UIDialogs.showRatingDialog(context, fragment.lifecycleScope, track, playlist, album, artist) {
+                                fragment.lifecycleScope.launch(Dispatchers.IO) {
+                                    val refetchTrack = StateDatabase.instance.getTrack(_trackCurrent?.id ?: return@launch) ?: return@launch;
+                                    withContext(Dispatchers.Main) {
+                                        _buttonStars.setRating(refetchTrack.score)
+                                    }
+                                }
+                            };
                         }
                     }
                 }
@@ -344,7 +355,7 @@ class PlaybackFragment: MainFragment() {
                     _imageArt.setAlbumArt(mediaMetadata, bitmapIntercept = {
                         if(it != null)
                             StateApp.instance.activity()?.let { act ->
-                                act.setBackgroundTop(BitmapDrawable(it), 2.3f, 0.2f, {
+                                act.setBackgroundTop(BitmapDrawable(it), 2.3f, 0.4f, {
                                     it.transform(BlurTransformation(25, 3))
                                 });
                                 //act.setBackgroundBottomGradient(android.graphics.Color.BLACK, 0.3f);

@@ -5,18 +5,22 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Animatable
 import android.text.method.ScrollingMovementMethod
+import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import androidx.collection.emptyLongSet
+import androidx.compose.ui.tooling.data.UiToolingDataApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -31,6 +35,9 @@ import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.AnyAdapterView.Companion.asAny
+import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
+import com.futo.music.ui.buttons.PillButton
+import com.futo.music.ui.dialogs.ProgressDialog
 import com.futo.music.ui.viewholders.ListPlaylistViewHolder
 import com.futo.music.ui.views.toasts.ToastView
 import kotlinx.coroutines.CoroutineScope
@@ -53,6 +60,16 @@ class UIDialogs {
 
         private fun registerDialogClosed(dialog: AlertDialog) {
             _openDialogs.remove(dialog);
+        }
+
+
+        fun showDialogProgress(context: Context, handler: ((ProgressDialog)->Unit)) {
+            val dialog = ProgressDialog(context, handler);
+            registerDialogOpened(dialog);
+            dialog.setOnDismissListener {
+                registerDialogClosed(dialog)
+            };
+            dialog.show();
         }
 
         fun dismissAllDialogs() {
@@ -256,8 +273,27 @@ class UIDialogs {
                 val partOf = StateDatabase.instance.getTrackPlaylists(track.id);
                 val list = playlists.map { ListPlaylistViewHolder.Item(it, partOf.any{ part -> part.id == it.id}) };
                 withContext(Dispatchers.Main) {
-                    showAdapterDialog(context, "Select a playlist", reason, {
-                        it.asAny<ListPlaylistViewHolder.Item, ListPlaylistViewHolder>(ArrayList(list), RecyclerView.VERTICAL, false, { view ->
+                    var dialog: AlertDialog? = null;
+                    dialog = showAdapterDialog(context, "Select a playlist", reason, {
+                        it.asAnyWithViews<ListPlaylistViewHolder.Item, ListPlaylistViewHolder>( ArrayList(list), arrayListOf(), arrayListOf(
+                            LinearLayout(context)
+                                .apply {
+                                    val button = PillButton(context, null)
+                                        .withIcon(androidx.media3.session.R.drawable.media3_icon_plus)
+                                        .withText("Add")
+                                    this.addView(button);
+                                    this.layoutParams = ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+                                    this.gravity = Gravity.RIGHT;
+
+                                    button.onClick.subscribe {
+                                        dialog?.hide();
+                                        showCreatePlaylistDialog(context, scope) {
+                                            showAddToPlaylistDialog(context, scope, reason, track);
+                                        }
+                                    }
+                                }
+
+                        ), RecyclerView.VERTICAL, false, { view ->
                             view.onClick.subscribe { view, item ->
                                 scope.launch(Dispatchers.IO) {
                                     if(item.added) {
@@ -286,6 +322,27 @@ class UIDialogs {
                     });
                 }
             }
+        }
+        fun showCreatePlaylistDialog(context: Context, scope: CoroutineScope, onResult: (Long?)->Unit) {
+
+            val dialog = UIDialogs.showDialog(context, R.drawable.ic_playlist, false, "New Playlist", "Enter a name for your new playlist", null, "", "Playlist name...", 0,
+                UIDialogs.Action("Cancel", {
+                    onResult(null);
+                }, UIDialogs.ActionStyle.NONE, true),
+                UIDialogs.Action.withInput("Create", { result ->
+
+                    if(result?.text.isNullOrBlank()) {
+                        UIDialogs.appToast("No name provided for playlist");
+                        return@withInput;
+                    }
+                    scope.launch(Dispatchers.IO) {
+                        val id = StateDatabase.instance.createPlaylist(result.text);
+
+                        withContext(Dispatchers.Main) {
+                            onResult(id);
+                        }
+                    }
+                }, UIDialogs.ActionStyle.PRIMARY, true));
         }
 
         fun showAdapterDialog(context: Context, title: String, textDetails: String, prepareRecycler: (RecyclerView)->Unit): AlertDialog {

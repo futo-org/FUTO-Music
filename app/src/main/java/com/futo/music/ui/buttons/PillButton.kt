@@ -26,20 +26,21 @@ class PillButton : LinearLayout {
         text = findViewById(R.id.pill_text);
         root = findViewById<LinearLayout>(R.id.root);
 
-        val attrArr = context.obtainStyledAttributes(attrs, R.styleable.PillButton, 0, 0);
-        val attrIconRef = attrArr.getResourceId(R.styleable.PillButton_pillIcon, -1);
-        if(attrIconRef != -1)
-            icon.setImageResource(attrIconRef);
-        else
-            icon.visibility = GONE;
+        if(attrs != null) {
+            val attrArr = context.obtainStyledAttributes(attrs, R.styleable.PillButton, 0, 0);
+            val attrIconRef = attrArr.getResourceId(R.styleable.PillButton_pillIcon, -1);
+            if (attrIconRef != -1)
+                icon.setImageResource(attrIconRef);
+            else
+                icon.visibility = GONE;
 
-        val attrText = attrArr.getText(R.styleable.PillButton_pillText) ?: "";
-        text.text = attrText;
+            val attrText = attrArr.getText(R.styleable.PillButton_pillText) ?: "";
+            text.text = attrText;
+        }
 
         if(text.text.isNullOrBlank()) {
             val dp6 = 6.dp(resources);
             val dp7 = 7.dp(resources);
-            val dp12 = 12.dp(resources);
             root.setPadding(dp7, dp6, dp7, dp7)
         }
 
@@ -50,6 +51,26 @@ class PillButton : LinearLayout {
 
             onClick.emit();
         };
+    }
+
+    fun withText(str: String): PillButton {
+        text.text = str;
+        if(text.text.isNullOrBlank()) {
+        }
+        else {
+            val dp6 = 6.dp(resources);
+            val dp7 = 7.dp(resources);
+            val dp12 = 12.dp(resources);
+            root.setPadding(dp7, dp6, dp12, dp7)
+        }
+        return this;
+    }
+    fun withIcon(resId: Int): PillButton {
+        if(resId != -1)
+            icon.setImageResource(resId);
+        else
+            icon.visibility = GONE;
+        return this;
     }
 
     fun setTransparant() {

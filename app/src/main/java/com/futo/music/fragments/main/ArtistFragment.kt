@@ -100,6 +100,8 @@ class ArtistFragment: MainFragment() {
 
         val buttonRating: RatingButton;
 
+        val buttonSwitch: ImageButton;
+
 
         init {
             root = findViewById(R.id.root);
@@ -117,11 +119,19 @@ class ArtistFragment: MainFragment() {
 
             buttonRating = findViewById(R.id.button_rating);
 
+            buttonSwitch = findViewById(R.id.button_switch);
+
             gridAlbums.onClick.subscribe {
-                UIDialogs.overlayPlayable(it);
+                it.openPlayable(fragment);
+            }
+            gridAlbums.onLongClick.subscribe {
+                it.openPlayable(fragment, true);
             }
             gridSongs.onClick.subscribe {
                 it.openPlayable(fragment);
+            }
+            gridSongs.onLongClick.subscribe {
+                it.openPlayable(fragment, true);
             }
 
             buttonPlayAll.setOnClickListener {
@@ -151,6 +161,21 @@ class ArtistFragment: MainFragment() {
                     UIDialogs.showRatingDialog(context, fragment.lifecycleScope, null, null, null, it, {
                        buttonRating.setRating(it.score);
                     });
+                }
+            }
+
+            gridAlbums.isVisible = false;
+
+            buttonSwitch.setOnClickListener {
+                if(gridAlbums.isVisible) {
+                    buttonSwitch.setImageResource(androidx.media3.session.R.drawable.media3_icon_album);
+                    gridSongs.isVisible = true;
+                    gridAlbums.isVisible = false;
+                }
+                else {
+                    buttonSwitch.setImageResource(R.drawable.ic_music_note);
+                    gridAlbums.isVisible = true;
+                    gridSongs.isVisible = false;
                 }
             }
         }

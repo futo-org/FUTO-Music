@@ -30,6 +30,7 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
     var playableItem: IPlayable? = null;
 
     override val onClick = Event1<IPlayable>();
+    override val onLongClick = Event1<IPlayable>();
 
     init {
         root = LayoutInflater.from(viewGroup.context).inflate(R.layout.grid_track, viewGroup, false) as ConstraintLayout;
@@ -42,6 +43,12 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
             playableItem?.let {
                 onClick.emit(it);
             }
+        }
+        root.setOnLongClickListener {
+            playableItem?.let {
+                onLongClick.emit(it);
+            }
+            return@setOnLongClickListener true;
         }
     }
 

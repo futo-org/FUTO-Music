@@ -8,6 +8,7 @@ interface IContentGridView {
     val root: ConstraintLayout;
 
     val onClick: Event1<IPlayable>
+    val onLongClick: Event1<IPlayable>
 
     fun bind(playable: IPlayable);
 

@@ -141,14 +141,26 @@ class HomeFragment: MainFragment() {
             gridArtists.onClick.subscribe {
                 it.openPlayable(fragment);
             }
+            gridArtists.onLongClick.subscribe {
+                it.openPlayable(fragment, true);
+            }
             gridAlbums.onClick.subscribe {
                 it.openPlayable(fragment);
+            }
+            gridAlbums.onLongClick.subscribe {
+                it.openPlayable(fragment, true);
             }
             gridPlaylists.onClick.subscribe {
                 it.openPlayable(fragment);
             }
+            gridPlaylists.onLongClick.subscribe {
+                it.openPlayable(fragment, true);
+            }
             gridRecent.onClick.subscribe {
                 it.openPlayable(fragment);
+            }
+            gridRecent.onLongClick.subscribe {
+                it.openPlayable(fragment, true);
             }
 
 
@@ -168,25 +180,10 @@ class HomeFragment: MainFragment() {
         }
 
         fun showNewPlaylistDialog() {
-            val dialog = UIDialogs.showDialog(context, R.drawable.ic_playlist, false, "New Playlist", "Enter a name for your new playlist", null, "", "Playlist name...", 0,
-                UIDialogs.Action("Cancel", {
-
-                }, UIDialogs.ActionStyle.NONE, true),
-                UIDialogs.Action.withInput("Create", { result ->
-
-                    if(result?.text.isNullOrBlank()) {
-                        UIDialogs.appToast("No name provided for playlist");
-                        return@withInput;
-                    }
-                    fragment.lifecycleScope.launch(Dispatchers.IO) {
-                        StateDatabase.instance.createPlaylist(result.text);
-
-                        withContext(Dispatchers.Main) {
-                            fragment.clearCache();
-                            updateContent();
-                        }
-                    }
-                }, UIDialogs.ActionStyle.PRIMARY, true));
+            UIDialogs.showCreatePlaylistDialog(context, fragment.lifecycleScope) {
+                fragment.clearCache();
+                updateContent();
+            };
         }
 
         fun updateContent() {

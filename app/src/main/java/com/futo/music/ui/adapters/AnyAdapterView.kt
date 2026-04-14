@@ -78,9 +78,11 @@ class AnyInsertedAdapterView<I, T>(view: RecyclerView, adapter: BaseAnyAdapter<I
         }
         inline fun<I, reified T : AnyAdapter.AnyViewHolder<I>> RecyclerView.asAnyWithViews(list: ArrayList<I>, prepend: ArrayList<View> = arrayListOf(), append: ArrayList<View> = arrayListOf(), orientation: Int = RecyclerView.VERTICAL, reversed: Boolean = false, noinline onCreate: ((T)->Unit)? = null) : AnyInsertedAdapterView<I, T> {
             for(view in prepend)
-                (view.parent as ViewGroup).removeView(view);
+                if(view.parent != null)
+                    (view.parent as ViewGroup).removeView(view);
             for(view in append)
-                (view.parent as ViewGroup).removeView(view);
+                if(view.parent != null)
+                    (view.parent as ViewGroup).removeView(view);
             return AnyInsertedAdapterView(this, AnyInsertedAdapter.create(list, prepend, append, onCreate), orientation, reversed);
         }
     }

@@ -36,6 +36,8 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import com.bumptech.glide.RequestBuilder
 import java.lang.RuntimeException
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 private val _allowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
 fun getRandomString(sizeOfRandomString: Int): String {
@@ -405,4 +407,46 @@ fun <T> RequestBuilder<T>.withMaxSizePx(maxSizePx: Int = 1920): RequestBuilder<T
         //.downsample(DownsampleStrategy.AT_MOST)
         //.override(maxSizePx, maxSizePx)
         //.centerInside()
+}
+
+
+fun zipArrays(inputs: List<Pair<String, InputStream>>, outputStream: OutputStream, closeInputs: Boolean = true, onProgress: ((Int, Int)->Unit)? = null) {
+    ZipOutputStream(outputStream).use {
+        var index = 0;
+        for(input in inputs) {
+            onProgress?.invoke(index, inputs.size);
+            val entry = ZipEntry(input.first);
+            it.putNextEntry(entry);
+
+            input.second.copyTo(it);
+            if(closeInputs)
+                input.second.close();
+            it.closeEntry();
+            index++;
+        }
+    };
+}
+
+
+fun audioContainerToExtension(container: String?): String {
+    if(container == null)
+        return "mp3";
+    if (container.contains("audio/mp4"))
+        return "mp4a";
+    else if (container.contains("video/mp4"))
+        return "mp4";
+    else if (container.contains("audio/mpeg"))
+        return "mp3";
+    else if (container.contains("audio/mp3"))
+        return "mp3";
+    else if (container.contains("audio/webm"))
+        return "webm";
+    else if (container == "application/vnd.apple.mpegurl")
+        return "m4a";
+    else if(container.contains("audio/ogg"))
+        return "ogg";
+    else if(container.contains("video/ogg"))
+        return "ogg";
+    else
+        return "mp3";// throw IllegalStateException("Unknown container: " + container)
 }

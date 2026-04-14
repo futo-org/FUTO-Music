@@ -58,6 +58,10 @@ class SearchBarView: ConstraintLayout {
         }
     }
 
+    fun clear() {
+        _text.setText("");
+    }
+
     fun focus(activity: Activity?) = focus(activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?);
     fun focus(inputManager: InputMethodManager? = null) {
         _text.requestFocus();

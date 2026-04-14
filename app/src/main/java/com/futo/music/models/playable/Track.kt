@@ -15,6 +15,7 @@ class Track: IPlayable, IPlayableTrack {
     val id: String;
 
     override val name: String;
+    var fileName: String? = null;
     val uri: Uri;
 
     var artist: Artist? = null;
@@ -22,7 +23,9 @@ class Track: IPlayable, IPlayableTrack {
 
     var duration: Int = 0;
 
-    var albumOrder: Int = 999;
+    var albumOrder: Int = 9999;
+
+    var mimeType: String? = null;
 
     override var score: Int = 0;
 
@@ -58,6 +61,15 @@ class Track: IPlayable, IPlayableTrack {
 
     fun withDuration(duration: Int): Track {
         this.duration = duration;
+        return this;
+    }
+
+    fun withMimeType(mimeType: String): Track {
+        this.mimeType = mimeType;
+        return this;
+    }
+    fun withFileName(fileName: String): Track {
+        this.fileName = fileName;
         return this;
     }
 

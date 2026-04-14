@@ -19,11 +19,13 @@ import com.futo.music.fragments.main.AlbumFragment
 import com.futo.music.fragments.main.ArtistFragment
 import com.futo.music.fragments.main.MainFragment
 import com.futo.music.fragments.main.PlaybackFragment
+import com.futo.music.fragments.main.PlaylistFragment
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateQueue
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
+import com.futo.music.storage.db.DBPlaylist
 import jp.wasabeef.glide.transformations.BitmapTransformation
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -95,6 +97,8 @@ fun IPlayable.openPlayable(fragment: MainFragment, preferMenu: Boolean = false) 
         fragment.navigate<ArtistFragment>(this);
     else if(this is DBAlbum && !preferMenu)
         fragment.navigate<AlbumFragment>(this);
+    else if(this is DBPlaylist && !preferMenu)
+        fragment.navigate<PlaylistFragment>(this);
     else {
         if (preferMenu || StateQueue.instance.getCurrentTrack() != null) {
             UIDialogs.overlayPlayable(this);

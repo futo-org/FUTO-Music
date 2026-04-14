@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MimeTypes
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.Insert
@@ -12,12 +13,15 @@ import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Update
+import com.futo.music.audioContainerToExtension
 import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.models.playable.Track
 import com.futo.music.states.StateDatabase
+import com.futo.music.toSafeFileName
+import java.io.InputStream
 import java.time.OffsetDateTime
 
 @Entity(tableName = "tracks")
@@ -44,6 +48,9 @@ class DBTrack(
 
     val duration: Int = 0,
 
+    val mimeType: String? = null,
+    val fileName: String? = null,
+
     val metadataType: MetadataType = MetadataType.UNKNOWN,
 
     val mediaStoreId: Long = -1,
@@ -69,6 +76,9 @@ class DBTrack(
         return StateDatabase.instance.getTrack(id) ?: throw IllegalStateException("Track was deleted or never existed");
     }
 
+    fun getStream(context: Context): InputStream? {
+        return context.contentResolver.openInputStream(Uri.parse(contentUrl));
+    }
 
     override fun getMediaItem(): MediaItem {
         val mediaItemBuilder = MediaItem.Builder()
@@ -106,6 +116,10 @@ class DBTrack(
             .build();
 
         return mediaItem;
+    }
+
+    fun getShareFileName(): String {
+        return (((fileName ?: (if(!artistLine.isNullOrBlank()) artistLine + " - " + name else name).toSafeFileName() + "." + audioContainerToExtension(mimeType))));
     }
 }
 
