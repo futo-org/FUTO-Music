@@ -56,6 +56,14 @@ class PlayableOptionOverlay: ConstraintLayout {
 
     private val _textTitle: TextView;
 
+    var isVisible: Boolean = false
+        get() {
+            return field;
+        }
+        private set(value) {
+            field = value;
+        }
+
     constructor(context: Context, attrs: AttributeSet? = null): super(context, attrs) {
         inflate(context, R.layout.view_playable_options_overlay, this);
         _root = findViewById<ConstraintLayout>(R.id.root);
@@ -219,6 +227,7 @@ class PlayableOptionOverlay: ConstraintLayout {
         val animatorSet = AnimatorSet();
         animatorSet.playTogether(animations);
         animatorSet.start();
+        isVisible = true;
     }
     fun hide() {
         val animations = arrayListOf<Animator>();
@@ -241,6 +250,7 @@ class PlayableOptionOverlay: ConstraintLayout {
             override fun onAnimationRepeat(p0: Animator) {}
             override fun onAnimationStart(p0: Animator) {}
         })
+        isVisible = false;
     }
 
 

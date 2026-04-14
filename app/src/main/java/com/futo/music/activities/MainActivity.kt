@@ -549,8 +549,13 @@ class MainActivity : AppCompatActivity() {
     fun handleBack() {
         Logger.i(TAG, "onBackPressed")
 
-        //if (_fragBotBarMenu.onBackPressed())
-        //    return;
+        if(_overlayPlayable.isVisible) {
+            _overlayPlayable.hide();
+            return;
+        }
+
+        if (fragCurrent?.onBackPressed() ?: false)
+            return;
 
         if (!(fragCurrent?.onBackPressed() ?: true))
             closeSegment();

@@ -67,6 +67,9 @@ class PlaybackFragment: MainFragment() {
         _view?.onPlayerAvailable(player);
     }
 
+    override fun onBackPressed(): Boolean {
+        return _view?.onBackPressed() ?: false;
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState);
@@ -289,6 +292,16 @@ class PlaybackFragment: MainFragment() {
             }
         }
 
+
+        fun onBackPressed(): Boolean {
+            if(_isQueueVisible)
+            {
+                hideQueue();
+                return true;
+            }
+            return false;
+        }
+        private var _isQueueVisible = false;
         fun showQueue(playable: IPlayable, tracks: List<IPlayableTrack>) {
             _queueOverlay.setPlayable(playable, tracks);
 
@@ -304,9 +317,9 @@ class PlaybackFragment: MainFragment() {
             val animatorSet = AnimatorSet();
             animatorSet.playTogether(animations);
             animatorSet.start();
+            _isQueueVisible = true;
         }
         fun hideQueue() {
-
             _queueOverlay.translationY = 0f;
 
             val animations = arrayListOf<Animator>();
@@ -318,6 +331,8 @@ class PlaybackFragment: MainFragment() {
             val animatorSet = AnimatorSet();
             animatorSet.playTogether(animations);
             animatorSet.start();
+
+            _isQueueVisible = false;
         }
 
         fun setCurrentTrack(id: Long) {
