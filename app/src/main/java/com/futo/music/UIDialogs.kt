@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Animatable
 import android.text.method.ScrollingMovementMethod
-import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -19,11 +18,8 @@ import android.widget.LinearLayout
 import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
-import androidx.collection.emptyLongSet
-import androidx.compose.ui.tooling.data.UiToolingDataApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.extensions.assume
 import com.futo.music.logging.Logger
@@ -34,7 +30,6 @@ import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
-import com.futo.music.ui.adapters.AnyAdapterView.Companion.asAny
 import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
 import com.futo.music.ui.buttons.PillButton
 import com.futo.music.ui.dialogs.ProgressDialog
