@@ -55,6 +55,7 @@ import kotlin.text.trim
 class StateQueue {
 
     val _queue: MutableList<IPlayableTrack> = mutableListOf();
+    val isQueueEmpty: Boolean get() = _queue.isEmpty();
 
     val onQueueChanged = Event1<List<IPlayableTrack>>();
 

@@ -26,6 +26,7 @@ import com.futo.music.ui.adapters.AnyAdapterView
 import com.futo.music.ui.adapters.AnyAdapterView.Companion.asAny
 import com.futo.music.ui.views.LoaderView
 import com.futo.music.ui.views.NoResultsView
+import com.futo.music.ui.views.topbars.GeneralTopBarView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,7 +41,7 @@ class NotificationOverlayView: ConstraintLayout {
 
     var scope: CoroutineScope? = null;
 
-    constructor(context: Context) : super(context) {
+    constructor(context: Context, frag: Frag) : super(context) {
         inflate(context, R.layout.overlay_notifications, this)
 
 
@@ -50,6 +51,10 @@ class NotificationOverlayView: ConstraintLayout {
 
         });
         emptyView.setText("Nothing to see here", "You don't have any notifications", R.drawable.ic_notifications)
+
+        findViewById<GeneralTopBarView>(R.id.topbar).apply {
+            setFragment(frag);
+        }
     }
 
     fun onShown(parameter: Any?) {
@@ -240,7 +245,7 @@ class NotificationOverlayView: ConstraintLayout {
         }
 
         override fun onCreateMainView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-            val view = NotificationOverlayView(requireContext());
+            val view = NotificationOverlayView(requireContext(), this);
             _view = view;
             return view;
         }

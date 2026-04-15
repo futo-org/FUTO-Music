@@ -164,7 +164,7 @@ class AlbumFragment: MainFragment() {
                     StateApp.instance.activity()?.let {
                         if(pal != null && (pal.dominant ?: pal.darkVibrant) != null) {
                             val color = (pal.dominant ?: pal.darkVibrant!!);
-                            val intensity = 1f / color.colorIntensity(255);
+                            val intensity = 1f / color.colorIntensity(180);
                             it.setBackgroundBottomGradient(color, 0.5f, Math.min(1f, intensity));
                         }
                         else

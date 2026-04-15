@@ -4,6 +4,12 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <com.futo.music.ui.views.topbars.NavigationTopBarView
+        android:id="@+id/topbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.futo.music.ui.views.general.SearchBarView
         android:id="@+id/view_search"
         android:layout_width="match_parent"
@@ -13,7 +19,7 @@
         android:layout_marginTop="10dp"
         android:paddingBottom="20dp"
         app:SearchBarView_hint="@string/hint_filter"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topbar"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 

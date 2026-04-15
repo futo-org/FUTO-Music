@@ -14,6 +14,7 @@ import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.fragments.MainFragView
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.openPlayable
 import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
@@ -68,9 +69,17 @@ class SearchFragment: MainFragment() {
             gridSearch = findViewById(R.id.grid_search);
             emptyView = findViewById(R.id.view_empty);
 
+            gridSearch.onOutsideClick.subscribe {
+                search.closeKeyboard(StateApp.instance.activity());
+            }
+
             gridSearch.onClick.subscribe {
                 //fragment.navigate<PlaybackFragment>(it);
-                UIDialogs.overlayPlayable(it);
+                it.openPlayable(fragment);
+                search.closeKeyboard(StateApp.instance.activity())
+            }
+            gridSearch.onLongClick.subscribe {
+                it.openPlayable(fragment, true);
                 search.closeKeyboard(StateApp.instance.activity())
             }
 

@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.R
+import com.futo.music.constructs.Event0
 import com.futo.music.constructs.Event1
 import com.futo.music.dp
 import com.futo.music.models.playable.IPlayable
@@ -30,6 +31,7 @@ class ContentGrid: ConstraintLayout {
 
     val onClick = Event1<IPlayable>();
     val onLongClick = Event1<IPlayable>();
+    val onOutsideClick = Event0();
 
     constructor(context: Context, attrs: AttributeSet? = null): super(context, attrs) {
         val attrArr = context.obtainStyledAttributes(attrs, R.styleable.ContentGrid, 0, 0);
@@ -44,6 +46,9 @@ class ContentGrid: ConstraintLayout {
         root = findViewById(R.id.root);
         textTitle = findViewById(R.id.text_title);
         recycler = findViewById(R.id.recycler);
+        root.setOnClickListener {
+            onOutsideClick.emit()
+        };
         if(vertical) {
             recycler.layoutManager = GridLayoutManager(context, 3);
             buttonList = null;

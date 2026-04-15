@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.fragments.MainFragView
 import com.futo.music.fragments.top.GeneralTopBarFragment
+import com.futo.music.fragments.top.NavigationTopBarFragment
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateDatabase
@@ -20,6 +21,7 @@ import com.futo.music.states.StateLibrary
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
+import com.futo.music.ui.views.topbars.NavigationTopBarView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -66,11 +68,14 @@ class ContentsFragment: MainFragment() {
 
         var contents: List<IPlayable>? = null;
 
+        val topbar: NavigationTopBarView;
+
 
         init {
             search = findViewById(R.id.view_search);
             gridContent = findViewById(R.id.grid_search);
             emptyView = findViewById(R.id.view_empty);
+            topbar = findViewById(R.id.topbar);
 
             gridContent.onClick.subscribe {
                 fragment.navigate<PlaybackFragment>(it);
@@ -113,6 +118,7 @@ class ContentsFragment: MainFragment() {
                     if(it is GeneralTopBarFragment)
                         it.setTitle(parameter.first as String);
                 }
+                topbar.setTitle(parameter.first as String);
                 contents = (parameter.second as List<*>).filterIsInstance<IPlayable>()
                 updateContent((parameter.second as List<*>).filterIsInstance<IPlayable>());
             }

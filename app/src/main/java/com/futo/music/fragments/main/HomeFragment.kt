@@ -28,6 +28,7 @@ import com.futo.music.ui.buttons.RoundButton
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
 import com.futo.music.ui.views.playback.PlayableOptionOverlay
+import com.futo.music.ui.views.topbars.GeneralTopBarView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -120,6 +121,16 @@ class HomeFragment: MainFragment() {
             gridPlaylists = findViewById(R.id.grid_playlists);
             gridArtists = findViewById(R.id.grid_artists);
             gridAlbums = findViewById(R.id.grid_albums);
+
+            findViewById<GeneralTopBarView>(R.id.topbar).apply {
+                setTitleLongPress {
+                    UIDialogs.showDialogVertical(context, 0, false, "Hidden Menu", "Some hidden options for testing", null, null, null, -1,
+                        UIDialogs.Action("Rescan", {
+                            StateApp.instance.activity()?.sync(true)
+                        }, ActionStyle.PRIMARY));
+                }
+                setFragment(fragment);
+            }
 
             containerPlaylistsCreate = findViewById(R.id.container_playlist_create);
             buttonPlaylistsCreate = findViewById(R.id.button_add_playlist);

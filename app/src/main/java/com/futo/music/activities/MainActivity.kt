@@ -141,11 +141,11 @@ class MainActivity : AppCompatActivity() {
     var isConnectedTop: Boolean = false;
 
     val fragmentsMain = mapOf<KClassifier, FragmentDefinition>(
-        Pair(HomeFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragHome }, connectTop = true)),
-        Pair(SearchFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragSearch })),
-        Pair(ContentsFragment::class, FragmentDefinition(_fragTopGeneral, _fragBotMenu, { _fragContents })),
+        Pair(HomeFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragHome }, connectTop = true)),
+        Pair(SearchFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragSearch })),
+        Pair(ContentsFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragContents })),
         Pair(PlaybackFragment::class, FragmentDefinition(null, null, { _fragPlayer }, animExit = R.anim.slide_down)),
-        Pair(NotificationOverlayView.Frag::class, FragmentDefinition(_fragTopGeneral, null, { _fragNotifs })),
+        Pair(NotificationOverlayView.Frag::class, FragmentDefinition(null, null, { _fragNotifs })),
         Pair(ArtistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragArtist })),
         Pair(AlbumFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragAlbum })),
         Pair(PlaylistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragPlaylist }))
@@ -286,7 +286,7 @@ class MainActivity : AppCompatActivity() {
             if(it) {
                 fragCurrent = _fragHome;
                 supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_top_bar, _fragTopGeneral)
+                    //.replace(R.id.fragment_top_bar, _fragTopGeneral)
                     .replace(R.id.fragment_main, _fragHome)
                     .replace(R.id.fragment_bottom_bar, _fragBotMenu)
                     .commitNow();
