@@ -46,6 +46,7 @@ import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.buttons.RatingButton
+import com.futo.music.ui.buttons.RatingsButton
 import com.futo.music.ui.views.playback.QueueOverlay
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.common.util.concurrent.MoreExecutors
@@ -125,6 +126,8 @@ class PlaybackFragment: MainFragment() {
         private val _buttonQueue: ImageButton;
         private val _buttonPlaylistAdd: ImageButton;
 
+        private val _buttonsRating: RatingsButton;
+
         private val _queueOverlay: QueueOverlay;
 
         private val _viewControls: PlayerControlView;
@@ -163,6 +166,8 @@ class PlaybackFragment: MainFragment() {
             _textTitle = findViewById(R.id.text_title);
             _textAlbum = findViewById(R.id.text_album);
             _textArtist = findViewById(R.id.text_artist);
+
+            _buttonsRating = findViewById(R.id.buttons_rating);
 
             _textTitle.isSelected = true;
 
@@ -342,6 +347,9 @@ class PlaybackFragment: MainFragment() {
 
                 withContext(Dispatchers.Main) {
                     _buttonStars.setRating(track?.score ?: 0);
+                    _buttonsRating.setRatingsFor(track) {
+                        _buttonStars.setRating(it);
+                    }
                     if(track != null)
                         setTrackMetadata(track);
                     _queueOverlay.setCurrentTrack(track);
