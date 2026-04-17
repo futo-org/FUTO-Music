@@ -30,6 +30,8 @@ class ContentAlbumGridView(viewGroup: ViewGroup) : IContentGridView {
     override val onClick = Event1<IPlayable>();
     override val onLongClick = Event1<IPlayable>();
 
+    private var _hideMetadata: Boolean = false;
+
     init {
         root = LayoutInflater.from(viewGroup.context).inflate(R.layout.grid_album, viewGroup, false) as ConstraintLayout;
         imageThumbnail = root.findViewById(R.id.image_thumbnail);
@@ -78,6 +80,15 @@ class ContentAlbumGridView(viewGroup: ViewGroup) : IContentGridView {
                 textMeta.text = "Unknown Artist";
                 textMeta.isVisible = true;
             }
+            if(_hideMetadata)
+            {
+                textMeta.isVisible = false
+                textName.textAlignment = TextView.TEXT_ALIGNMENT_CENTER;
+            }
+            else {
+                textName.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
+            }
+
             if(playable.trackDurations > 0) {
                 textCount.text = playable.trackCount.toString();
                 textCount.isVisible = true;
@@ -108,5 +119,9 @@ class ContentAlbumGridView(viewGroup: ViewGroup) : IContentGridView {
             this.width = width - dp40 - dp10;
             this.height = width - dp40 - dp10;
         }
+    }
+
+    override fun setSettings(hideMetadata: Boolean) {
+        this._hideMetadata = hideMetadata;
     }
 }

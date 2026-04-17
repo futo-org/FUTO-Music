@@ -242,9 +242,9 @@ class StateLibrary {
         val id = artist.id.toLongOrNull() ?: return false;
         val existing = StateDatabase.instance.getArtistByMSID(id);
 
-        val dbAlbum = if(artist.id?.toLongOrNull() != null)
+        val dbAlbums = if(artist.id?.toLongOrNull() != null)
             StateDatabase.instance.db.albumDao().getByArtistMSID(artist.id.toLong())
-        else null;
+        else listOf();
 
         val dbEntry = DBArtist(
             id = existing?.id ?: 0,
@@ -261,7 +261,8 @@ class StateLibrary {
         Logger.i(TAG, "Inserting artist [${artist.name}] (new: ${existing == null})")
         dbEntry.id = StateDatabase.instance.db.artistDao().insert(dbEntry).first();
 
-        if(dbAlbum != null)
+
+        for(dbAlbum in dbAlbums)
             StateDatabase.instance.db.albumDao().insert(DBAlbumArtist(dbAlbum.id, dbEntry.id));
         return existing == null;
     }

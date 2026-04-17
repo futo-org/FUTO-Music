@@ -26,6 +26,8 @@ class ContentArtistGridView(viewGroup: ViewGroup) : IContentGridView {
     override val onClick = Event1<IPlayable>();
     override val onLongClick = Event1<IPlayable>();
 
+    private var _hideMetadata: Boolean = false;
+
     init {
         root = LayoutInflater.from(viewGroup.context).inflate(R.layout.grid_artist, viewGroup, false) as ConstraintLayout;
         imageThumbnail = root.findViewById(R.id.image_thumbnail);
@@ -85,6 +87,10 @@ class ContentArtistGridView(viewGroup: ViewGroup) : IContentGridView {
         imageThumbnail.shapeAppearanceModel = imageThumbnail.shapeAppearanceModel.toBuilder()
             .setAllCornerSizes(thumbnailSize.toFloat() / 2)
             .build();
+    }
+
+    override fun setSettings(hideMetadata: Boolean) {
+        this._hideMetadata = hideMetadata;
     }
 
     companion object {

@@ -32,6 +32,8 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
     override val onClick = Event1<IPlayable>();
     override val onLongClick = Event1<IPlayable>();
 
+    private var _hideMetadata: Boolean = false;
+
     init {
         root = LayoutInflater.from(viewGroup.context).inflate(R.layout.grid_track, viewGroup, false) as ConstraintLayout;
         imageThumbnail = root.findViewById(R.id.image_thumbnail);
@@ -79,6 +81,9 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
                 textCount.isVisible = false;
             }
         }
+
+        if(_hideMetadata)
+            textMeta.isVisible = false;
     }
 
     override fun setSize(width: Int, height: Int) {
@@ -92,5 +97,9 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
             this.width = width - dp40 - dp10;
             this.height = width - dp40 - dp10;
         }
+    }
+
+    override fun setSettings(hideMetadata: Boolean) {
+        this._hideMetadata = hideMetadata;
     }
 }

@@ -3,10 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/background_bar_round_4dp"
+    android:background="@drawable/background_bar_transparant_71_round_4dp"
     android:id="@+id/root"
     android:layout_margin="5dp">
-    <EditText
+    <com.futo.music.ui.views.general.EditText
         android:id="@+id/text_search"
         android:layout_width="0dp"
         android:layout_height="40dp"
@@ -32,6 +32,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_clear"
         android:alpha="0.3"
+        android:visibility="gone"
         app:layout_constraintDimensionRatio="1"
         android:background="@color/transparent"
         />

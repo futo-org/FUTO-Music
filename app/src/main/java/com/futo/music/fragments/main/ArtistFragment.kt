@@ -1,49 +1,40 @@
 package com.futo.music.fragments.main
 
-import android.content.Context
-import android.graphics.drawable.GradientDrawable
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.collection.emptyLongSet
-import androidx.compose.animation.core.updateTransition
-import androidx.compose.ui.graphics.Color
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import androidx.core.view.marginTop
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import com.futo.music.GradientType
+import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.PlaySettings
 import com.futo.music.R
-import com.futo.music.UIDialogs
-import com.futo.music.colorIntensity
-import com.futo.music.extractColor
+import com.futo.music.dp
 import com.futo.music.fragments.MainFragView
 import com.futo.music.fragments.top.NavigationTopBarFragment
-import com.futo.music.models.playable.IPlayable
+import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.openPlayable
-import com.futo.music.states.ArtistOrdering
-import com.futo.music.states.StateApp
+import com.futo.music.setHeaderScrollFade
 import com.futo.music.states.StateDatabase
-import com.futo.music.states.StateLibrary
+import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
-import com.futo.music.toGradient
-import com.futo.music.toGradientDrawable
-import com.futo.music.ui.buttons.RatingButton
+import com.futo.music.storage.db.DBTrack
+import com.futo.music.ui.adapters.AnyInsertedAdapterView
+import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
+import com.futo.music.ui.adapters.TrackAnyViewHolder
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.ContentGrid
-import com.futo.music.ui.views.general.SearchBarView
+import com.futo.music.ui.views.containers.PlayableHeader
 import com.futo.music.withSettings
-import jp.wasabeef.glide.transformations.BlurTransformation
-import jp.wasabeef.glide.transformations.MaskTransformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -53,7 +44,7 @@ class ArtistFragment: MainFragment() {
     override val isTab: Boolean = true;
     override val hasBottomBar: Boolean get() = true;
 
-    override val fragmentTitle: String = "Artist";
+    override val fragmentTitle: String = "Album";
 
     private var _view: FragView? = null;
 
@@ -83,100 +74,75 @@ class ArtistFragment: MainFragment() {
 
         val root: ConstraintLayout;
 
-        val search: SearchBarView;
+        val recycler: RecyclerView;
 
-        val textName: TextView;
-        val textMetadata: TextView;
-        val imageHeader: ImageView;
-
-        val gridSongs: ContentGrid;
-        val gridAlbums: ContentGrid;
+        val header: PlayableHeader;
         val emptyView: NoResultsView;
-
-        val buttonPlayAll: LinearLayout;
-        val buttonShuffle: LinearLayout;
 
         var artistCurrent: DBArtist? = null;
 
-        val buttonRating: RatingButton;
+        var containerTop: ConstraintLayout;
+        val buttonBack: ImageButton;
 
-        val buttonSwitch: ImageButton;
+        private val gridAlbums: ContentGrid;
+
+        private val _adapter: AnyInsertedAdapterView<IPlayableTrack, TrackAnyViewHolder>;
+        private var _adapterDataset: List<IPlayableTrack>? = null;
 
 
         init {
             root = findViewById(R.id.root);
-            search = findViewById(R.id.view_search);
-            gridAlbums = findViewById(R.id.grid_albums);
-            gridSongs = findViewById(R.id.grid_songs);
-            emptyView = findViewById(R.id.view_empty);
-
-            textName = findViewById(R.id.text_name);
-            textMetadata = findViewById(R.id.text_metadata);
-            imageHeader = findViewById(R.id.image_header);
-
-            buttonPlayAll = findViewById(R.id.button_play_all);
-            buttonShuffle = findViewById(R.id.button_shuffle);
-
-            buttonRating = findViewById(R.id.button_rating);
-
-            buttonSwitch = findViewById(R.id.button_switch);
-
+            recycler = findViewById(R.id.recycler)
+            header = PlayableHeader(context);
+            emptyView = NoResultsView(context);
+            gridAlbums = ContentGrid(context, false, 150.dp(resources), "")
+            gridAlbums.hideMetadata = true;
             gridAlbums.onClick.subscribe {
                 it.openPlayable(fragment);
             }
             gridAlbums.onLongClick.subscribe {
                 it.openPlayable(fragment, true);
             }
-            gridSongs.onClick.subscribe {
-                it.openPlayable(fragment);
-            }
-            gridSongs.onLongClick.subscribe {
-                it.openPlayable(fragment, true);
-            }
 
-            buttonPlayAll.setOnClickListener {
+            containerTop = findViewById(R.id.container_top);
+            buttonBack = findViewById(R.id.button_back);
+
+            header.setAdditionalViews(listOf(gridAlbums));
+
+            header.onPlayAll.subscribe {
                 artistCurrent?.let {
                     fragment.navigate<PlaybackFragment>(it);
                 }
             }
-            buttonShuffle.setOnClickListener {
+            header.onShuffleAll.subscribe {
                 artistCurrent?.let {
                     fragment.navigate<PlaybackFragment>(it.withSettings(PlaySettings(shuffle = true)));
                 }
             }
 
-            findViewById<ImageButton>(R.id.button_back).setOnClickListener {
-                fragment.closeSegment();
-            }
+            _adapter = recycler.asAnyWithViews<IPlayableTrack, TrackAnyViewHolder>(arrayListOf<View>(header), arrayListOf<View>(emptyView), RecyclerView.VERTICAL, false, {
+                it.useFullName = false;
+                it.onClick.subscribe {
+                    if(it is DBTrack)
+                        it.openPlayable(fragment);
+                }
+                it.onLongClick.subscribe {
+                    if(it is DBTrack)
+                        it.openPlayable(fragment, true);
+                }
+            });
 
-            search.onChange.subscribe {
-                if(it.isEmpty())
-                    gridSongs.clearSearch();
+            val fadeOffset = 30.dp(resources);
+            recycler.setHeaderScrollFade(containerTop, fadeOffset);
+
+            header.onSearchChanged.subscribe { q -> //TODO: Implement efficient filtering on AnyAdapter
+                if(q.isBlank())
+                    _adapter.setData(_adapterDataset ?: return@subscribe);
                 else
-                    gridSongs.search(it);
+                    _adapter.setData(_adapterDataset?.filter { if(it is DBTrack) it.filter(q) else true } ?: return@subscribe);
             }
-
-            buttonRating.onClick.subscribe {
-                artistCurrent?.let {
-                    UIDialogs.showRatingDialog(context, fragment.lifecycleScope, null, null, null, it, {
-                       buttonRating.setRating(it.score);
-                    });
-                }
-            }
-
-            gridAlbums.isVisible = false;
-
-            buttonSwitch.setOnClickListener {
-                if(gridAlbums.isVisible) {
-                    buttonSwitch.setImageResource(androidx.media3.session.R.drawable.media3_icon_album);
-                    gridSongs.isVisible = true;
-                    gridAlbums.isVisible = false;
-                }
-                else {
-                    buttonSwitch.setImageResource(R.drawable.ic_music_note);
-                    gridAlbums.isVisible = true;
-                    gridSongs.isVisible = false;
-                }
+            buttonBack.setOnClickListener {
+                fragment.closeSegment();
             }
         }
 
@@ -191,51 +157,33 @@ class ArtistFragment: MainFragment() {
         fun updateContent(artist: DBArtist) {
             artistCurrent = artist;
 
-            textName.text = artist.name;
+            header.setPlayable(artist, true);
+            header.setMetadata("");
+            header.clearSearch();
             fragment.topBar?.let {
                 if(it is NavigationTopBarFragment) {
                     it.setTitle(artist.name)
                 }
             }
-            buttonRating.setRating(artist.score);
-            Glide.with(imageHeader)
-                .load(artist.artUri)
-                .fallback(R.drawable.background_button_black)
-                .extractColor { pal ->
-                    StateApp.instance.activity()?.let {
-                        if(pal != null && (pal.dominant ?: pal.darkVibrant) != null) {
-                            val color = (pal.dominant ?: pal.darkVibrant!!);
-                            val intensity = 1f / color.colorIntensity(180);
-                            it.setBackgroundBottomGradient(color, 0.5f, Math.min(1f, intensity));
-                        }
-                        else
-                            it.hideBackgroundBottom();
-                    }
-                }
-                .into(imageHeader);
 
             fragment.lifecycleScope.launch(Dispatchers.IO) {
 
-                val albums = StateDatabase.instance.db.albumDao().getArtistAlbums(artist.id).sortedByDescending { it.datePlayed }
-                val songs = StateDatabase.instance.getArtistTracks(artist.id).sortedByDescending { it.plays };
+                val songs = StateDatabase.instance.getArtistTracks(artist.id);
+                val albums = StateDatabase.instance.getArtistAlbums(artist.id).sortedByDescending { it.datePlayed }
 
                 withContext(Dispatchers.Main) {
                     gridAlbums.setData(albums);
-                    gridSongs.setData(songs);
 
-                    textMetadata.text = "${albums.size} album(s), ${songs.size} song(s)";
+                    _adapter.setData(songs);
+                    _adapterDataset = songs;
 
-                    if (albums.isEmpty())
-                        gridAlbums.isVisible = false;
+                    if(albums.size > 0) {
+                        header.setMetadata(("${songs.size} track" + (if(songs.size > 1 || songs.size == 0) "s" else "") + " · ${albums.size} album" + (if(albums.size > 1) "s" else "")));
+                    }
                     else
-                        gridAlbums.isVisible = false;
+                        header.setMetadata("${songs.size} track" + (if(songs.size > 1) "s" else ""));
 
                     if (songs.isEmpty())
-                        gridSongs.isVisible = false;
-                    else
-                        gridSongs.isVisible = true;
-
-                    if (albums.isEmpty() && songs.isEmpty())
                         emptyView.isVisible = true;
                     else
                         emptyView.isVisible = false;

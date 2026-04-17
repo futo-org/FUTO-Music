@@ -5,30 +5,35 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
+import androidx.collection.emptyLongSet
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.PlaySettings
 import com.futo.music.R
 import com.futo.music.UIDialogs
-import com.futo.music.colorIntensity
-import com.futo.music.extractColor
+import com.futo.music.dp
 import com.futo.music.fragments.MainFragView
 import com.futo.music.fragments.top.NavigationTopBarFragment
+import com.futo.music.hideAnimated
+import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.openPlayable
-import com.futo.music.states.StateApp
+import com.futo.music.setHeaderScrollFade
+import com.futo.music.showAnimated
 import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.DBAlbum
-import com.futo.music.storage.db.DBArtist
+import com.futo.music.storage.db.DBTrack
+import com.futo.music.ui.adapters.AnyInsertedAdapterView
+import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
+import com.futo.music.ui.adapters.TrackAnyViewHolder
 import com.futo.music.ui.buttons.RatingButton
+import com.futo.music.ui.buttons.StandardButton
 import com.futo.music.ui.views.NoResultsView
-import com.futo.music.ui.views.containers.ContentGrid
-import com.futo.music.ui.views.general.SearchBarView
+import com.futo.music.ui.views.containers.PlayableHeader
 import com.futo.music.withSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -69,73 +74,86 @@ class AlbumFragment: MainFragment() {
 
         val root: ConstraintLayout;
 
-        val search: SearchBarView;
+        val recycler: RecyclerView;
 
-        val textName: TextView;
-        val textMetadata: TextView;
-        val imageHeader: ImageView;
-
-        val gridSongs: ContentGrid;
+        val header: PlayableHeader;
         val emptyView: NoResultsView;
-
-        val buttonPlayAll: LinearLayout;
-        val buttonShuffle: LinearLayout;
 
         var albumCurrent: DBAlbum? = null;
 
-        val buttonRating: RatingButton;
+        var containerTop: ConstraintLayout;
+        val buttonBack: ImageButton;
+
+        private val _containerButtons: LinearLayout;
+        //private val _buttonPlayAll: StandardButton;
+        //private val _buttonShuffleAll: StandardButton;
+
+        private val _adapter: AnyInsertedAdapterView<IPlayableTrack, TrackAnyViewHolder>;
+        private var _adapterDataset: List<IPlayableTrack>? = null;
 
 
         init {
             root = findViewById(R.id.root);
-            search = findViewById(R.id.view_search);
-            gridSongs = findViewById(R.id.grid_songs);
-            emptyView = findViewById(R.id.view_empty);
+            recycler = findViewById(R.id.recycler)
+            header = PlayableHeader(context);
+            emptyView = NoResultsView(context);
 
-            textName = findViewById(R.id.text_name);
-            textMetadata = findViewById(R.id.text_metadata);
-            imageHeader = findViewById(R.id.image_header);
+            containerTop = findViewById(R.id.container_top);
+            buttonBack = findViewById(R.id.button_back);
+            _containerButtons = findViewById(R.id.container_buttons);
+            //_buttonPlayAll = findViewById(R.id.button_play_all);
+            //_buttonShuffleAll = findViewById(R.id.button_shuffle_all)
 
-            buttonPlayAll = findViewById(R.id.button_play_all);
-            buttonShuffle = findViewById(R.id.button_shuffle);
-
-            buttonRating = findViewById(R.id.button_rating);
-
-            gridSongs.onClick.subscribe {
-                it.openPlayable(fragment);
-            }
-            gridSongs.onLongClick.subscribe {
-                it.openPlayable(fragment, true);
-            }
-
-            buttonPlayAll.setOnClickListener {
+            header.onPlayAll.subscribe {
                 albumCurrent?.let {
                     fragment.navigate<PlaybackFragment>(it);
                 }
             }
-            buttonShuffle.setOnClickListener {
+            header.onShuffleAll.subscribe {
                 albumCurrent?.let {
                     fragment.navigate<PlaybackFragment>(it.withSettings(PlaySettings(shuffle = true)));
                 }
             }
 
-            findViewById<ImageButton>(R.id.button_back).setOnClickListener {
-                fragment.closeSegment();
-            }
-
-            search.onChange.subscribe {
-                if(it.isEmpty())
-                    gridSongs.clearSearch();
-                else
-                    gridSongs.search(it);
-            }
-
-            buttonRating.onClick.subscribe {
-                albumCurrent?.let {
-                    UIDialogs.showRatingDialog(context, fragment.lifecycleScope, null, null, it, null, {
-                       buttonRating.setRating(it.score);
-                    });
+            _adapter = recycler.asAnyWithViews<IPlayableTrack, TrackAnyViewHolder>(arrayListOf<View>(header), arrayListOf<View>(emptyView), RecyclerView.VERTICAL, false, {
+                it.useFullName = true;
+                it.onClick.subscribe {
+                    if(it is DBTrack)
+                        it.openPlayable(fragment);
                 }
+                it.onLongClick.subscribe {
+                    if(it is DBTrack)
+                        it.openPlayable(fragment, true);
+                }
+            });
+
+            val fadeOffset = 30.dp(resources);
+            recycler.setHeaderScrollFade(containerTop, fadeOffset) {
+                /*
+                if(it)
+                    _containerButtons.showAnimated();
+                else
+                    _containerButtons.hideAnimated();
+                */
+            }
+
+            /*
+            _buttonPlayAll.onClick.subscribe {
+                fragment.navigate<PlaybackFragment>(albumCurrent ?: return@subscribe);
+            }
+            _buttonShuffleAll.onClick.subscribe {
+                fragment.navigate<PlaybackFragment>(albumCurrent?.withSettings(PlaySettings(true)) ?: return@subscribe);
+            }
+            */
+
+            header.onSearchChanged.subscribe { q -> //TODO: Implement efficient filtering on AnyAdapter
+                if(q.isBlank())
+                    _adapter.setData(_adapterDataset ?: return@subscribe);
+                else
+                    _adapter.setData(_adapterDataset?.filter { if(it is DBTrack) it.filter(q) else true } ?: return@subscribe);
+            }
+            buttonBack.setOnClickListener {
+                fragment.closeSegment();
             }
         }
 
@@ -150,42 +168,24 @@ class AlbumFragment: MainFragment() {
         fun updateContent(album: DBAlbum) {
             albumCurrent = album;
 
-            textName.text = album.name;
+            header.setPlayable(album, true);
+            header.setMetadata("");
+            header.clearSearch();
             fragment.topBar?.let {
                 if(it is NavigationTopBarFragment) {
                     it.setTitle(album.name)
                 }
             }
-            buttonRating.setRating(album.score);
-            Glide.with(imageHeader)
-                .load(album.artUri)
-                .fallback(R.drawable.background_button_black)
-                .extractColor { pal ->
-                    StateApp.instance.activity()?.let {
-                        if(pal != null && (pal.dominant ?: pal.darkVibrant) != null) {
-                            val color = (pal.dominant ?: pal.darkVibrant!!);
-                            val intensity = 1f / color.colorIntensity(180);
-                            it.setBackgroundBottomGradient(color, 0.5f, Math.min(1f, intensity));
-                        }
-                        else
-                            it.hideBackgroundBottom();
-                    }
-                }
-                .into(imageHeader);
 
             fragment.lifecycleScope.launch(Dispatchers.IO) {
 
                 val songs = StateDatabase.instance.getAlbumTracks(album.id);
 
                 withContext(Dispatchers.Main) {
-                    gridSongs.setData(songs);
+                    _adapter.setData(songs);
+                    _adapterDataset = songs;
 
-                    textMetadata.text = "${songs.size} song(s)";
-
-                    if (songs.isEmpty())
-                        gridSongs.isVisible = false;
-                    else
-                        gridSongs.isVisible = true;
+                    header.setMetadata("${songs.size} track" + (if(songs.size > 1) "s" else ""));
 
                     if (songs.isEmpty())
                         emptyView.isVisible = true;

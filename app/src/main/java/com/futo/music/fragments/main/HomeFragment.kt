@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.UIDialogs
@@ -25,6 +27,7 @@ import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.ui.buttons.RoundButton
+import com.futo.music.ui.buttons.StandardButton
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
 import com.futo.music.ui.views.playback.PlayableOptionOverlay
@@ -114,6 +117,10 @@ class HomeFragment: MainFragment() {
         val containerPlaylistsCreate: ConstraintLayout;
         val buttonPlaylistsCreate: RoundButton;
 
+        val containerShuffles: LinearLayout;
+        val buttonShuffle: StandardButton;
+        val buttonWshuffle: StandardButton;
+
 
         init {
             search = findViewById(R.id.view_search);
@@ -121,6 +128,10 @@ class HomeFragment: MainFragment() {
             gridPlaylists = findViewById(R.id.grid_playlists);
             gridArtists = findViewById(R.id.grid_artists);
             gridAlbums = findViewById(R.id.grid_albums);
+
+            containerShuffles = findViewById(R.id.container_shuffles);
+            buttonShuffle = findViewById(R.id.button_shuffle);
+            buttonWshuffle = findViewById(R.id.button_wshuffle);
 
             findViewById<GeneralTopBarView>(R.id.topbar).apply {
                 setTitleLongPress {
@@ -186,6 +197,22 @@ class HomeFragment: MainFragment() {
                 }
             }
 
+            buttonShuffle.onClick.subscribe {
+                fragment.lifecycleScope.launch(Dispatchers.IO) {
+                    val tracks = StateDatabase.instance.getTrackListShuffled(500);
+                    withContext(Dispatchers.Main) {
+                        fragment.navigate<PlaybackFragment>(Vibe("Shuffle", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks));
+                    }
+                }
+            }
+            buttonWshuffle.onClick.subscribe {
+                fragment.lifecycleScope.launch(Dispatchers.IO) {
+                    val tracks = StateDatabase.instance.getTrackListWeighted(500);
+                    withContext(Dispatchers.Main) {
+                        fragment.navigate<PlaybackFragment>(Vibe("Weighted", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks));
+                    }
+                }
+            }
 
             updateContent();
         }
@@ -204,15 +231,20 @@ class HomeFragment: MainFragment() {
                 val albums = fragment._dataAlbums ?:  StateDatabase.instance.getAlbumsByRecent();
                 var playlists = (fragment._dataPlaylists ?: StateDatabase.instance.getPlaylistsByRecent()).map { it as IPlayable };
 
-                val vibeWeighted = fragment._dataVibeWeighted ?: Vibe("Suggested", ImageVariable.fromResource(R.drawable.ic_playlist), listOf(), listOf(), StateDatabase.instance.getTrackListWeighted(100));
+                if(recent.any() || artists.any() || albums.any())
+                    containerShuffles.isVisible = true;
+                else
+                    containerShuffles.isVisible = false;
+
+                //val vibeWeighted = fragment._dataVibeWeighted ?: Vibe("Suggested", ImageVariable.fromResource(R.drawable.ic_playlist), listOf(), listOf(), StateDatabase.instance.getTrackListWeighted(100));
 
                 //fragment._dataRecent = recent;
                 fragment._dataArtists = artists;
                 fragment._dataAlbums = albums;
-                fragment._dataVibeWeighted = vibeWeighted;
+                //fragment._dataVibeWeighted = vibeWeighted;
 
-                if(vibeWeighted != null && vibeWeighted.singles.size > 5)
-                    playlists = listOf(vibeWeighted) + (playlists);
+                //if(vibeWeighted != null && vibeWeighted.singles.size > 5)
+                //    playlists = listOf(vibeWeighted) + (playlists);
 
                 //fragment._dataPlaylists = playlists;
                 withContext(Dispatchers.Main) {

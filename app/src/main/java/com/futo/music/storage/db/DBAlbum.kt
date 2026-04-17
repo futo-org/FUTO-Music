@@ -86,7 +86,7 @@ interface DBAlbumDao {
     @Query("SELECT * FROM albums WHERE mediaStoreId = :id")
     fun getByMSID(id: Long): DBAlbum?;
     @Query("SELECT * FROM albums WHERE mediaStoreArtistId = :id")
-    fun getByArtistMSID(id: Long): DBAlbum?;
+    fun getByArtistMSID(id: Long): List<DBAlbum>;
 
 
 

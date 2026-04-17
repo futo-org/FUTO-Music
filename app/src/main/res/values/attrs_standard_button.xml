@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="StandardButton">
+        <attr name="StandardButton_Icon" format="reference" />
+        <attr name="StandardButton_Text" format="string" />
+        <attr name="StandardButton_Color" format="color" />
+        <attr name="StandardButton_Background" format="reference" />
+    </declare-styleable>
+</resources>

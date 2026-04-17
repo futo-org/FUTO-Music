@@ -89,6 +89,9 @@ class StateDatabase(
     fun getArtistTracks(id: Long): List<DBTrack> {
         return db.tracksDao().getArtistTracks(id);
     }
+    fun getArtistAlbums(id: Long): List<DBAlbum> {
+        return db.albumDao().getArtistAlbums(id);
+    }
     fun getTrackArtists(id: Long): List<DBArtist> {
         return db.artistDao().getTrackArtists(id);
     }
@@ -149,6 +152,11 @@ class StateDatabase(
 
     fun getTrackListWeighted(count: Int): List<DBTrack> {
         val tracks = db.tracksDao().getRandomWeightedTracks(count);
+
+        return tracks;
+    }
+    fun getTrackListShuffled(count: Int): List<DBTrack> {
+        val tracks = db.tracksDao().getRandomShuffledTracks(count);
 
         return tracks;
     }

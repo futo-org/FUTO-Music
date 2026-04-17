@@ -3,11 +3,16 @@ package com.futo.music
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.LinearGradient
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.view.View
+import androidx.core.view.isVisible
 import androidx.palette.graphics.Palette
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -138,7 +143,7 @@ class GlidePaletteGenerator(val callback: (PaletteColors?)->Unit): BitmapTransfo
 }
 
 fun <T> RequestBuilder<T>.extractBitmap(handler: ((Bitmap?)->Unit)): RequestBuilder<T> {
-    return this.listener(object: RequestListener<T> {
+    return this.addListener(object: RequestListener<T> {
         override fun onLoadFailed(p0: GlideException?, p1: Any?, p2: Target<T?>?, p3: Boolean): Boolean {
             handler(null);
             return false;
@@ -156,7 +161,7 @@ fun <T> RequestBuilder<T>.extractBitmap(handler: ((Bitmap?)->Unit)): RequestBuil
     })
 }
 fun <T> RequestBuilder<T>.extractColor(handler: ((PaletteColors?)->Unit)): RequestBuilder<T> {
-    return this.listener(object: RequestListener<T> {
+    return this.addListener(object: RequestListener<T> {
         override fun onLoadFailed(p0: GlideException?, p1: Any?, p2: Target<T?>?, p3: Boolean): Boolean {
             handler(PaletteColors())
             return false;
@@ -228,9 +233,15 @@ enum class GradientType(val value: Array<Float>) {
     DiagonalLeft(arrayOf(0f,0f,1f,1f)),
     DiagonalRight(arrayOf(1f,0f,0f,1f))
 }
+fun createLinearGradient(type: GradientType, reverse: Boolean, colors: IntArray, mode: Shader.TileMode): LinearGradient {
+    val typeVal = type.value;
+    if(reverse)
+        colors.reverse();
+    return LinearGradient(typeVal[0], typeVal[1], typeVal[2], typeVal[3], colors, null as FloatArray?, mode);
+}
 
-fun Int.toGradient(color: Int, gradientType: GradientType): android.graphics.LinearGradient {
-    return android.graphics.LinearGradient(gradientType.value[0], gradientType.value[1], gradientType.value[2], gradientType.value[3], this, color, Shader.TileMode.MIRROR);
+fun Int.toGradient(color: Int, gradientType: GradientType): LinearGradient {
+    return LinearGradient(gradientType.value[0], gradientType.value[1], gradientType.value[2], gradientType.value[3], this, color, Shader.TileMode.MIRROR);
 }
 fun Int.toGradientDrawable(color: Int, gradientType: GradientDrawable.Orientation): GradientDrawable {
     return GradientDrawable(gradientType, intArrayOf(this, color));
@@ -241,4 +252,51 @@ fun Int.colorIntensity(target: Int): Float {
     val green = Color.green(this);
     val blue = Color.blue(this);
     return (red + green + blue) / target.toFloat();
+}
+
+fun RecyclerView.setHeaderScrollFade(header: View, offset: Int, onVisibleChanged: ((Boolean)->Unit)? = null) {
+    addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+
+            val layoutManager = layoutManager;
+            if(layoutManager is LinearLayoutManager) {
+                val firstVisible = layoutManager.findFirstVisibleItemPosition();
+                if(firstVisible > 0) {
+                    if(header.isVisible) {
+                        header.isVisible = false;
+                        onVisibleChanged?.invoke(false);
+                    }
+                }
+                else {
+                    if(!header.isVisible) {
+                        header.isVisible = true;
+                        onVisibleChanged?.invoke(true);
+                    }
+
+                    val sy = computeVerticalScrollOffset();
+                    val max = header.measuredHeight - offset;
+                    header.alpha = Math.max(0f, (1f - (sy.toFloat() / max)));
+                }
+            }
+        }
+    })
+}
+
+fun View.hideAnimated() {
+    this.animate()
+        .alpha(0f)
+        .setDuration(300)
+        .withEndAction {
+            this.isVisible = false;
+        }
+        .start();
+}
+fun View.showAnimated() {
+    this.alpha = 0f;
+    this.isVisible = true;
+    this.animate()
+        .alpha(1f)
+        .setDuration(300)
+        .start();
 }

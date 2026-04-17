@@ -93,5 +93,8 @@ class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?): 
         fun setSize(width: Int, height: Int) {
             view.setSize(width, height);
         }
+        fun setSettings(hideMetadata: Boolean = false) {
+            view.setSettings(hideMetadata);
+        }
     }
 }

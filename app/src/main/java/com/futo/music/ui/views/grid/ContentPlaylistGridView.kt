@@ -36,6 +36,8 @@ class ContentPlaylistGridView(viewGroup: ViewGroup) : IContentGridView {
     override val onClick = Event1<IPlayable>();
     override val onLongClick = Event1<IPlayable>();
 
+    var _hideMetadata: Boolean = false;
+
     init {
         root = LayoutInflater.from(viewGroup.context).inflate(R.layout.grid_playlist, viewGroup, false) as ConstraintLayout;
         imageThumbnail1 = root.findViewById(R.id.image_thumbnail);
@@ -120,6 +122,8 @@ class ContentPlaylistGridView(viewGroup: ViewGroup) : IContentGridView {
                 textCount.isVisible = false;
             }
         }
+        if(_hideMetadata)
+            textMeta.isVisible = false;
     }
 
     override fun setSize(width: Int, height: Int) {
@@ -146,5 +150,10 @@ class ContentPlaylistGridView(viewGroup: ViewGroup) : IContentGridView {
             }
         }
 
+    }
+
+
+    override fun setSettings(hideMetadata: Boolean) {
+        this._hideMetadata = hideMetadata;
     }
 }

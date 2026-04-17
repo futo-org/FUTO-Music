@@ -34,7 +34,7 @@ class TrackListEditorAdapter : RecyclerView.Adapter<TrackListEditorViewHolder> {
     override fun getItemCount() = _tracks?.size ?: 0;
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): TrackListEditorViewHolder {
-        val view = LayoutInflater.from(viewGroup.context).inflate(R.layout.list_track, viewGroup, false);
+        val view = LayoutInflater.from(viewGroup.context).inflate(R.layout.list_track_editable, viewGroup, false);
         val holder = TrackListEditorViewHolder(view, _touchHelper, _trackCurrentChanged, _trackCurrent);
 
         holder.onRemove.subscribe { v -> onRemove.emit(v); };

@@ -6,7 +6,9 @@ import android.util.AttributeSet
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
+import androidx.collection.emptyLongSet
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import com.futo.music.R
 import com.futo.music.constructs.Event1
@@ -15,6 +17,7 @@ class SearchBarView: ConstraintLayout {
 
     private val _text: EditText;
     private val _root: ConstraintLayout;
+    private val _buttonClear: ImageView;
 
     val onFocusChange = Event1<Boolean>();
     val onChange = Event1<String>();
@@ -24,8 +27,9 @@ class SearchBarView: ConstraintLayout {
         inflate(context, R.layout.view_search_bar, this);
         _root = findViewById<ConstraintLayout>(R.id.root);
         _text = findViewById(R.id.text_search);
+        _buttonClear = findViewById(R.id.button_clear);
 
-        findViewById<ImageView>(R.id.button_clear).setOnClickListener {
+        _buttonClear.setOnClickListener {
             _text.text.clear();
             _text.clearFocus();
         }
@@ -47,14 +51,20 @@ class SearchBarView: ConstraintLayout {
         _text.addTextChangedListener {
             if(it == null)
                 return@addTextChangedListener;
+            val str = it?.toString() ?: "";
             for (i in it.length - 1 downTo 0) {
                 if (it[i] === '\n') {
                     it.delete(i, i + 1)
-                    onEnter.emit(it?.toString() ?: "");
+                    onEnter.emit(str);
                     return@addTextChangedListener;
                 }
             }
-            onChange.emit(it?.toString() ?: "");
+            onChange.emit(str);
+
+            if(str.length > 0)
+                _buttonClear.isVisible = true;
+            else
+                _buttonClear.isVisible = false;
         }
     }
 

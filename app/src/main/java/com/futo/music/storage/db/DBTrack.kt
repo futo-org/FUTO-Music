@@ -121,6 +121,10 @@ class DBTrack(
     fun getShareFileName(): String {
         return (((fileName ?: (if(!artistLine.isNullOrBlank()) artistLine + " - " + name else name).toSafeFileName() + "." + audioContainerToExtension(mimeType))));
     }
+
+    fun filter(query: String): Boolean {
+        return name.lowercase().contains(query) || (artistLine != null && artistLine.contains(query))
+    }
 }
 
 @Dao
@@ -145,6 +149,8 @@ interface DBTrackDao {
 
     @Query("SELECT t.* FROM tracks t WHERE t.scoreCalculated > 0 ORDER BY (ABS(RANDOM())/ 9223372036854775808.0) * t.scoreCalculated / 100 DESC LIMIT :count")
     fun getRandomWeightedTracks(count: Int): List<DBTrack>
+    @Query("SELECT t.* FROM tracks t  ORDER BY RANDOM() DESC LIMIT :count")
+    fun getRandomShuffledTracks(count: Int): List<DBTrack>
 
 
     @Query("SELECT COUNT(*) FROM tracks")

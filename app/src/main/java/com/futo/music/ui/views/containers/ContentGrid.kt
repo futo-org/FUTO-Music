@@ -2,6 +2,7 @@ package com.futo.music.ui.views.containers
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.Gravity
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
@@ -32,6 +33,8 @@ class ContentGrid: ConstraintLayout {
     val onClick = Event1<IPlayable>();
     val onLongClick = Event1<IPlayable>();
     val onOutsideClick = Event0();
+
+    var hideMetadata: Boolean = false;
 
     constructor(context: Context, attrs: AttributeSet? = null): super(context, attrs) {
         val attrArr = context.obtainStyledAttributes(attrs, R.styleable.ContentGrid, 0, 0);
@@ -69,6 +72,7 @@ class ContentGrid: ConstraintLayout {
 
         adapter = ContentAdapter {
             it.setSize(rowHeight, rowHeight);
+            it.setSettings(hideMetadata);
             it.view.onClick.subscribe {
                 onClick.emit(it);
             }
@@ -77,6 +81,54 @@ class ContentGrid: ConstraintLayout {
             }
         }
         recycler.adapter = adapter;
+    }
+    constructor(context: Context, vertical: Boolean, rowHeight: Int, initialText: String): super(context) {
+        this.vertical = vertical;
+        this.rowHeight = rowHeight;
+
+        if(vertical)
+            inflate(context, R.layout.view_content_grid_v, this);
+        else
+            inflate(context, R.layout.view_content_grid_h, this);
+
+        root = findViewById(R.id.root);
+        textTitle = findViewById(R.id.text_title);
+        recycler = findViewById(R.id.recycler);
+        root.setOnClickListener {
+            onOutsideClick.emit()
+        };
+        if(vertical) {
+            recycler.layoutManager = GridLayoutManager(context, 3);
+            buttonList = null;
+        }
+        else {
+            val layoutManager = LinearLayoutManager(context);
+            layoutManager.orientation = LinearLayoutManager.HORIZONTAL;
+            recycler.layoutManager = layoutManager;
+            buttonList = findViewById(R.id.button_list);
+            buttonList.isVisible = false;
+        }
+
+        if(initialText.isNullOrEmpty())
+            textTitle.isVisible = false;
+        else
+            textTitle.text = initialText;
+
+        adapter = ContentAdapter {
+            it.setSize(rowHeight, rowHeight);
+            it.setSettings(hideMetadata);
+            it.view.onClick.subscribe {
+                onClick.emit(it);
+            }
+            it.view.onLongClick.subscribe {
+                onLongClick.emit(it);
+            }
+        }
+        recycler.adapter = adapter;
+    }
+
+    fun setCenterGravity() {
+        recycler
     }
 
     fun setButtonListener(handler: ()->Unit) {

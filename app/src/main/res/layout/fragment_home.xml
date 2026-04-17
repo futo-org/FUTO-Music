@@ -26,32 +26,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toTopOf="parent"/>
-<!--
-            <ImageView
-                android:id="@+id/background_gradient"
-                android:layout_width="match_parent"
-                android:layout_height="400dp"
-                android:layout_marginTop="-50dp"
-                android:src="@drawable/background_gradient"
-                android:alpha="0.5"
-                />
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:src="@drawable/gradient_black_transparent"
-                app:layout_constraintLeft_toLeftOf="@id/background_gradient"
-                app:layout_constraintRight_toRightOf="@id/background_gradient"
-                app:layout_constraintTop_toTopOf="@id/background_gradient"
-                />
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="200dp"
-                android:src="@drawable/gradient_transparant_black"
-                app:layout_constraintLeft_toLeftOf="@id/background_gradient"
-                app:layout_constraintRight_toRightOf="@id/background_gradient"
-                app:layout_constraintBottom_toBottomOf="@id/background_gradient"
-                />
-            -->
 
 
             <LinearLayout
@@ -61,6 +35,7 @@
                 android:layout_marginTop="50dp"
                 android:orientation="vertical"
                 app:layout_constraintTop_toTopOf="parent">
+
 
                 <com.futo.music.ui.views.general.SearchBarView
                     android:id="@+id/view_search"
@@ -75,6 +50,8 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent" />
 
+
+
                 <com.futo.music.ui.views.containers.ContentGrid
                     android:id="@+id/grid_recent"
                     android:layout_width="match_parent"
@@ -83,13 +60,14 @@
                     app:ContentGrid_row_height="150dp"
                     android:layout_marginTop="20dp"
                     app:ContentGrid_vertical="false" />
+
                 <com.futo.music.ui.views.containers.ContentGrid
                     android:id="@+id/grid_playlists"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:ContentGrid_row_height="150dp"
                     app:ContentGrid_text="Your Playlists"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="15dp"
                     app:ContentGrid_vertical="false" />
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/container_playlist_create"
@@ -130,6 +108,32 @@
                         android:text="@string/no_playlists_text" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <LinearLayout
+                    android:id="@+id/container_shuffles"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginRight="12dp">
+                    <com.futo.music.ui.buttons.StandardButton
+                        android:id="@+id/button_shuffle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:StandardButton_Color="#AA111111"
+                        app:StandardButton_Icon="@drawable/media3_icon_shuffle_on"
+                        app:StandardButton_Text="Shuffle"
+                        android:layout_weight="1" />
+                    <com.futo.music.ui.buttons.StandardButton
+                        android:id="@+id/button_wshuffle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:StandardButton_Color="#AA111111"
+                        app:StandardButton_Icon="@drawable/media3_icon_shuffle_star"
+                        app:StandardButton_Text="WShuffle"
+                        android:layout_weight="1" />
+
+                </LinearLayout>
                 <com.futo.music.ui.views.containers.ContentGrid
                     android:id="@+id/grid_artists"
                     android:layout_width="match_parent"
