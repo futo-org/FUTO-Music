@@ -379,7 +379,7 @@ class MainActivity : AppCompatActivity() {
         if(drawable is BitmapDrawable && _backgroundTop.scaleY != heightScale) {
             _lastTopAnimation = _backgroundTop.animate()
                 .alpha(0f)
-                .setDuration(_backgroundTransitionDuration)
+                .setDuration(_backgroundTransitionDuration / 2)
                 .setListener(object: Animator.AnimatorListener {
                     override fun onAnimationCancel(p0: Animator) { }
                     override fun onAnimationEnd(p0: Animator) {

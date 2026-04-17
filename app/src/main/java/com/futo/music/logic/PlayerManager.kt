@@ -57,7 +57,7 @@ class PlayerManager {
             this@PlayerManager.isPlaying = isPlaying;
             onPlayingChanged.emit(isPlaying);
             invokeListener {
-                it.onPlayingChanged(isPlaying);
+                it.onPlayingChanged(isPlaying || player.playWhenReady);
             }
 
             try {
