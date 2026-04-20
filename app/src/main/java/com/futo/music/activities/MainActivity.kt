@@ -335,11 +335,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun sync(force: Boolean = false) {
-        if(force || StateLibrary.instance.requireSync(this)) {
-            val announce = StateAnnouncement.instance.registerLoading("Syncing Mediastore", "Importing new music from your phone", null,
-                "importing", true);
-            UIDialogs.appToast("We're importing your music!\nGive us a minute.")
-            lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            if(force || StateLibrary.instance.requireSync(this@MainActivity) || StateDatabase.instance.getTrackCount() == 0) {
+                val announce = StateAnnouncement.instance.registerLoading("Syncing Mediastore", "Importing new music from your phone", null,
+                    "importing", true);
+                UIDialogs.appToast("We're importing your music!\nGive us a minute.")
                 try {
                     val results = StateLibrary.instance.syncDatabase(applicationContext, { max, progress, type, text ->
                         if (max > 0) {
@@ -649,7 +649,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            if (fragCurrent?.isHistory ?: false && withHistory && _queue.lastOrNull() != fragCurrent)
+            val lastOnQueue = _queue.lastOrNull();
+            if(lastOnQueue != null && lastOnQueue.first == segment)
+                _queue.removeLast();
+            else if (fragCurrent?.isHistory ?: false && withHistory && _queue.lastOrNull() != fragCurrent)
                 _queue.add(Pair(fragCurrent!!, _parameterCurrent));
 
             if (segment.isOverlay && !(fragCurrent?.isOverlay ?: false) && withHistory)// && fragCurrent.isHistory)

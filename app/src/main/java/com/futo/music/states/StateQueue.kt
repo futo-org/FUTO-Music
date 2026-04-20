@@ -143,7 +143,7 @@ class StateQueue {
             else if(playable is DBArtist)
                 StateDatabase.instance.setPlayedArtist(playable.id);
             else if(playable is DBTrack)
-                StateDatabase.instance.setPlayedTrack(playable.id);
+                StateDatabase.instance.setPlayedTrack(playable.id, true);
             else if(playable is DBPlaylist)
                 StateDatabase.instance.setPlayedPlaylist(playable.id);
 
@@ -219,7 +219,7 @@ class StateQueue {
             else if(playable is DBArtist)
                 StateDatabase.instance.setPlayedArtist(playable.id);
             else if(playable is DBTrack)
-                StateDatabase.instance.setPlayedTrack(playable.id);
+                StateDatabase.instance.setPlayedTrack(playable.id, true);
             else if(playable is DBPlaylist)
                 StateDatabase.instance.setPlayedPlaylist(playable.id);
 

@@ -60,6 +60,7 @@ import kotlinx.coroutines.withContext
 class PlaybackFragment: MainFragment() {
     override val isMainView : Boolean = true;
     override val isTab: Boolean = true;
+    override val isHistory: Boolean = false;
 
     private var _player: PlayerManager? = null;
 
@@ -299,6 +300,29 @@ class PlaybackFragment: MainFragment() {
             frag._player?.let {
                 onPlayerAvailable(it);
             }
+
+            _textArtist.setOnClickListener {
+                fragment.lifecycleScope.launch(Dispatchers.IO) {
+                    val track = _trackCurrent ?: return@launch;
+                    val artist = StateDatabase.instance.getTrackArtists(track.id).firstOrNull();
+                    withContext(Dispatchers.Main) {
+                        if(artist == null)
+                            UIDialogs.appToast("Couldn't find artist?");
+                        fragment.navigate<ArtistFragment>(artist);
+                    }
+                }
+            }
+            _textAlbum.setOnClickListener {
+                fragment.lifecycleScope.launch(Dispatchers.IO) {
+                    val track = _trackCurrent ?: return@launch;
+                    val album = StateDatabase.instance.getTrackAlbums(track.id).firstOrNull();
+                    withContext(Dispatchers.Main) {
+                        if(album == null)
+                            UIDialogs.appToast("Couldn't find album?");
+                        fragment.navigate<AlbumFragment>(album);
+                    }
+                }
+            }
         }
 
 
@@ -499,8 +523,11 @@ class PlaybackFragment: MainFragment() {
             if(parameter == null) {
                 val player = PlaybackService._lastPlayer ?: return;
                 val mediaItem = PlaybackService._currentMediaItem ?: return;
-                val track = null;
-                onMediaMetadataChanged(player, mediaItem.mediaMetadata, track);
+
+                val trackId = mediaItem?.mediaId?.toLongOrNull()
+                if(trackId != null)
+                    setCurrentTrack(trackId);
+                onMediaMetadataChanged(player, mediaItem.mediaMetadata,);
             }
         }
 

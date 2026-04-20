@@ -231,10 +231,6 @@ class HomeFragment: MainFragment() {
                 val albums = fragment._dataAlbums ?:  StateDatabase.instance.getAlbumsByRecent();
                 var playlists = (fragment._dataPlaylists ?: StateDatabase.instance.getPlaylistsByRecent()).map { it as IPlayable };
 
-                if(recent.any() || artists.any() || albums.any())
-                    containerShuffles.isVisible = true;
-                else
-                    containerShuffles.isVisible = false;
 
                 //val vibeWeighted = fragment._dataVibeWeighted ?: Vibe("Suggested", ImageVariable.fromResource(R.drawable.ic_playlist), listOf(), listOf(), StateDatabase.instance.getTrackListWeighted(100));
 
@@ -248,6 +244,12 @@ class HomeFragment: MainFragment() {
 
                 //fragment._dataPlaylists = playlists;
                 withContext(Dispatchers.Main) {
+
+                    if(recent.any() || artists.any() || albums.any())
+                        containerShuffles.isVisible = true;
+                    else
+                        containerShuffles.isVisible = false;
+
                     if(recent.isNullOrEmpty())
                         gridRecent.visibility = View.GONE;
                     else {

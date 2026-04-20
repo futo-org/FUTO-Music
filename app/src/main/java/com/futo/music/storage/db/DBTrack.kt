@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.Insert
@@ -38,6 +39,8 @@ class DBTrack(
     val contentUrl: String? = null,
 
     override val datePlayed: OffsetDateTime = OffsetDateTime.MIN,
+    @ColumnInfo(defaultValue = "NULL")
+    val dateOpened: OffsetDateTime? = null,
     val dateAdded: OffsetDateTime = OffsetDateTime.MIN,
     override var score: Int = 0,
     val scoreLevel: Int = 0,
@@ -152,6 +155,8 @@ interface DBTrackDao {
     @Query("SELECT t.* FROM tracks t  ORDER BY RANDOM() DESC LIMIT :count")
     fun getRandomShuffledTracks(count: Int): List<DBTrack>
 
+    @Query("SELECT * FROM tracks WHERE dateOpened IS NOT NULL ORDER BY dateOpened DESC LIMIT :count")
+    fun getTopByRecentOpened(count: Int): List<DBTrack>;
 
     @Query("SELECT COUNT(*) FROM tracks")
     fun count(): Int;
@@ -161,6 +166,8 @@ interface DBTrackDao {
 
     @Update(entity = DBTrack::class)
     fun setPlayed(update: DBTrackUpdatePlayed)
+    @Update(entity = DBTrack::class)
+    fun setOpened(update: DBTrackUpdateOpened)
 
     @Update(entity = DBTrack::class)
     fun setRating(update: DBTrackUpdateRating): Int
@@ -173,6 +180,12 @@ interface DBTrackDao {
 class DBTrackUpdatePlayed(
     val id: Long,
     val datePlayed: OffsetDateTime
+)
+@Entity
+class DBTrackUpdateOpened(
+    val id: Long,
+    val datePlayed: OffsetDateTime,
+    val dateOpened: OffsetDateTime?
 )
 
 @Entity

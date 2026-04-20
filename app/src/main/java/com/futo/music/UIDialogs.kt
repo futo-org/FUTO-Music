@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -19,7 +20,9 @@ import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.extensions.assume
 import com.futo.music.logging.Logger
@@ -405,6 +408,12 @@ class UIDialogs {
                 }
             };
             var inputView = view.findViewById<TextView>(R.id.dialog_text_input);
+            fun hideKeyboard() {
+                val inputManager = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager?
+                    ?: return;
+                inputManager?.hideSoftInputFromWindow(inputView.windowToken, 0);
+                inputView.clearFocus();
+            }
             inputView.apply {
                 if (input == null && placeholder == null) this.visibility = View.GONE;
                 else {
@@ -412,6 +421,17 @@ class UIDialogs {
                     this.hint = placeholder ?: "";
                     this.visibility = View.VISIBLE;
                     this.textAlignment = if(actions.any { it.center }) View.TEXT_ALIGNMENT_CENTER else View.TEXT_ALIGNMENT_TEXT_START
+                }
+                this.addTextChangedListener {
+                    if(it == null)
+                        return@addTextChangedListener;
+                    for (i in it.length - 1 downTo 0) {
+                        if (it[i] === '\n') {
+                            it.delete(i, i + 1)
+                            hideKeyboard()
+                            return@addTextChangedListener;
+                        }
+                    }
                 }
             };
             view.findViewById<TextView>(R.id.dialog_text_code).apply {

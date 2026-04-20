@@ -24,6 +24,7 @@ import com.futo.music.storage.db.DBPlaylistUpdatePlayed
 import com.futo.music.storage.db.DBPlaylistUpdateRating
 import com.futo.music.storage.db.DBPlaylistUpdateTrackMetadata
 import com.futo.music.storage.db.DBTrack
+import com.futo.music.storage.db.DBTrackUpdateOpened
 import com.futo.music.storage.db.DBTrackUpdatePlayed
 import com.futo.music.storage.db.DBTrackUpdateRating
 import com.futo.music.storage.db.DBTrackUpdateRatingCalculated
@@ -65,15 +66,16 @@ class StateDatabase(
 
     val db = Room
         .databaseBuilder(context.applicationContext, AppDatabase::class.java, "fmusic")
-        .fallbackToDestructiveMigration(true)
+        //.fallbackToDestructiveMigration(true)
         .build();
 
     fun getRecentPlays(): List<IPlayable> {
         val recentAlbums = db.albumDao().getTopByRecentPlayed(15).filter { it.datePlayed.year > 2000 };
         val recentArtists = db.artistDao().getTopByRecentPlayed(15).filter { it.datePlayed.year > 2000 };
         val recentPlaylists = db.playlistDao().getTopByRecentPlayed(15).filter { it.datePlayed.year > 2000 };
+        val recentTracks = db.tracksDao().getTopByRecentOpened(15).filter { it.dateOpened!!.year > 2000 };
 
-        return (recentAlbums + recentArtists + recentPlaylists).sortedByDescending { it.datePlayed };
+        return (recentAlbums + recentArtists + recentPlaylists + recentTracks).sortedByDescending { it.datePlayed };
     }
 
     fun search(str: String): List<IPlayable> {
@@ -132,6 +134,10 @@ class StateDatabase(
         return db.playlistDao().getTrackPlaylists(id);
     }
 
+    fun getTrackCount(): Int {
+        return db.tracksDao().count();
+    }
+
     fun updatePlaylistMetadata(playlistId: Long) {
         //TODO: Optimize to query
         val tracks = getPlaylistTracks(playlistId);
@@ -165,8 +171,11 @@ class StateDatabase(
     fun setPlayedArtist(artistId: Long) {
         return db.artistDao().setPlayed(DBArtistUpdatePlayed(artistId, OffsetDateTime.now()));
     }
-    fun setPlayedTrack(trackId: Long) {
-        return db.tracksDao().setPlayed(DBTrackUpdatePlayed(trackId, OffsetDateTime.now()));
+    fun setPlayedTrack(trackId: Long, opened: Boolean = false) {
+        if(opened)
+            return db.tracksDao().setOpened(DBTrackUpdateOpened(trackId, OffsetDateTime.now(), OffsetDateTime.now()));
+        else
+            return db.tracksDao().setPlayed(DBTrackUpdatePlayed(trackId, OffsetDateTime.now()));
     }
     fun setPlayedPlaylist(playlistId: Long) {
         return db.playlistDao().setPlayed(DBPlaylistUpdatePlayed(playlistId, OffsetDateTime.now()))
@@ -229,7 +238,7 @@ class StateDatabase(
         var count = 0;
         var results = mutableListOf<Pair<DBPlayableType?, Int>>();
         for(track in tracks) {
-            if(newScoreType == DBPlayableType.Track && newScore <= 0){
+            if(newScore <= 0){
                 val recalcScore = recalculateTrackScore(track);
                 db.tracksDao().setRatingCalculated(DBTrackUpdateRatingCalculated(track.id, recalcScore.first?.value ?: 0, recalcScore.second))
                 results.add(Pair(recalcScore.first, recalcScore.second));
