@@ -125,6 +125,15 @@
         app:layout_constraintRight_toLeftOf="@id/container_trait_right"
         app:layout_constraintTop_toTopOf="@id/container_trait_left"
         app:layout_constraintBottom_toBottomOf="@id/container_trait_right"/>
+    <TextView
+        android:id="@+id/text_rating_note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/buttons_rating"
+        android:textAlignment="center"
+        android:textSize="10dp"
+        android:textColor="#AAFFFFFF" />
+
     <LinearLayout
         android:id="@+id/container_trait_right"
         android:layout_width="wrap_content"

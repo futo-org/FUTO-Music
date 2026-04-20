@@ -9,6 +9,7 @@ import com.futo.music.constructs.Event0
 import com.futo.music.levenshtein
 import com.futo.music.levenshteinDistance
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.models.playable.PlayableType
 import com.futo.music.storage.db.AppDatabase
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBAlbumUpdatePlayed
@@ -33,6 +34,28 @@ enum class DBPlayableType(val value: Int) {
     Playlist(2),
     Album(3),
     Artist(4);
+
+
+    companion object {
+        fun ofValue(v: Int): DBPlayableType? {
+            return when(v) {
+                Track.value -> Track
+                Playlist.value -> Playlist
+                Album.value -> Album
+                Artist.value -> Artist
+                else -> null
+            }
+        }
+        fun fromType(t: PlayableType): DBPlayableType? {
+            return when(t) {
+                PlayableType.Track -> Track
+                PlayableType.Artist -> Artist
+                PlayableType.Album -> Album
+                PlayableType.Playlist -> Playlist
+                else -> return null;
+            }
+        }
+    }
 }
 
 class StateDatabase(
@@ -191,29 +214,59 @@ class StateDatabase(
 
         return result;
     }
-    fun setRatingTrack(trackId: Long, rating: Int): Boolean {
+    fun setRatingTrack(trackId: Long, rating: Int): Pair<DBPlayableType?, Int>? {
         val result = db.tracksDao().setRating(DBTrackUpdateRating(trackId, rating)) > 0;
 
         val track = db.tracksDao().get(trackId);
-        if(track != null)
-            updateTrackScores(listOf(track), DBPlayableType.Track, rating);
+        if(track != null) {
+            return updateTrackScores(listOf(track), DBPlayableType.Track, rating).firstOrNull();
+        }
 
-        return result;
+        return null;
     }
 
-    fun updateTrackScores(tracks: List<DBTrack>, newScoreType: DBPlayableType, newScore: Int): Int {
+    fun updateTrackScores(tracks: List<DBTrack>, newScoreType: DBPlayableType, newScore: Int): List<Pair<DBPlayableType?, Int>> {
         var count = 0;
+        var results = mutableListOf<Pair<DBPlayableType?, Int>>();
         for(track in tracks) {
-            if(track.scoreLevel == newScoreType.value && track.scoreCalculated != newScore) {
+            if(newScoreType == DBPlayableType.Track && newScore <= 0){
+                val recalcScore = recalculateTrackScore(track);
+                db.tracksDao().setRatingCalculated(DBTrackUpdateRatingCalculated(track.id, recalcScore.first?.value ?: 0, recalcScore.second))
+                results.add(Pair(recalcScore.first, recalcScore.second));
+            }
+            else if(track.scoreLevel == newScoreType.value && track.scoreCalculated != newScore) {
                 db.tracksDao().setRatingCalculated(DBTrackUpdateRatingCalculated(track.id, newScoreType.value, newScore));
                 count++;
+                results.add(Pair(newScoreType, newScore));
             }
             else if(track.scoreLevel > newScoreType.value || track.scoreLevel <= 0) {
                 db.tracksDao().setRatingCalculated(DBTrackUpdateRatingCalculated(track.id, newScoreType.value, newScore));
                 count++;
+                results.add(Pair(newScoreType, newScore));
             }
         }
-        return count;
+        return results;
+    }
+
+    fun recalculateTrackScore(track: DBTrack): Pair<DBPlayableType?, Int> {
+        var score = 0;
+
+        if(track.score > 0 && track.scoreLevel == DBPlayableType.Track.value)
+            return Pair(DBPlayableType.Track, track.score);
+
+        val playlists = StateDatabase.instance.getTrackPlaylists(track.id);
+        if(playlists.any { it.score > 0 })
+            return Pair(DBPlayableType.Playlist, playlists.maxOf { it.score });
+
+        val albums = StateDatabase.instance.getTrackAlbums(track.id);
+        if(albums.any { it.score > 0 })
+            return Pair(DBPlayableType.Album, albums.maxOf { it.score });
+
+        val artists = StateDatabase.instance.getTrackArtists(track.id);
+        if(artists.any { it.score > 0 })
+            return Pair(DBPlayableType.Artist, artists.maxOf { it.score });
+
+        return Pair(null, 0);
     }
 
 

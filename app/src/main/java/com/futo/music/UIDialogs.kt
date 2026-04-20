@@ -242,7 +242,7 @@ class UIDialogs {
                                     else if (currentItem is DBPlaylist)
                                         StateDatabase.instance.setRatingPlaylist(currentItem.id, rating);
                                     else if (currentItem is DBTrack)
-                                        StateDatabase.instance.setRatingTrack(currentItem.id, rating);
+                                        StateDatabase.instance.setRatingTrack(currentItem.id, rating) != null;
                                     else false
                                     if(!result) {
                                         appToast("Failed to update rating");

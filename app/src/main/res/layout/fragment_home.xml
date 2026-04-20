@@ -22,7 +22,7 @@
 
             <com.futo.music.ui.views.topbars.GeneralTopBarView
                 android:id="@+id/topbar"
-                app:GeneralTopBar_text="Home"
+                app:GeneralTopBar_text="Alpha"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toTopOf="parent"/>

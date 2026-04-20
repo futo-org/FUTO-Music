@@ -21,6 +21,7 @@ import com.futo.music.activities.MainActivity
 import com.futo.music.logging.Logger
 import com.futo.music.models.playable.Track
 import com.futo.music.states.StateApp
+import com.futo.music.states.StateQueue
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -65,9 +66,17 @@ class PlaybackService: MediaLibraryService() {
                     .build();
             }
 
-            return Futures.immediateFuture(mediaItemsUpdated);
+            return Futures.immediateFuture(mediaItemsUpdated);F
         }
         */
+
+        @OptIn(UnstableApi::class)
+        override fun onAddMediaItems(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>): ListenableFuture<List<MediaItem>> {
+            _lastMediaItems = mediaItems;
+
+
+            return super.onAddMediaItems(mediaSession, controller, mediaItems)
+        }
 
         @OptIn(UnstableApi::class)
         override fun onSetMediaItems(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>, startIndex: Int, startPositionMs: Long): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
@@ -129,8 +138,12 @@ class PlaybackService: MediaLibraryService() {
         player.addListener(object: Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 super.onMediaItemTransition(mediaItem, reason);
-                if(mediaItem?.localConfiguration?.uri != null)
-                    _currentMediaItem = getLastMediaItems().find { it.localConfiguration?.uri == mediaItem?.localConfiguration?.uri };
+                if(mediaItem?.localConfiguration?.uri != null) {
+                    var items = getLastMediaItems();
+                    if(items.size == 0)
+                        items = StateQueue.instance.getLastMediaItems() ?: listOf();
+                    _currentMediaItem = items.find { it.localConfiguration?.uri == mediaItem?.localConfiguration?.uri };
+                }
                 else
                     _currentMediaItem = null;
             }

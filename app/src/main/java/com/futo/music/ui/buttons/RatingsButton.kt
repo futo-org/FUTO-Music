@@ -13,6 +13,7 @@ import com.futo.music.UIDialogs.Companion.appToast
 import com.futo.music.constructs.Event1
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.PlayableType
+import com.futo.music.states.DBPlayableType
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.DBAlbum
@@ -31,9 +32,11 @@ class RatingsButton: ConstraintLayout {
 
     var rating: Int = 0
         get() = field;
-        private set(v: Int) {
-            field = v;
-        }
+        private set(v: Int) { field = v; }
+
+    var ratingGhost: Int = 0
+        get() = field;
+        private set(v: Int) { field = v }
 
     @SuppressLint("ClickableViewAccessibility")
     constructor(context: Context, attrs: AttributeSet? = null): super(context, attrs) {
@@ -96,27 +99,34 @@ class RatingsButton: ConstraintLayout {
 
 
 
-    private fun setStars(rating: Int) {
+    private fun setStars(rating: Int, ghost: Int = 0) {
         this.rating = rating;
         buttonStars.forEachIndexed { index, button ->
             button.apply {
                 if (rating > 0 && rating > index)
                     button.setImageResource(R.drawable.ic_star_gold);
+                else if(ghost > 0 && ghost > index)
+                    button.setImageResource(R.drawable.ic_star_gold_transparant);
                 else
                     button.setImageResource(R.drawable.ic_star_transparent);
             }
         }
     }
 
-    fun setRatingsFor(item: IPlayable?, ratingChanged: ((Int)->Unit)? = null) {
+    private fun getGhostRating(item: IPlayable): Int {
+        return if(item is DBTrack && item.scoreLevel != DBPlayableType.Track.value && item.scoreCalculated > 0) item.scoreCalculated / 20 else 0;
+    }
+    fun setRatingsFor(itemInput: IPlayable?, ratingChanged: ((Int, Int, DBPlayableType?)->Unit)? = null) {
         onRatingChanged.remove(this);
-        if(item != null) {
-            setStars(item.score / 20);
+        if(itemInput != null) {
+            var item: IPlayable = itemInput;
+            val ghost = getGhostRating(item);
+            setStars(item.score / 20, ghost);
             onRatingChanged.subscribe {
                 val rating = it * 20;
                 val currentItem = item;
-                ratingChanged?.invoke(rating);
                 currentItem.score = rating;
+                ratingChanged?.invoke(rating, getGhostRating(item), DBPlayableType.fromType(item.type));
                 StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
                     val result = if (currentItem is DBAlbum)
                         StateDatabase.instance.setRatingAlbum(currentItem.id, rating);
@@ -124,8 +134,17 @@ class RatingsButton: ConstraintLayout {
                         StateDatabase.instance.setRatingArtist(currentItem.id, rating);
                     else if (currentItem is DBPlaylist)
                         StateDatabase.instance.setRatingPlaylist(currentItem.id, rating);
-                    else if (currentItem is DBTrack)
-                        StateDatabase.instance.setRatingTrack(currentItem.id, rating);
+                    else if (currentItem is DBTrack) {
+                       val changeResult = StateDatabase.instance.setRatingTrack(currentItem.id, rating);
+                        if(changeResult != null) {
+                            if(changeResult.first != null && changeResult.first != DBPlayableType.Track) {
+                                ratingChanged?.invoke(0, changeResult.second, changeResult.first);
+                                if(changeResult.second > 0)
+                                    setStars(rating / 20, changeResult.second / 20);
+                            }
+                        }
+                        changeResult != null;
+                    }
                     else false
                     if (!result) {
                         appToast("Failed to update rating");

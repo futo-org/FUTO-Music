@@ -122,8 +122,8 @@ class PlayableHeader: ConstraintLayout {
     }
 
     fun setPlayable(playable: IPlayable, withGlobalBackground: Boolean = false) {
-        buttonRatings.setRatingsFor(playable, {
-            onRatingChanged?.emit(it);
+        buttonRatings.setRatingsFor(playable, { newRating, ghost, type ->
+            onRatingChanged?.emit(newRating);
         });
 
         textName.text = playable.name;

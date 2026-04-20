@@ -106,6 +106,9 @@ class StateQueue {
     fun setLastMediaItems(items: List<MediaItem>) {
         _lastSetMediaItems = items;
     }
+    fun getLastMediaItems(): List<MediaItem>? {
+        return _lastSetMediaItems;
+    }
     //Hackfix for missing data temporarily
     fun restoreMediaItem(item: MediaItem?): MediaItem? {
         if(item == null)

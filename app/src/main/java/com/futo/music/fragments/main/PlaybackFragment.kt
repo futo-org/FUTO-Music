@@ -37,7 +37,9 @@ import com.futo.music.gestures.OnSwipeTouchListener
 import com.futo.music.logic.PlayerManager
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
+import com.futo.music.models.playable.PlayableType
 import com.futo.music.services.PlaybackService
+import com.futo.music.states.DBPlayableType
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateQueue
@@ -123,6 +125,7 @@ class PlaybackFragment: MainFragment() {
         private val _buttonRepeat: ImageButton;
 
         private val _buttonStars: RatingButton;
+        private val _textRatingNote: TextView;
         private val _buttonQueue: ImageButton;
         private val _buttonPlaylistAdd: ImageButton;
 
@@ -168,6 +171,7 @@ class PlaybackFragment: MainFragment() {
             _textArtist = findViewById(R.id.text_artist);
 
             _buttonsRating = findViewById(R.id.buttons_rating);
+            _textRatingNote = findViewById(R.id.text_rating_note);
 
             _textTitle.isSelected = true;
 
@@ -347,8 +351,9 @@ class PlaybackFragment: MainFragment() {
 
                 withContext(Dispatchers.Main) {
                     _buttonStars.setRating(track?.score ?: 0);
-                    _buttonsRating.setRatingsFor(track) {
-                        _buttonStars.setRating(it);
+                    _buttonsRating.setRatingsFor(track) { newRating, ghost, type ->
+                        _buttonStars.setRating(newRating);
+                        setRatingFrom(type);
                     }
                     if(track != null)
                         setTrackMetadata(track);
@@ -398,6 +403,16 @@ class PlaybackFragment: MainFragment() {
             _textTitle.text = track.name;
             _textArtist.text = track.artistLine;
             _textAlbum.text = track.albumLine;
+
+            setRatingFrom(DBPlayableType.ofValue(track.scoreLevel));
+        }
+
+        fun setRatingFrom(type: DBPlayableType?) {
+            if(type != DBPlayableType.Track && type != null) {
+                _textRatingNote.text = "from " + type.name;
+            }
+            else
+                _textRatingNote.text = "";
         }
 
 
@@ -480,6 +495,12 @@ class PlaybackFragment: MainFragment() {
                     }
                 }
                 StateQueue.instance.setQueue(context, parameter.playable);
+            }
+            if(parameter == null) {
+                val player = PlaybackService._lastPlayer ?: return;
+                val mediaItem = PlaybackService._currentMediaItem ?: return;
+                val track = null;
+                onMediaMetadataChanged(player, mediaItem.mediaMetadata, track);
             }
         }
 
