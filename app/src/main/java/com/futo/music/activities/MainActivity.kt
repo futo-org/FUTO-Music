@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.SystemBarStyle
@@ -96,6 +97,7 @@ import com.bumptech.glide.RequestBuilder
 import com.futo.music.fragments.main.AlbumFragment
 import com.futo.music.fragments.main.PlaylistFragment
 import com.futo.music.toGradientDrawable
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 class MainActivity : AppCompatActivity() {
 
@@ -103,6 +105,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var _fragContainerTopBar: FragmentContainerView;
     private lateinit var _fragContainerMain: FragmentContainerView;
     private lateinit var _fragContainerBotBar: FragmentContainerView;
+
+    private lateinit var _fragContainerSheet: FragmentContainerView;
+    private lateinit var _containerSheet: FrameLayout;
+    private lateinit var _sheetBehavior: BottomSheetBehavior<FrameLayout>;
+    private var _sheetCloseHandler: (()->Unit)? = null;
+
     private lateinit var _toastView: ToastView;
     private lateinit var _overlayPlayable: PlayableOptionOverlay;
 
@@ -206,6 +214,8 @@ class MainActivity : AppCompatActivity() {
         _fragContainerTopBar = findViewById(R.id.fragment_top_bar);
         _fragContainerMain = findViewById(R.id.fragment_main);
         _fragContainerBotBar = findViewById(R.id.fragment_bottom_bar);
+        _fragContainerSheet = findViewById(R.id.overlay_sheet_fragment);
+        _containerSheet = findViewById(R.id.overlay_sheet);
         _toastView = findViewById(R.id.toast_view);
         _overlayPlayable = findViewById(R.id.overlay_playable)
 
@@ -217,6 +227,24 @@ class MainActivity : AppCompatActivity() {
         _backgroundBottom.post {
             _backgroundBottom.pivotY = _backgroundBottom.height.toFloat();
         }
+
+        _sheetBehavior = BottomSheetBehavior<FrameLayout>.from(_containerSheet);
+        _sheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN;
+        _sheetBehavior.addBottomSheetCallback(object: BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(sheet: View, state: Int) {
+                when(state) {
+                    BottomSheetBehavior.STATE_EXPANDED -> {}
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        Logger.i(TAG, "Sheet closed");
+                        _sheetCloseHandler?.invoke();
+                    }
+                    BottomSheetBehavior.STATE_DRAGGING -> {}
+                }
+            }
+            override fun onSlide(p0: View, p1: Float) {
+
+            }
+        });
 
         _rootInsetsController = RootInsetsController.attach(this, _rootView);
         _rootInsetsController.setLightSystemBarAppearance(lightStatus = false, lightNav = false);
@@ -336,7 +364,14 @@ class MainActivity : AppCompatActivity() {
 
     fun sync(force: Boolean = false) {
         lifecycleScope.launch(Dispatchers.IO) {
-            if(force || StateLibrary.instance.requireSync(this@MainActivity) || StateDatabase.instance.getTrackCount() == 0) {
+            var shouldSync = force || StateLibrary.instance.requireSync(this@MainActivity);
+
+            if(!shouldSync) {
+                val countDB = StateDatabase.instance.getTrackCount();
+                val countMS = StateLibrary.instance.getTrackCount(this@MainActivity);
+                shouldSync = countDB < countMS;
+            }
+            if(shouldSync) {
                 val announce = StateAnnouncement.instance.registerLoading("Syncing Mediastore", "Importing new music from your phone", null,
                     "importing", true);
                 UIDialogs.appToast("We're importing your music!\nGive us a minute.")
@@ -701,12 +736,18 @@ class MainActivity : AppCompatActivity() {
     var _callbackPermissionAudio: ((Boolean)->Unit)? = null;
     val permissionReqAudio = registerForActivityResult(ActivityResultContracts.RequestPermission(), { isGranted ->
         //Clear syncs after
-        StateLibrary.instance.resetSyncs();
+        //StateLibrary.instance.resetSyncs();
         _callbackPermissionAudio?.invoke(isGranted);
     });
     fun requestPermissionAudio(cb: ((Boolean)->Unit)? = null) {
         _callbackPermissionAudio = cb;
-        permissionReqAudio.launch(android.Manifest.permission.READ_MEDIA_AUDIO);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionReqAudio.launch(android.Manifest.permission.READ_MEDIA_AUDIO)
+        }
+        else {
+            permissionReqAudio.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
 
     }
 
@@ -752,6 +793,15 @@ class MainActivity : AppCompatActivity() {
     fun showPlayableOverlay(playable: IPlayable) {
         lifecycleScope.launch(Dispatchers.Main) {
             _overlayPlayable.show(playable);
+        }
+    }
+    fun showSheet(fragment: Fragment, onClose: (()-> Unit)? = null) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            _sheetCloseHandler = onClose;
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.overlay_sheet_fragment, fragment)
+                .commitNow();
+            _sheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED;
         }
     }
 

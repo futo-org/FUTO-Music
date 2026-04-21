@@ -4,12 +4,14 @@ import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Animatable
+import android.os.Build
 import android.text.method.ScrollingMovementMethod
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
@@ -21,8 +23,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.extensions.assume
 import com.futo.music.logging.Logger
@@ -36,8 +42,14 @@ import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
 import com.futo.music.ui.buttons.PillButton
 import com.futo.music.ui.dialogs.ProgressDialog
+import com.futo.music.ui.viewholders.ListPlaylistToggleViewHolder
 import com.futo.music.ui.viewholders.ListPlaylistViewHolder
+import com.futo.music.ui.views.SheetBar
+import com.futo.music.ui.views.containers.PlaylistsToggleView
+import com.futo.music.ui.views.playback.PlayableOptionOverlay
+import com.futo.music.ui.views.playback.PlayableOptionsView
 import com.futo.music.ui.views.toasts.ToastView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -79,6 +91,17 @@ class UIDialogs {
         }
 
         fun overlayPlayable(playable: IPlayable) {
+            StateApp.instance.activity()?.let {
+                var dialog: BottomSheetDialog? = null;
+                val overlay = PlayableOptionsView(it);
+                overlay.setPlayable(playable)
+                overlay.onHide.subscribe {
+                    dialog?.hide();
+                }
+                dialog = showSheet(it, overlay, addTopHandle = true)
+            }
+        }
+        fun overlayPlayableOld(playable: IPlayable) {
             StateApp.instance.activity()?.let {
                 it.showPlayableOverlay(playable);
             }
@@ -266,6 +289,66 @@ class UIDialogs {
 
         fun showAddToPlaylistDialog(context: Context, scope: CoroutineScope, reason: String, track: DBTrack) {
             scope.launch(Dispatchers.IO) {
+                var dialog: BottomSheetDialog? = null;
+
+                val trackArt = StateDatabase.instance.getTrackAlbumArt(track.id);
+                val playlists = StateDatabase.instance.getPlaylistsByRecent()
+                val partOf = StateDatabase.instance.getTrackPlaylists(track.id);
+                val list = playlists.map { ListPlaylistToggleViewHolder.Item(it, partOf.any{ part -> part.id == it.id}) }.sortedBy { if(it.added) 1 else 0 };
+                withContext(Dispatchers.Main) {
+                    val togglesView = PlaylistsToggleView(context, "New Playlist", {
+                        dialog?.hide();
+                        showCreatePlaylistDialog(context, scope) {
+                            showAddToPlaylistDialog(context, scope, reason, track);
+                        }
+                    });
+                    togglesView.onPlaylistToggleChanged.subscribe { item ->
+                        scope.launch(Dispatchers.IO) {
+                            if(!item.added) {
+                                StateDatabase.instance.removeTrackFromPlaylist(item.playlist.id, track.id);
+                                StateDatabase.instance.updatePlaylistMetadata(item.playlist.id);
+                                StateDatabase.instance.onLibraryUpdated.emit();
+                            }
+                            else {
+                                val id = StateDatabase.instance.addTrackToPlaylist(item.playlist.id, track.id);
+                                if (id > 0) {
+
+                                    StateDatabase.instance.updatePlaylistMetadata(item.playlist.id);
+                                    StateDatabase.instance.onLibraryUpdated.emit();
+                                }
+                            }
+                            withContext(Dispatchers.Main) {
+
+                            }
+                        }
+                    }
+                    togglesView.setPlaylists(list);
+                    togglesView.setTopViews(listOf(
+                        SheetBar(context),
+                        TextView(context).apply {
+                            this.text = "Playlists"
+                            this.textSize = 6.dp(resources).toFloat();
+                            this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                            this.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                                this.setMargins(0,0,0,10.dp(resources));
+                            }
+                        },
+                        TextView(context).apply {
+                            this.text = reason
+                            this.textSize = 4.dp(resources).toFloat();
+                            this.setTextColor(Color.rgb(150, 150, 150));
+                            this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                            this.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                                this.setMargins(0,0,0,15.dp(resources));
+                            }
+                        }
+                    ));
+                    dialog = showSheet(context, togglesView);
+                }
+            }
+        }
+        fun showAddToPlaylistDialogOld(context: Context, scope: CoroutineScope, reason: String, track: DBTrack) {
+            scope.launch(Dispatchers.IO) {
                 val trackArt = StateDatabase.instance.getTrackAlbumArt(track.id);
                 val playlists = StateDatabase.instance.getPlaylistsByRecent()
                 val partOf = StateDatabase.instance.getTrackPlaylists(track.id);
@@ -341,6 +424,42 @@ class UIDialogs {
                         }
                     }
                 }, UIDialogs.ActionStyle.PRIMARY, true));
+        }
+
+        fun showSheet(context: Context, view: View, onClose: (()->Unit)? = null, addTopHandle: Boolean = false): BottomSheetDialog? {
+            return StateApp.instance.activity()?.let {
+                val dialog = BottomSheetDialog(context);
+
+                var viewToUse = if(addTopHandle) {
+                    val linear = LinearLayout(context);
+                    linear.orientation = LinearLayout.VERTICAL;
+                    linear.addView(SheetBar(context))
+                    linear.addView(view);
+                    linear;
+                } else view;
+
+                dialog.setContentView(viewToUse);
+                dialog.show();
+
+                //TODO: add to theme
+                val background = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet);
+                background?.setBackgroundResource(R.drawable.background_sheet);
+
+                try {
+                    dialog.window?.let {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            it.setDecorFitsSystemWindows(false)
+                        };
+                    }
+                }catch(ex: Throwable){}
+
+                ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+                    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                    v.setPadding(0, 0, 0, systemBars.bottom) // Add the nav bar height as padding
+                    insets
+                }
+                return@let dialog;
+            }
         }
 
         fun showAdapterDialog(context: Context, title: String, textDetails: String, prepareRecycler: (RecyclerView)->Unit): AlertDialog {

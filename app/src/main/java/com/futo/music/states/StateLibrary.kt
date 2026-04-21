@@ -437,6 +437,20 @@ class StateLibrary {
         }
     }
 
+    fun getTrackCount(context: Context): Int {
+        val resolver =  context.contentResolver;
+        if(resolver == null) {
+            Logger.w(TAG, "Album contentResolver not found");
+            return 0;
+        }
+        val cursor = resolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Audio.Media._ID),
+            null, null, null);
+        return cursor.use {
+            return it?.count ?: 0;
+        }
+    }
+
     companion object {
         val TAG = "Library";
         val PROJECTION_VIDEO = arrayOf(

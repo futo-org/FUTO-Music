@@ -81,6 +81,16 @@ class StandardButton : LinearLayout {
         return this;
     }
 
+    fun withBackground(resId: Int): StandardButton {
+        if(resId > 0)
+            root.setBackgroundResource(resId);
+        return this;
+    }
+    fun withOnClick(handler: ()-> Unit): StandardButton {
+        onClick.subscribe(handler);
+        return this;
+    }
+
     fun setTransparant() {
         root.setBackgroundColor(0);
     }

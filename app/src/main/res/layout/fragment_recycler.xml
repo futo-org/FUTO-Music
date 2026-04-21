@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <LinearLayout
+        android:id="@+id/container_before"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        android:orientation="vertical" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
         android:fadingEdge="vertical"
         android:fadingEdgeLength="30dp"
         android:requiresFadingEdge="vertical"
+        app:layout_constraintTop_toBottomOf="@id/container_before"
+        app:layout_constraintBottom_toTopOf="@id/container_after"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <LinearLayout
+        android:id="@+id/container_after"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="vertical" />
 </androidx.constraintlayout.widget.ConstraintLayout>
