@@ -189,7 +189,12 @@ class HomeFragment: MainFragment() {
             gridRecent.onLongClick.subscribe {
                 it.openPlayable(fragment, true);
             }
-
+            gridSongRecent.onClick.subscribe {
+                it.openPlayable(fragment);
+            }
+            gridSongRecent.onLongClick.subscribe {
+                it.openPlayable(fragment, true);
+            }
 
             buttonPlaylistsCreate.onClick.subscribe {
                 showNewPlaylistDialog();

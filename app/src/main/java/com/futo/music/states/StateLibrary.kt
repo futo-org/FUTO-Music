@@ -287,6 +287,7 @@ class StateLibrary {
             contentUrl = track.uri.toString(),
             dateAdded = if(existing != null) existing.dateAdded else OffsetDateTime.now(),
             datePlayed = if(existing != null) existing.datePlayed else OffsetDateTime.MIN,
+            dateOpened = if(existing != null) existing.dateOpened else null,
             plays = if(existing != null) existing.plays else 0,
             skips = if(existing != null) existing.skips else 0,
             score = existing?.score ?: -1,
