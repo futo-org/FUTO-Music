@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.futo.music.BuildConfig
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.UIDialogs.ActionStyle
@@ -49,6 +50,7 @@ class HomeFragment: MainFragment() {
     private var _dataArtists: List<DBArtist>? = null;
     private var _dataRecent: List<IPlayable>? = null;
     private var _dataPlaylists: List<DBPlaylist>? = null;
+    private var _dataSongNew: List<IPlayable>? = null;
     private var _dataVibeWeighted: Vibe? = null;
 
     fun clearCache() {
@@ -113,6 +115,7 @@ class HomeFragment: MainFragment() {
         val gridPlaylists: ContentGrid;
         val gridArtists: ContentGrid;
         val gridAlbums: ContentGrid;
+        val gridSongRecent: ContentGrid;
 
         val containerPlaylistsCreate: ConstraintLayout;
         val buttonPlaylistsCreate: RoundButton;
@@ -128,6 +131,7 @@ class HomeFragment: MainFragment() {
             gridPlaylists = findViewById(R.id.grid_playlists);
             gridArtists = findViewById(R.id.grid_artists);
             gridAlbums = findViewById(R.id.grid_albums);
+            gridSongRecent = findViewById(R.id.grid_songs_recent);
 
             containerShuffles = findViewById(R.id.container_shuffles);
             buttonShuffle = findViewById(R.id.button_shuffle);
@@ -141,6 +145,7 @@ class HomeFragment: MainFragment() {
                         }, ActionStyle.PRIMARY));
                 }
                 setFragment(fragment);
+                setTitleMini($"(v${BuildConfig.VERSION_CODE})")
             }
 
             containerPlaylistsCreate = findViewById(R.id.container_playlist_create);
@@ -230,6 +235,7 @@ class HomeFragment: MainFragment() {
                 val artists = fragment._dataArtists ?: StateDatabase.instance.getArtistsByRecent();
                 val albums = fragment._dataAlbums ?:  StateDatabase.instance.getAlbumsByRecent();
                 var playlists = (fragment._dataPlaylists ?: StateDatabase.instance.getPlaylistsByRecent()).map { it as IPlayable };
+                val songNew = fragment._dataSongNew ?: StateDatabase.instance.getTracksNew(20);
 
 
                 //val vibeWeighted = fragment._dataVibeWeighted ?: Vibe("Suggested", ImageVariable.fromResource(R.drawable.ic_playlist), listOf(), listOf(), StateDatabase.instance.getTrackListWeighted(100));
@@ -237,6 +243,7 @@ class HomeFragment: MainFragment() {
                 //fragment._dataRecent = recent;
                 fragment._dataArtists = artists;
                 fragment._dataAlbums = albums;
+                fragment._dataSongNew = songNew;
                 //fragment._dataVibeWeighted = vibeWeighted;
 
                 //if(vibeWeighted != null && vibeWeighted.singles.size > 5)
@@ -276,6 +283,13 @@ class HomeFragment: MainFragment() {
                     else {
                         gridAlbums.setData(albums);
                         gridAlbums.visibility = View.VISIBLE;
+                    }
+
+                    if(songNew.isNullOrEmpty())
+                        gridSongRecent.visibility = View.GONE;
+                    else {
+                        gridSongRecent.setData(songNew);
+                        gridSongRecent.visibility = View.VISIBLE;
                     }
                 }
             }

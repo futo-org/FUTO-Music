@@ -92,6 +92,7 @@ import kotlin.math.max
 import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.RequestBuilder
 import com.futo.music.fragments.main.AlbumFragment
@@ -193,6 +194,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen();
         super.onCreate(savedInstanceState);
 
         enableEdgeToEdge(

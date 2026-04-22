@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.extensions.assume
 import com.futo.music.logging.Logger
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.states.DBPlayableType
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.DBAlbum
@@ -261,14 +262,20 @@ class UIDialogs {
                                 val currentItem = item;
                                 currentItem.score = rating;
                                 scope.launch(Dispatchers.IO) {
+                                    var trackRatingResult: Pair<DBPlayableType?, Int>? = null;
                                     val result = if (currentItem is DBAlbum)
                                         StateDatabase.instance.setRatingAlbum(currentItem.id, rating);
                                     else if (currentItem is DBArtist)
                                         StateDatabase.instance.setRatingArtist(currentItem.id, rating);
                                     else if (currentItem is DBPlaylist)
                                         StateDatabase.instance.setRatingPlaylist(currentItem.id, rating);
-                                    else if (currentItem is DBTrack)
-                                        StateDatabase.instance.setRatingTrack(currentItem.id, rating) != null;
+                                    else if (currentItem is DBTrack) {
+                                        trackRatingResult = StateDatabase.instance.setRatingTrack(
+                                            currentItem.id,
+                                            rating
+                                        )
+                                        trackRatingResult != null
+                                    }
                                     else false
                                     if(!result) {
                                         appToast("Failed to update rating");

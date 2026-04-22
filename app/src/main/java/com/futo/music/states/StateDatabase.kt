@@ -8,6 +8,7 @@ import com.futo.music.RootApplication
 import com.futo.music.constructs.Event0
 import com.futo.music.levenshtein
 import com.futo.music.levenshteinDistance
+import com.futo.music.logging.Logger
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.storage.db.AppDatabase
@@ -134,6 +135,11 @@ class StateDatabase(
         return db.playlistDao().getTrackPlaylists(id);
     }
 
+
+
+    fun getTracksNew(count: Int): List<DBTrack> {
+        return db.tracksDao().getTracksNew(count);
+    }
     fun getTrackCount(): Int {
         return db.tracksDao().count();
     }
@@ -253,6 +259,13 @@ class StateDatabase(
                 count++;
                 results.add(Pair(newScoreType, newScore));
             }
+            else if(track.scoreLevel == newScoreType.value && track.scoreCalculated == newScore){
+                //No update
+                results.add(Pair(newScoreType, newScore));
+            }
+            else {
+                Logger.e(TAG, "Unhandled edgecase for rating update");
+            }
         }
         return results;
     }
@@ -285,7 +298,11 @@ class StateDatabase(
     }
 
 
-    fun insertOrUpdate(track: DBTrack): Long {
+    fun insertOrUpdate(track: DBTrack, explicitUpdateId: Long = -1): Long {
+        if(explicitUpdateId > 0) {
+            db.tracksDao().update(track);
+            return explicitUpdateId;
+        }
         return db.tracksDao().insert(track).first();
     }
     fun insertOrUpdate(artist: DBArtist): Long {

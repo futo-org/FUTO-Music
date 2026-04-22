@@ -301,7 +301,7 @@ class StateLibrary {
         )
 
         Logger.i(TAG, "Inserting track [${track.name}] (new: ${existing == null})")
-        dbEntry.id = StateDatabase.instance.insertOrUpdate(dbEntry);
+        dbEntry.id = StateDatabase.instance.insertOrUpdate(dbEntry, existing?.id ?: -1);
 ;        if(dbAlbum != null)
             StateDatabase.instance.db.albumDao().insert(DBAlbumTrack(dbAlbum.id, dbEntry.id, track.albumOrder));
         if(dbArtist != null)

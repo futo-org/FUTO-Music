@@ -124,4 +124,6 @@ dependencies {
 
     //HTTP
     implementation("com.squareup.okhttp3:okhttp:5.3.0")
+
+    implementation("androidx.core:core-splashscreen:1.0.0")
 }

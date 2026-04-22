@@ -24,6 +24,7 @@ class GeneralTopBarView: ConstraintLayout {
     private val _buttonNotifIcon: ImageView;
     private val _buttonNotifCount: TextView;
     private val _textTitle: TextView;
+    private val _textMiniMeta: TextView;
 
     private var _parentFragment: MainFragment? = null;
 
@@ -37,6 +38,7 @@ class GeneralTopBarView: ConstraintLayout {
         _buttonNotifs = findViewById(R.id.button_notifs);
         _buttonNotifIcon = findViewById(R.id.button_notifs_icon);
         _buttonNotifCount = findViewById(R.id.button_notifs_count);
+        _textMiniMeta = findViewById(R.id.text_minimeta);
 
         _buttonNotifs.setOnClickListener {
             val frag = _parentFragment;
@@ -88,6 +90,10 @@ class GeneralTopBarView: ConstraintLayout {
             _buttonNotifIcon.setImageResource(R.drawable.ic_notifications_filled);
         else
             _buttonNotifIcon.setImageResource(R.drawable.ic_notifications);
+    }
+
+    fun setTitleMini(str: String) {
+        _textMiniMeta.text = str;
     }
 
     fun setTitleLongPress(handler: (()->Unit)?) {

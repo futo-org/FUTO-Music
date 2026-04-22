@@ -149,6 +149,9 @@ interface DBTrackDao {
     @Query("SELECT t.* FROM tracks t INNER JOIN playlist_tracks at ON t.id = at.trackId WHERE at.playlistId = :playlistId ORDER BY at.ordering")
     fun getPlaylistTracks(playlistId: Long): List<DBTrack>
 
+    @Query("SELECT * FROM tracks ORDER BY dateAdded DESC LIMIT :count")
+    fun getTracksNew(count: Int): List<DBTrack>
+
 
     @Query("SELECT t.* FROM tracks t WHERE t.scoreCalculated > 0 ORDER BY (ABS(RANDOM())/ 9223372036854775808.0) * t.scoreCalculated / 100 DESC LIMIT :count")
     fun getRandomWeightedTracks(count: Int): List<DBTrack>
@@ -163,6 +166,9 @@ interface DBTrackDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg tracks: DBTrack): Array<Long>;
+
+    @Update(entity = DBTrack::class)
+    fun update(vararg tracks: DBTrack): Int
 
     @Update(entity = DBTrack::class)
     fun setPlayed(update: DBTrackUpdatePlayed)
