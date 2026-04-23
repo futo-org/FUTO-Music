@@ -143,6 +143,9 @@ class StateDatabase(
     fun getTrackCount(): Int {
         return db.tracksDao().count();
     }
+    fun getAllTracks(): List<DBTrack> {
+        return db.tracksDao().getAll();
+    }
 
     fun updatePlaylistMetadata(playlistId: Long) {
         //TODO: Optimize to query

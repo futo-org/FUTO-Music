@@ -58,6 +58,7 @@ class HomeFragment: MainFragment() {
         _dataArtists = null;
         _dataRecent = null;
         _dataPlaylists = null;
+        _dataSongNew = null;
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -163,6 +164,36 @@ class HomeFragment: MainFragment() {
             }
             gridPlaylists.setButtonListener(androidx.media3.session.R.drawable.media3_icon_plus) {
                 showNewPlaylistDialog();
+            }
+            gridSongRecent.setButtonListener {
+                fragment.lifecycleScope.launch(Dispatchers.IO) {
+                    val count = StateDatabase.instance.getTrackCount();
+                    if(count > 2000) {
+                        withContext(Dispatchers.Main) {
+                            UIDialogs.showDialog(context, R.drawable.ic_music_note, "High Track Count", "You appear to have lots of music (${count}) on this phone, are you sure you want to list all?\n\nThis UI has not been optimized yet.\n\nSearching your music might be a better idea.",
+                                null, 0,
+                                UIDialogs.Action("Nevermind", {}),
+                                UIDialogs.Action("Open", {
+
+                                    fragment.lifecycleScope.launch(Dispatchers.IO) {
+                                        val allSongs = StateDatabase.instance.getAllTracks();
+                                        withContext(Dispatchers.Main) {
+                                            fragment.navigate<ContentsFragment>(Pair("Songs", allSongs));
+                                        }
+                                    }
+
+
+                                }, UIDialogs.ActionStyle.DANGEROUS))
+                        }
+
+                    }
+                    else {
+                        val allSongs = StateDatabase.instance.getAllTracks();
+                        withContext(Dispatchers.Main) {
+                            fragment.navigate<ContentsFragment>(Pair("Songs", allSongs));
+                        }
+                    }
+                }
             }
 
             gridArtists.onClick.subscribe {

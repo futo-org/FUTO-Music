@@ -303,7 +303,27 @@ class UIDialogs {
                 val partOf = StateDatabase.instance.getTrackPlaylists(track.id);
                 val list = playlists.map { ListPlaylistToggleViewHolder.Item(it, partOf.any{ part -> part.id == it.id}) }.sortedBy { if(it.added) 1 else 0 };
                 withContext(Dispatchers.Main) {
-                    val togglesView = PlaylistsToggleView(context, "New Playlist", {
+                    val togglesView = PlaylistsToggleView(context,
+                        preViews = arrayListOf(
+                            TextView(context).apply {
+                                this.text = "Playlists"
+                                this.textSize = 6.dp(resources).toFloat();
+                                this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                                this.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                                    this.setMargins(0,15.dp(resources),0,10.dp(resources));
+                                }
+                            },
+                            TextView(context).apply {
+                                this.text = reason
+                                this.textSize = 4.dp(resources).toFloat();
+                                this.setTextColor(Color.rgb(150, 150, 150));
+                                this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                                this.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                                    this.setMargins(0,0,0,15.dp(resources));
+                                }
+                            }),
+                        addButtonText = "New Playlist",
+                        addButtonHandler = {
                         dialog?.hide();
                         showCreatePlaylistDialog(context, scope) {
                             showAddToPlaylistDialog(context, scope, reason, track);
@@ -331,24 +351,7 @@ class UIDialogs {
                     }
                     togglesView.setPlaylists(list);
                     togglesView.setTopViews(listOf(
-                        SheetBar(context),
-                        TextView(context).apply {
-                            this.text = "Playlists"
-                            this.textSize = 6.dp(resources).toFloat();
-                            this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-                            this.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-                                this.setMargins(0,0,0,10.dp(resources));
-                            }
-                        },
-                        TextView(context).apply {
-                            this.text = reason
-                            this.textSize = 4.dp(resources).toFloat();
-                            this.setTextColor(Color.rgb(150, 150, 150));
-                            this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-                            this.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-                                this.setMargins(0,0,0,15.dp(resources));
-                            }
-                        }
+                        SheetBar(context)
                     ));
                     dialog = showSheet(context, togglesView);
                 }

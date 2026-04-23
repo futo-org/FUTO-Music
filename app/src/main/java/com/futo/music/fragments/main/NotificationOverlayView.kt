@@ -27,6 +27,7 @@ import com.futo.music.ui.adapters.AnyAdapterView.Companion.asAny
 import com.futo.music.ui.views.LoaderView
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.topbars.GeneralTopBarView
+import com.futo.music.ui.views.topbars.NavigationTopBarView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -52,7 +53,7 @@ class NotificationOverlayView: ConstraintLayout {
         });
         emptyView.setText("Nothing to see here", "You don't have any notifications", R.drawable.ic_notifications)
 
-        findViewById<GeneralTopBarView>(R.id.topbar).apply {
+        findViewById<NavigationTopBarView>(R.id.topbar).apply {
             setFragment(frag);
         }
     }

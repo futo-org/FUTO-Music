@@ -7,6 +7,7 @@ import android.view.MotionEvent
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.UIDialogs.Companion.appToast
@@ -91,8 +92,12 @@ class RatingsButton: ConstraintLayout {
 
     fun getRatingAtPosition(touchX: Float): Int? {
         for(view in buttonStars) {
-            if(touchX > view.left && touchX < view.right)
-                return buttonStars.indexOf(view);
+            if(touchX > view.left && touchX < view.right) {
+                val index = buttonStars.indexOf(view);
+                if(index == 0 && touchX < (view.left + (view.width / 7)))
+                    return -1;
+                return index;
+            }
         }
         return null;
     }
@@ -119,6 +124,7 @@ class RatingsButton: ConstraintLayout {
     fun setRatingsFor(itemInput: IPlayable?, ratingChanged: ((Int, Int, DBPlayableType?)->Unit)? = null) {
         onRatingChanged.remove(this);
         if(itemInput != null) {
+            isVisible = true;
             var item: IPlayable = itemInput;
             val ghost = getGhostRating(item);
             setStars(item.score / 20, ghost);
@@ -152,7 +158,9 @@ class RatingsButton: ConstraintLayout {
                 }
             }
         }
-        else
+        else {
             setStars(0);
+            isVisible = false;
+        }
     }
 }

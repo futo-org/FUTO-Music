@@ -357,6 +357,22 @@ class StateLibrary {
             return@use;
         }
     }
+    fun getTrackByUrl(context: Context, url: String): Track? {
+        val resolver =  context.contentResolver;
+        if(resolver == null) {
+            Logger.w(TAG, "Album contentResolver not found");
+            return null;
+        }
+        val cursor = resolver?.query(
+           Uri.parse(url), StateLibrary.PROJECTION_MEDIA,
+            null,
+            null,
+            null) ?: return null;
+        return cursor.use {
+            cursor.moveToFirst();
+            return audioFromCursor(cursor);
+        }
+    }
 
     fun getAlbums(context: Context): List<AndroidAlbum> {
         return AndroidAlbum.getAlbums(context);

@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHeight_min="wrap"
         android:orientation="vertical" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -18,13 +19,15 @@
         android:requiresFadingEdge="vertical"
         app:layout_constraintTop_toBottomOf="@id/container_before"
         app:layout_constraintBottom_toTopOf="@id/container_after"
+        app:layout_constraintHeight_min="wrap"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp" />
 
     <LinearLayout
         android:id="@+id/container_after"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHeight_min="wrap"
         android:orientation="vertical" />
 </androidx.constraintlayout.widget.ConstraintLayout>

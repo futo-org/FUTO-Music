@@ -97,7 +97,7 @@ class SearchFragment: MainFragment() {
             if(str.length < 2) {
                 emptyView.isVisible = true;
                 gridSearch.isVisible = false;
-
+                emptyView.setText("Search", "At least 2 characters are required");
             }
             else {
                 emptyView.isVisible = false;
@@ -106,8 +106,12 @@ class SearchFragment: MainFragment() {
                     val search = StateDatabase.instance.search(str);
 
                     withContext(Dispatchers.Main) {
-                        if (search.isNullOrEmpty())
+                        if (search.isNullOrEmpty()) {
+                            gridSearch.setData(listOf())
                             gridSearch.visibility = GONE;
+                            emptyView.setText("No results", "No results were found for your query.");
+                            emptyView.isVisible = true;
+                        }
                         else {
                             gridSearch.setData(search);
                             gridSearch.visibility = VISIBLE;

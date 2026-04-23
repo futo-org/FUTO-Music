@@ -15,6 +15,7 @@ import com.futo.music.fragments.MainFragView
 import com.futo.music.fragments.top.GeneralTopBarFragment
 import com.futo.music.fragments.top.NavigationTopBarFragment
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.openPlayable
 import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
@@ -78,7 +79,8 @@ class ContentsFragment: MainFragment() {
             topbar = findViewById(R.id.topbar);
 
             gridContent.onClick.subscribe {
-                fragment.navigate<PlaybackFragment>(it);
+                //fragment.navigate<PlaybackFragment>(it);
+                it.openPlayable(fragment);
             }
             search.onChange.subscribe {
                 contents?.let { contents ->

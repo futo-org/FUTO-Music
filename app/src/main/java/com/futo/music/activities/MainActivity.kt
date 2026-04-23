@@ -12,6 +12,8 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -97,6 +99,9 @@ import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.RequestBuilder
 import com.futo.music.fragments.main.AlbumFragment
 import com.futo.music.fragments.main.PlaylistFragment
+import com.futo.music.models.playable.Album
+import com.futo.music.models.playable.Artist
+import com.futo.music.models.playable.Track
 import com.futo.music.toGradientDrawable
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
@@ -864,6 +869,89 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent);
+
+        var targetData: String? = null;
+        when(intent?.action) {
+            Intent.ACTION_SEND -> {
+                targetData = intent.dataString;
+                if(!targetData.isNullOrEmpty()) {
+                    Logger.i(TAG, "View Received: " + targetData);
+                }
+                else {
+                    val audioUri: Uri? = intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java);
+                    if(audioUri != null)
+                        targetData = audioUri.toString();
+                }
+            }
+            Intent.ACTION_VIEW -> {
+                targetData = intent.dataString;
+                if(!targetData.isNullOrEmpty()) {
+                    Logger.i(TAG, "View Received: " + targetData);
+                }
+                else {
+                    val audioUri: Uri? = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                    if(audioUri != null)
+                        targetData = audioUri.toString();
+                }
+            }
+        }
+        try {
+            if(targetData != null) {
+                handleUrl(targetData);
+            }
+        }
+        catch(ex: Throwable) {
+            Logger.e(TAG, "Failed to handle intent: " + ex.message);
+        }
+    }
+    fun handleUrl(url: String) {
+        if(url.startsWith("content://"))
+            handleContent(url);
+    }
+
+    fun handleContent(contentUrl: String) {
+        /*
+        val mediaStoreTrack = StateLibrary.instance.getTrackByUrl(this, contentUrl);
+        if(mediaStoreTrack != null) {
+
+            lifecycleScope.launch(Dispatchers.Main) {
+                navigate<PlaybackFragment>(mediaStoreTrack);
+            }
+            return;
+        }*/
+
+
+        val retriever = MediaMetadataRetriever();
+
+        var artist: String? = null;
+        var title: String = contentUrl;
+        var album: String? = null;
+
+
+        try {
+            retriever.setDataSource(contentUrl);
+            artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+            title =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE) ?: contentUrl;
+            album = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+        }
+        catch(ex: Throwable) {
+
+        }
+
+        val track = Track(title, Uri.parse(contentUrl), null);
+        if(!artist.isNullOrBlank())
+            track.withArtist(Artist(artist, null, null));
+        if(!album.isNullOrBlank())
+            track.withAlbum(Album(album, null, null, null, null));
+
+        UIDialogs.appToast("Opening files is WIP");
+        lifecycleScope.launch(Dispatchers.Main) {
+            navigate<PlaybackFragment>(track);
+        }
+    }
 
     companion object {
         val TAG = "MainActivity";

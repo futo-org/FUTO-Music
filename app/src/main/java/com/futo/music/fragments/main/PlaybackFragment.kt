@@ -5,9 +5,12 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.ComponentName
 import android.content.Context
+import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
+import android.text.method.Touch
 import android.view.LayoutInflater
+import android.view.TouchDelegate
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -31,6 +34,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.futo.music.IPlayableWithPlaySettings
 import com.futo.music.R
 import com.futo.music.UIDialogs
+import com.futo.music.dp
 import com.futo.music.extensions.setAlbumArt
 import com.futo.music.fragments.MainFragView
 import com.futo.music.gestures.OnSwipeTouchListener
@@ -38,6 +42,7 @@ import com.futo.music.logic.PlayerManager
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.models.playable.PlayableType
+import com.futo.music.models.playable.Track
 import com.futo.music.services.PlaybackService
 import com.futo.music.states.DBPlayableType
 import com.futo.music.states.StateApp
@@ -161,6 +166,7 @@ class PlaybackFragment: MainFragment() {
             }
 
             override fun onMediaClose() {
+                setPlayButtonState(false);
             }
         }
 
@@ -196,6 +202,7 @@ class PlaybackFragment: MainFragment() {
             }
 
             _buttonOptions.isVisible = false;
+            _buttonStars.isVisible = false;
 
             _buttonShuffle.setOnClickListener {
                 val player = frag?._player?.player ?: return@setOnClickListener;
@@ -216,12 +223,29 @@ class PlaybackFragment: MainFragment() {
 
             _viewControls = findViewById(R.id.view_control);
             _timeBar = _viewControls.findViewById(R.id.time_progress);
+            _viewControls.post {
+                val timeBarRect = Rect();
+                _timeBar.getHitRect(timeBarRect);
+
+                _viewControls.setOnTouchListener { view, event ->
+                    event.setLocation(event.x,
+                        (timeBarRect.top + timeBarRect.height() - 1).toFloat()
+                    );
+                    _timeBar.onTouchEvent(event);
+                }
+            }
 
             _buttonPlay.setOnClickListener {
-                if(_isPlaying)
-                    fragment._player?.player?.pause();
-                else
+                if(fragment._player?.isEnded ?: false) {
+                    fragment._player?.player?.seekTo(0);
                     fragment._player?.player?.play();
+                }
+                else {
+                    if (_isPlaying)
+                        fragment._player?.player?.pause();
+                    else
+                        fragment._player?.player?.play();
+                }
             }
             _buttonLeft.setOnClickListener {
                 if(fragment._player?.player?.hasPreviousMediaItem() ?: false) {
@@ -508,7 +532,19 @@ class PlaybackFragment: MainFragment() {
                     player.shuffleModeEnabled = false;
                     setShuffleButtonState(player.shuffleModeEnabled);
                 }
-                StateQueue.instance.setQueue(context, parameter);
+                StateQueue.instance.setQueue(context, parameter) {
+                    if(it.size == 0) {
+                        fragment.lifecycleScope.launch(Dispatchers.Main) {
+                            fragment.closeSegment();
+                            UIDialogs.appToast("No tracks in this collection");
+
+                        }
+                    }
+                };
+                if(parameter is Track) {
+                    _buttonsRating.setRatingsFor(null);
+                    setRatingFrom(null);
+                }
             }
             if(parameter is IPlayableWithPlaySettings) {
                 if(parameter.playSettings.shuffle) {
@@ -518,7 +554,15 @@ class PlaybackFragment: MainFragment() {
                         setShuffleButtonState(player.shuffleModeEnabled);
                     }
                 }
-                StateQueue.instance.setQueue(context, parameter.playable);
+                StateQueue.instance.setQueue(context, parameter.playable) {
+                    if(it.size == 0) {
+                        fragment.lifecycleScope.launch(Dispatchers.Main) {
+                            fragment.closeSegment();
+                            UIDialogs.appToast("No tracks in this collection");
+
+                        }
+                    }
+                };
             }
             if(parameter == null) {
                 val player = PlaybackService._lastPlayer ?: return;

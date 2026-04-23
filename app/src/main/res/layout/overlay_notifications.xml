@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.futo.music.ui.views.topbars.GeneralTopBarView
+    <com.futo.music.ui.views.topbars.NavigationTopBarView
         android:id="@+id/topbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

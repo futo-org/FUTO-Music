@@ -25,7 +25,7 @@ class PlayerManager {
     var lastMediaMetadata: MediaMetadata? = null;
     var lastMediaItem: MediaItem? = null;
     var isPlaying: Boolean = false;
-
+    var isEnded: Boolean = false;
 
     val onPlayingChanged = Event1<Boolean>();
     val onMediaMetadataChanged = Event1<MediaMetadata>();
@@ -44,7 +44,23 @@ class PlayerManager {
             this@PlayerManager.isPlaying = isPlaying;
             onPlayingChanged.emit(isPlaying);
             invokeListener {
-                it.onPlayingChanged(isPlaying || player.playWhenReady);
+                it.onPlayingChanged((isPlaying || player.playWhenReady) && !isEnded);
+            }
+        }
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            super.onPlaybackStateChanged(playbackState);
+
+            when(playbackState) {
+                Player.STATE_READY -> {
+                    isEnded = false;
+                }
+                Player.STATE_ENDED -> {
+                    onMediaClose.emit();
+                    invokeListener {
+                        it.onMediaClose();
+                    }
+                    isEnded = true;
+                }
             }
         }
 
@@ -70,19 +86,6 @@ class PlayerManager {
             onMediaMetadataChanged.emit(mediaMetadata);
             invokeListener {
                 it.onMediaMetadataChanged(player, mediaMetadata);
-            }
-        }
-
-        override fun onPlaybackStateChanged(playbackState: Int) {
-            super.onPlaybackStateChanged(playbackState);
-
-            when(playbackState) {
-                Player.STATE_ENDED -> {
-                    onMediaClose.emit();
-                    invokeListener {
-                        it.onMediaClose();
-                    }
-                }
             }
         }
     }

@@ -136,7 +136,7 @@ class StateQueue {
             _lastSetQueuePlayable = playable;
         }
     }
-    fun setQueue(context: Context, playable: IPlayable) {
+    fun setQueue(context: Context, playable: IPlayable, cb: ((List<IPlayableTrack>)->Unit)? = null) {
         StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
             if(playable is DBAlbum)
                 StateDatabase.instance.setPlayedAlbum(playable.id);
@@ -168,6 +168,7 @@ class StateQueue {
                 _player?.player?.play();
             }
             onQueueChanged.emit(newQueue);
+            cb?.invoke(newQueue);
         }
     }
 

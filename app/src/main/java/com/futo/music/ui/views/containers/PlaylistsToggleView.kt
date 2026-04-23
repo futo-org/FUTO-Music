@@ -16,13 +16,13 @@ import com.futo.music.ui.viewholders.ListPlaylistToggleViewHolder
 import com.futo.music.ui.viewholders.ListPlaylistViewHolder
 import kotlin.collections.arrayListOf
 
-class PlaylistsToggleView(context: Context, addButtonText: String? = null, addButtonHandler: (()-> Unit)? = null): RecyclerContainer(context) {
+class PlaylistsToggleView(context: Context, val preViews: ArrayList<View>? = null, addButtonText: String? = null, addButtonHandler: (()-> Unit)? = null): RecyclerContainer(context) {
 
     val onPlaylistToggleChanged = Event1<ListPlaylistToggleViewHolder.Item>();
 
     val adapter: AnyInsertedAdapterView<ListPlaylistToggleViewHolder.Item, ListPlaylistToggleViewHolder> =
         _recycler.asAnyWithViews<ListPlaylistToggleViewHolder.Item, ListPlaylistToggleViewHolder>(
-            arrayListOf<View>(),
+            if(preViews != null) preViews else arrayListOf(),
             arrayListOf<View>(*listOf(
                 View(context).apply { this.minimumHeight = 20.dp(resources) },
                 if(addButtonText != null && addButtonHandler != null)
@@ -31,6 +31,9 @@ class PlaylistsToggleView(context: Context, addButtonText: String? = null, addBu
                         .withText(addButtonText)
                         .withBackground(R.drawable.background_button_accent)
                         .withOnClick {  addButtonHandler.invoke() }
+                else null,
+                if(addButtonText != null && addButtonHandler != null)
+                    View(context).apply { this.minimumHeight = 20.dp(resources) }
                 else null
             ).filterNotNull().toTypedArray()
             ),
