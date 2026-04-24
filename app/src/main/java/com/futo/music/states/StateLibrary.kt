@@ -373,6 +373,22 @@ class StateLibrary {
             return audioFromCursor(cursor);
         }
     }
+    fun getTrackByDisplayName(context: Context, name: String): Track? {
+        val resolver =  context.contentResolver;
+        if(resolver == null) {
+            Logger.w(TAG, "Album contentResolver not found");
+            return null;
+        }
+        val cursor = resolver?.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, StateLibrary.PROJECTION_MEDIA,
+            MediaStore.Audio.Media.DISPLAY_NAME + " = ?",
+            arrayOf(name),
+            null) ?: return null;
+        return cursor.use {
+            cursor.moveToFirst();
+            return audioFromCursor(cursor);
+        }
+    }
 
     fun getAlbums(context: Context): List<AndroidAlbum> {
         return AndroidAlbum.getAlbums(context);

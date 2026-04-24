@@ -16,6 +16,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
@@ -32,6 +33,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.database.getStringOrNull
 import androidx.core.os.BuildCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsCompat.Type
@@ -897,36 +899,63 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-        try {
-            if(targetData != null) {
-                handleUrl(targetData);
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                if(targetData != null) {
+                    handleUrl(targetData);
+                }
             }
-        }
-        catch(ex: Throwable) {
-            Logger.e(TAG, "Failed to handle intent: " + ex.message);
+            catch(ex: Throwable) {
+                Logger.e(TAG, "Failed to handle intent: " + ex.message);
+                withContext(Dispatchers.Main) {
+                    UIDialogs.appToast("Opening file failed:\n" + ex.message);
+                }
+            }
         }
     }
     fun handleUrl(url: String) {
-        if(url.startsWith("content://"))
+        if(url.startsWith("content://")) {
             handleContent(url);
+        }
     }
 
     fun handleContent(contentUrl: String) {
-        /*
-        val mediaStoreTrack = StateLibrary.instance.getTrackByUrl(this, contentUrl);
-        if(mediaStoreTrack != null) {
+        var title: String = contentUrl;
+        var hasFileName: Boolean  = false;
 
-            lifecycleScope.launch(Dispatchers.Main) {
-                navigate<PlaybackFragment>(mediaStoreTrack);
+        val cursor = contentResolver.query(Uri.parse(contentUrl), null, null, null);
+        cursor?.use {
+            if(cursor.moveToFirst()) {
+                val displayName = cursor.getStringOrNull(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                if(!displayName.isNullOrBlank()) {
+                    title = displayName;
+                    hasFileName = true;
+                }
             }
-            return;
-        }*/
+        }
+
+        if(hasFileName) {
+            val dbT = StateDatabase.instance.getTrackByFileName(title);
+            if (dbT != null) {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    navigate<PlaybackFragment>(dbT);
+                }
+                return;
+            }
+
+            val t = StateLibrary.instance.getTrackByDisplayName(this, title);
+            if (t != null) {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    navigate<PlaybackFragment>(t);
+                }
+                return;
+            }
+        }
 
 
         val retriever = MediaMetadataRetriever();
 
         var artist: String? = null;
-        var title: String = contentUrl;
         var album: String? = null;
 
 
@@ -947,7 +976,6 @@ class MainActivity : AppCompatActivity() {
         if(!album.isNullOrBlank())
             track.withAlbum(Album(album, null, null, null, null));
 
-        UIDialogs.appToast("Opening files is WIP");
         lifecycleScope.launch(Dispatchers.Main) {
             navigate<PlaybackFragment>(track);
         }

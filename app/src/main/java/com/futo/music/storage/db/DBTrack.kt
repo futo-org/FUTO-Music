@@ -138,6 +138,8 @@ interface DBTrackDao {
     fun get(id: Long): DBTrack?;
     @Query("SELECT * FROM tracks WHERE mediaStoreId = :id")
     fun getByMSID(id: Long): DBTrack?;
+    @Query("SELECT * FROM tracks WHERE fileName = :fileName")
+    fun getByFileName(fileName: String): DBTrack?;
 
     @Query("SELECT * FROM tracks WHERE INSTR(lower(name), lower(:str))")
     fun search(str: String): List<DBTrack>;

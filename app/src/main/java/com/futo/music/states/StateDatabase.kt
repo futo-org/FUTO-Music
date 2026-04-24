@@ -356,6 +356,11 @@ class StateDatabase(
             .getByMSID(id);
     }
 
+    fun getTrackByFileName(fileName: String): DBTrack? {
+        return db
+            .tracksDao()
+            .getByFileName(fileName);
+    }
     fun getTrackByMSID(id: Long): DBTrack? {
         return db
             .tracksDao()
