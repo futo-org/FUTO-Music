@@ -5,29 +5,29 @@ import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.Transformation
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import androidx.core.view.marginTop
 import com.bumptech.glide.Glide
 import com.futo.music.GradientType
 import com.futo.music.R
 import com.futo.music.colorIntensity
 import com.futo.music.constructs.Event0
 import com.futo.music.constructs.Event1
+import com.futo.music.dp
 import com.futo.music.extractBitmap
 import com.futo.music.extractColor
-import com.futo.music.fragments.top.NavigationTopBarFragment
 import com.futo.music.images.GradientFadeTransformation
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.states.StateApp
 import com.futo.music.storage.db.DBAlbum
-import com.futo.music.ui.buttons.RatingButton
 import com.futo.music.ui.buttons.RatingsButton
-import com.futo.music.ui.buttons.StandardButton
-import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.general.SearchBarView
 
 class PlayableHeader: ConstraintLayout {
@@ -59,6 +59,8 @@ class PlayableHeader: ConstraintLayout {
     private var switchIndex = 0;
     private var switchOptions: List<Pair<Int, ()->Unit>>? = null;
 
+    var expandedImage: Boolean = false;
+
 
     constructor(context: Context, attrs: AttributeSet? = null) : super(context, attrs) {
         inflate(context, R.layout.header_playable, this);
@@ -87,6 +89,53 @@ class PlayableHeader: ConstraintLayout {
         buttonShuffle.setOnClickListener {
             onShuffleAll.emit();
         }
+
+        imageHeader.post {
+            imageHeader.pivotX = imageHeader.width / 2f
+            imageHeader.pivotY = 0f;
+            imageHeader.setOnClickListener {
+                if(expandedImage)
+                    reduceArt(imageHeader.width);
+                else
+                    expandArt(imageHeader.width);
+            }
+        }
+    }
+
+    fun expandArt(width: Int) {
+        val dp20 = 20.dp(resources);
+        val from = textName.marginTop;
+
+        imageHeader.animate()
+            .setDuration(500)
+            .scaleX(2f)
+            .scaleY (2f)
+            .start();
+        textName.startAnimation(object : Animation() {
+            protected override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                val params: LayoutParams = textName.layoutParams as LayoutParams
+                params.topMargin = (((dp20 + width) * interpolatedTime) + from * (1f - interpolatedTime)).toInt();
+                textName.setLayoutParams(params)
+            }
+        }.apply { this.duration = 500 })
+        expandedImage = true;
+    }
+    fun reduceArt(width: Int) {
+        val dp20 = 20.dp(resources);
+        imageHeader.animate()
+            .setDuration(500)
+            .scaleX(1f)
+            .scaleY (1f)
+            .start();
+        val currentMargin = textName.marginTop;
+        textName.startAnimation(object : Animation() {
+            protected override fun applyTransformation(interpolatedTime: Float, t: Transformation?) {
+                val params: LayoutParams = textName.layoutParams as LayoutParams
+                params.topMargin = ((dp20 * interpolatedTime) + (currentMargin * (1f - interpolatedTime))).toInt();
+                textName.setLayoutParams(params)
+            }
+        }.apply { this.duration = 500 })
+        expandedImage = false;
     }
 
     fun setMetadata(str: String) {
