@@ -99,13 +99,21 @@ import androidx.core.graphics.drawable.toDrawable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.RequestBuilder
+import com.futo.music.BuildConfig
+import com.futo.music.Constants
 import com.futo.music.fragments.main.AlbumFragment
 import com.futo.music.fragments.main.PlaylistFragment
+import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.Album
 import com.futo.music.models.playable.Artist
 import com.futo.music.models.playable.Track
+import com.futo.music.states.Announcement
+import com.futo.music.states.SessionAnnouncement
 import com.futo.music.toGradientDrawable
+import com.futo.music.toHumanBytesSize
+import com.futo.music.updater.Updater
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -145,6 +153,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var _rootInsetsController: RootInsetsController
 
+    private var _updater: Updater? = null;
 
     private val _queue: LinkedList<Pair<MainFragment, Any?>> = LinkedList();
     var fragCurrent: MainFragment? = null; private set;
@@ -369,6 +378,88 @@ class MainActivity : AppCompatActivity() {
             onBackPressedDispatcher.addCallback {
                 handleBack();
             }
+
+        if(true) //TODO: !IS_PLAYSTORE
+        {
+            _updater = Updater(Constants.URL_APK, Constants.URL_VERSION, File(this.filesDir, Constants.FILE_UPDATING));
+            checkForUpdate(false);
+        }
+    }
+
+    fun checkForUpdate(skipDownloadQuery: Boolean) {
+        fun downloadUpdate(version: Int) {
+            val announcement = SessionAnnouncement(
+                "update_downloading_" + UUID.randomUUID().toString(),
+                "Downloading Update (v${version})", "Downloading..", AnnouncementType.ONGOING,
+                icon = ImageVariable.fromResource(R.mipmap.ic_launcher)
+            );
+            announcement.progressText = "Downloading..";
+            announcement.progress = 0.0;
+            StateAnnouncement.instance.registerAnnouncementSession(announcement)
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    _updater?.download { total, progress, percentage ->
+                        lifecycleScope.launch(Dispatchers.Main) {
+                            announcement.setProgress(
+                                percentage,
+                                "${progress.toHumanBytesSize(false)}/${total.toHumanBytesSize(false)}"
+                            );
+                        }
+                    }
+                    withContext(Dispatchers.Main) {
+                        StateAnnouncement.instance.closeAnnouncement(
+                            announcement.id
+                        );
+                        StateAnnouncement.instance.registerAnnouncement(
+                            "update_install_" + UUID.randomUUID().toString(),
+                            "Update ready to be installed (v$version)",
+                            "This may require permissions.", AnnouncementType.SESSION,
+                            icon = ImageVariable.fromResource(R.mipmap.ic_launcher),
+                            actionButton = "Install",
+                            action = {
+                                _updater?.install(this@MainActivity);
+                            })
+                    }
+                }
+                catch(ex: Throwable) {
+                    Logger.e(TAG, "Update download failed", ex);
+                    StateAnnouncement.instance.closeAnnouncement(announcement.id);
+                    StateAnnouncement.instance.registerAnnouncement(
+                        "update_downloading_error_" + UUID.randomUUID().toString(),
+                        "Update Download Failed ($version)", ex.message ?: "", AnnouncementType.SESSION,
+                        actionButton = "Re-download",
+                        action = {
+                            StateAnnouncement.instance.closeAnnouncement(it.id);
+                            downloadUpdate(version);
+                        });
+                }
+            }
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val updateVersion = _updater?.hasUpdate(BuildConfig.VERSION_CODE);
+                if (updateVersion != null) {
+                    if(!skipDownloadQuery) {
+                        StateAnnouncement.instance.registerAnnouncement(
+                            "update_download_" + UUID.randomUUID().toString(),
+                            "New update available (v${updateVersion})",
+                            "Download the update", AnnouncementType.SESSION,
+                            icon = ImageVariable.fromResource(R.mipmap.ic_launcher),
+                            actionButton = "Download",
+                            action = {
+                                StateAnnouncement.instance.deleteAnnouncement(it.id);
+                                downloadUpdate(updateVersion);
+                            });
+                    }
+                    else
+                        downloadUpdate(updateVersion);
+                }
+            }
+            catch(ex: Throwable) {
+                Logger.e(TAG, "Update version check failed", ex);
+            }
+        }
     }
 
     fun sync(force: Boolean = false) {

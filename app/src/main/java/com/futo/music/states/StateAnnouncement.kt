@@ -76,10 +76,10 @@ class StateAnnouncement {
         Logger.i(TAG, "Finished loading announcements")
     }
 
-    fun registerAnnouncement(id: String?, title: String, msg: String, announceType: AnnouncementType = AnnouncementType.SESSION, time: OffsetDateTime? = null, category: String? = null, actionButton: String, action: ((announcement: Announcement)->Unit)) {
+    fun registerAnnouncement(id: String?, title: String, msg: String, announceType: AnnouncementType = AnnouncementType.SESSION, time: OffsetDateTime? = null, category: String? = null, icon: ImageVariable? = null, actionButton: String, action: ((announcement: Announcement)->Unit)) {
         synchronized(_lock) {
             val idActual = id ?: UUID.randomUUID().toString();
-            val announcement = SessionAnnouncement(idActual, title, msg, announceType, time, category, actionButton, idActual);
+            val announcement = SessionAnnouncement(idActual, title, msg, announceType, time, category,actionButton, idActual, icon = icon);
             _sessionActions[idActual] = action;
             registerAnnouncementSession(announcement);
         }

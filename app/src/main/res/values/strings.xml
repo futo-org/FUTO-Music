@@ -24,4 +24,19 @@
     <string name="submit">Submit</string>
     <string name="restart">Restart</string>
     <string name="close">Close</string>
+
+
+
+
+    <string name="success">Success</string>
+    <string name="failed_to_update_with_error">Failed to update package with error</string>
+    <string name="general_failure">The operation failed in a generic way</string>
+    <string name="aborted">The operation failed because it was actively aborted</string>
+    <string name="blocked">The operation failed because it was blocked</string>
+    <string name="conflict">The operation failed because it conflicts (or is inconsistent with) with another package already installed on the device</string>
+    <string name="incompatible">The operation failed because it is fundamentally incompatible with this device</string>
+    <string name="invalid">The operation failed because one or more of the APKs was invalid</string>
+    <string name="not_enough_storage">The operation failed because of storage issues</string>
+    <string name="install_failed_device_installer_broken">Failed to start system installer. Your device’s ROM is not compatible with automatic updates.</string>
+
 </resources>
