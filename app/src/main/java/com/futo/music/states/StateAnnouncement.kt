@@ -378,6 +378,11 @@ class SessionAnnouncement(
         return this;
     }
 
+    fun withProgress(): SessionAnnouncement{
+        progress = 0.0;
+        return this;
+    }
+
     fun setProgress(progress: Double, progressText: String? = null) {
         this.progress = progress;
         if(progressText != null) {

@@ -25,7 +25,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.App.Starting">
 
-        <receiver android:name=".receivers.InstallReceiver" />
+        <receiver android:name=".updater.InstallReceiver" />
 
         <activity
             android:name=".activities.MainActivity"

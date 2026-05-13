@@ -68,6 +68,9 @@ class NotificationOverlayView: ConstraintLayout {
         else
             emptyView.isVisible = true;
 
+    }
+
+    fun onResume() {
         StateAnnouncement.instance.onAnnouncementChanged.subscribe(this) {
             scope?.launch(Dispatchers.Main) {
                 Logger.i("NotificationOverlayView", "Announcements Changed");
@@ -80,10 +83,6 @@ class NotificationOverlayView: ConstraintLayout {
                     emptyView.isVisible = true;
             }
         }
-    }
-
-    fun onResume() {
-
     }
 
     fun onPause() {

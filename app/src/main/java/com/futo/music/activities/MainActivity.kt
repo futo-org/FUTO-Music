@@ -417,6 +417,12 @@ class MainActivity : AppCompatActivity() {
                             icon = ImageVariable.fromResource(R.mipmap.ic_launcher),
                             actionButton = "Install",
                             action = {
+                                StateAnnouncement.instance.closeAnnouncement(it.id);
+                                StateAnnouncement.instance.registerAnnouncementSession(SessionAnnouncement(
+                                    "update_installing_" + UUID.randomUUID().toString(),
+                                    "Installing Update (v${version})..", "You have to approve the update.", AnnouncementType.ONGOING,
+                                    icon = ImageVariable.fromResource(R.mipmap.ic_launcher),
+                                ).withProgress());
                                 _updater?.install(this@MainActivity);
                             })
                     }

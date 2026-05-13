@@ -163,14 +163,19 @@ class Updater {
 
 
     private fun onReceiveResult(context: Context, version: Int, apkFile: File, result: String?) {
-        val existingAnnouncement = StateAnnouncement.instance.getVisibleAnnouncements().find { it.id.startsWith("update_install_") };
-        if(existingAnnouncement != null)
-            StateAnnouncement.instance.closeAnnouncement(existingAnnouncement.id);
+        val existingAnnouncement = StateAnnouncement.instance.getVisibleAnnouncements().find { it.id.startsWith("update_installing_") };
 
-        StateAnnouncement.instance.registerAnnouncement(null, "Update Install Failed (v${version})", "Try again?",
-            icon = ImageVariable.fromResource(R.mipmap.ic_launcher), actionButton = "Re-download", action = {
-                StateApp.instance.activity()?.checkForUpdate(true);
-            })
+        StateApp.instance.scopeOrNull?.launch(Dispatchers.Main) {
+            if (existingAnnouncement != null)
+                StateAnnouncement.instance.closeAnnouncement(existingAnnouncement.id);
+
+            StateAnnouncement.instance.registerAnnouncement(
+                null, "Update Install Failed (v${version})", result ?: "Failed",
+                icon = ImageVariable.fromResource(R.mipmap.ic_launcher), actionButton = "Try Again", action = {
+                    StateAnnouncement.instance.closeAnnouncement(it.id);
+                    StateApp.instance.activity()?.checkForUpdate(true);
+                })
+        };
         /*
         try {
             InstallReceiver.onReceiveResult.remove(this)

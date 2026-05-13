@@ -9,6 +9,11 @@ import android.os.Build
 import com.futo.music.R
 import com.futo.music.constructs.Event1
 import com.futo.music.logging.Logger
+import com.futo.music.states.SessionAnnouncement
+import com.futo.music.states.StateAnnouncement
+import com.futo.music.states.StateApp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class InstallReceiver : BroadcastReceiver() {
@@ -21,6 +26,8 @@ class InstallReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1);
         Logger.i(TAG, "Received status $status.");
+
+        val existingAnnouncement = StateAnnouncement.instance.getVisibleAnnouncements().find { it.id.startsWith("update_installing_") } as SessionAnnouncement?
 
         when (status) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
@@ -44,6 +51,10 @@ class InstallReceiver : BroadcastReceiver() {
                 } catch (e: ActivityNotFoundException) {
                     Logger.e(TAG, "System installer cannot handle CONFIRM_INSTALL intent. ROM is broken; falling back / reporting error.", e)
                     onReceiveResult.emit(context.getString(R.string.install_failed_device_installer_broken))
+                }
+                StateApp.instance.scopeOrNull?.launch(Dispatchers.Main) {
+                    Logger.i(TAG, "User informed");
+                    existingAnnouncement?.setProgress(0, "Install pending..");
                 }
             }
             PackageInstaller.STATUS_SUCCESS -> onReceiveResult.emit(null);
