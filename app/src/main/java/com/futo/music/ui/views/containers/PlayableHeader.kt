@@ -27,8 +27,10 @@ import com.futo.music.images.GradientFadeTransformation
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.states.StateApp
 import com.futo.music.storage.db.DBAlbum
+import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.ui.buttons.RatingsButton
 import com.futo.music.ui.views.general.SearchBarView
+import com.futo.music.ui.views.images.QuadImageView
 
 class PlayableHeader: ConstraintLayout {
 
@@ -39,6 +41,7 @@ class PlayableHeader: ConstraintLayout {
     val textName: TextView;
     val textMetadata: TextView;
     val imageHeader: ImageView;
+    val imageHeaderQuad: QuadImageView;
 
     val buttonPlayAll: ImageButton;
     val buttonShuffle: ImageButton;
@@ -71,6 +74,7 @@ class PlayableHeader: ConstraintLayout {
         textName = findViewById(R.id.text_name);
         textMetadata = findViewById(R.id.text_metadata);
         imageHeader = findViewById(R.id.image_header);
+        imageHeaderQuad = findViewById(R.id.image_header_quad);
 
         containerViews = findViewById(R.id.container_additions)
 
@@ -177,45 +181,59 @@ class PlayableHeader: ConstraintLayout {
 
         textName.text = playable.name;
 
-        val image = playable.getImage();
-        if(image?.url != null) {
-            var builder = Glide.with(imageHeader)
-                .load(image.url)
-                .fallback(R.drawable.background_button_black);
-            if(withGlobalBackground) {
-                builder = builder
-                    .extractColor { pal ->
-                        StateApp.instance.activity()?.let {
-                            if (pal != null && (pal.dominant ?: pal.darkVibrant) != null) {
-                                var color = (pal.dominant ?: pal.darkVibrant!!);
-                                val colorIntensity = color.colorIntensity(100);
-                                val intensity = 1f / colorIntensity;
-                                if(intensity > 1f)
-                                    color = Color.rgb(Color.red(color) * intensity, Color.green(color) * intensity, Color.blue(color) * intensity);
-                                it.setBackgroundBottomGradient(
-                                    color,
-                                    0.5f,
-                                    Math.min(1f, intensity)
-                                );
-                            } else
-                                it.hideBackgroundBottom();
+        if(playable is DBPlaylist) {
+            imageHeaderQuad.setImages(listOf(
+                playable.artUri1,
+                playable.artUri2,
+                playable.artUri3,
+                playable.artUri4
+            ).filterNotNull());
+            imageHeaderQuad.visibility = VISIBLE;
+            imageHeader.visibility = INVISIBLE;
+        }
+        else {
+            val image = playable.getImage();
+            if (image?.url != null) {
+                var builder = Glide.with(imageHeader)
+                    .load(image.url)
+                    .fallback(R.drawable.background_button_black);
+                if (withGlobalBackground) {
+                    builder = builder
+                        .extractColor { pal ->
+                            StateApp.instance.activity()?.let {
+                                if (pal != null && (pal.dominant ?: pal.darkVibrant) != null) {
+                                    var color = (pal.dominant ?: pal.darkVibrant!!);
+                                    val colorIntensity = color.colorIntensity(100);
+                                    val intensity = 1f / colorIntensity;
+                                    if (intensity > 1f)
+                                        color = Color.rgb(Color.red(color) * intensity, Color.green(color) * intensity, Color.blue(color) * intensity);
+                                    it.setBackgroundBottomGradient(
+                                        color,
+                                        0.5f,
+                                        Math.min(1f, intensity)
+                                    );
+                                } else
+                                    it.hideBackgroundBottom();
+                            }
                         }
-                    }
-                    .extractBitmap {
-                        if (it == null)
-                            return@extractBitmap;
-                        StateApp.instance.activity()
-                            ?.setBackgroundTop(BitmapDrawable(context.resources, it), 1f, 0.4f, {
-                                return@setBackgroundTop it.transform(
-                                    GradientFadeTransformation(
-                                        GradientType.Vertical,
-                                        false
-                                    )
-                                );
-                            })
-                    }
+                        .extractBitmap {
+                            if (it == null)
+                                return@extractBitmap;
+                            StateApp.instance.activity()
+                                ?.setBackgroundTop(BitmapDrawable(context.resources, it), 1f, 0.4f, {
+                                    return@setBackgroundTop it.transform(
+                                        GradientFadeTransformation(
+                                            GradientType.Vertical,
+                                            false
+                                        )
+                                    );
+                                })
+                        }
+                }
+                builder.into(imageHeader);
             }
-            builder.into(imageHeader);
+            imageHeaderQuad.visibility = GONE;
+            imageHeader.visibility = VISIBLE;
         }
     }
     fun clearSearch(){
