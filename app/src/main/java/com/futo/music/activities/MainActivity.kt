@@ -209,6 +209,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen();
         super.onCreate(savedInstanceState);
@@ -386,6 +391,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    val requestUnknownInstallUnknownLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        try {
+
+            val existingAnnouncement = StateAnnouncement.instance.getVisibleAnnouncements().find { it.id.startsWith("update_installing_") };
+            if(existingAnnouncement != null)
+                StateAnnouncement.instance.closeAnnouncement(existingAnnouncement.id);
+
+            StateAnnouncement.instance.registerAnnouncementSession(SessionAnnouncement(
+                "update_installing_" + UUID.randomUUID().toString(),
+                "Installing Update..", "You have to approve the update.", AnnouncementType.ONGOING,
+                icon = ImageVariable.fromResource(R.mipmap.ic_launcher),
+            ).withProgress());
+            _updater?.install(this);
+        }catch(ex: Throwable) {
+            UIDialogs.appToast("Failed to resume install process:\n" + ex.message);
+        }
+    };
     fun checkForUpdate(skipDownloadQuery: Boolean) {
         fun downloadUpdate(version: Int) {
             val announcement = SessionAnnouncement(
@@ -1080,6 +1103,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         val TAG = "MainActivity";
+        val CODE_REQ_INSTALL_UNKNOWN = 1191;
     }
 
     class FragmentDefinition(

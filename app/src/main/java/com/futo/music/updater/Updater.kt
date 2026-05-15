@@ -10,6 +10,7 @@ import android.provider.Settings
 import androidx.core.net.toUri
 import com.futo.music.R
 import com.futo.music.UIDialogs
+import com.futo.music.activities.MainActivity
 import com.futo.music.api.http.ManagedHttpClient
 import com.futo.music.copyToOutputStream
 import com.futo.music.logging.Logger
@@ -93,7 +94,6 @@ class Updater {
         if(!_hasDownload || _downloadVersion <= 0)
             throw IllegalStateException("No download yet");
 
-
         try {
             val pm = context.packageManager
             if (!pm.canRequestPackageInstalls()) {
@@ -104,7 +104,7 @@ class Updater {
                     data = "package:${context.packageName}".toUri()
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                context.startActivity(intent)
+                StateApp.instance.activity()?.requestUnknownInstallUnknownLauncher?.launch(intent);
                 return
             }
         } catch (t: Throwable) {
