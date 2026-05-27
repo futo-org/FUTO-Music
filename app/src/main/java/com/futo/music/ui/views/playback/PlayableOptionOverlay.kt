@@ -106,7 +106,13 @@ class PlayableOptionOverlay: ConstraintLayout {
         _buttonPlaylistAdd.onClick.subscribe {
             _currentPlayable?.let {
                 if(it is DBTrack) {
-                    UIDialogs.showAddToPlaylistDialog(context, getScope(), "Add to playlist", it);
+                    UIDialogs.showAddToPlaylistDialog(context, getScope(), "Add to playlist, items are immediately added", it);
+                }
+                else if(it is DBAlbum) {
+                    UIDialogs.showAddToPlaylistDialog(context, getScope(), "Add to playlist, items are immediately added", it);
+                }
+                else if(it is DBArtist) {
+                    UIDialogs.showAddToPlaylistDialog(context, getScope(), "Add to playlist, items are immediately added", it);
                 }
             }
             hide();
@@ -256,12 +262,10 @@ class PlayableOptionOverlay: ConstraintLayout {
 
     fun setButtons(playable: IPlayable) {
         if(playable is DBTrack) {
-            _buttonPlaylistAdd.isVisible = true;
             _buttonPlayNext.isVisible = true;
             _buttonQueueAdd.isVisible = true;
         }
         else {
-            _buttonPlaylistAdd.isVisible = false;
             _buttonPlayNext.isVisible = false;
             _buttonQueueAdd.isVisible = false;
         }
@@ -270,6 +274,11 @@ class PlayableOptionOverlay: ConstraintLayout {
             _buttonRate.isVisible = true;
         else
             _buttonRate.isVisible = false;
+
+        if(playable is DBTrack || playable is DBArtist || playable is DBAlbum)
+            _buttonPlaylistAdd.isVisible = true;
+        else
+            _buttonPlaylistAdd.isVisible = false;
 
         if((playable is DBTrack && playable.artistId != null) || playable is DBArtist)
             _buttonArtist.isVisible = true;

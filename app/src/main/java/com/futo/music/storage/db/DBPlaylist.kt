@@ -107,6 +107,9 @@ interface DBPlaylistDao {
     @Query("SELECT * FROM playlist_tracks WHERE playlistId = :playlistId AND trackId = :trackId")
     fun getPlaylistTrackRef(playlistId: Long, trackId: Long): DBPlaylistTrack?;
 
+    @Query("SELECT * FROM playlist_tracks WHERE playlistId = :playlistId")
+    fun getPlaylistTrackRefs(playlistId: Long): List<DBPlaylistTrack>
+
     @Update(entity = DBPlaylist::class)
     fun setPlayed(update: DBPlaylistUpdatePlayed)
 

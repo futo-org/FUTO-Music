@@ -81,7 +81,7 @@ class TrackListEditorViewHolder : ViewHolder {
         }
     }
 
-    fun bind(t: IPlayableTrack, canEdit: Boolean) {
+    fun bind(t: IPlayableTrack, canEdit: Boolean, thumbnailVisible: Boolean = false) {
         if(t is DBTrack) {
             t.getImage()
                 ?.setImageView(_imageThumbnail, R.drawable.unknown_music);
@@ -95,6 +95,13 @@ class TrackListEditorViewHolder : ViewHolder {
             } else {
                 _buttonDelete.visibility = View.GONE;
                 _imageDragDrop.visibility = View.GONE;
+            }
+
+            if(thumbnailVisible) {
+                _imageThumbnail.visibility = View.VISIBLE;
+            }
+            else {
+                _imageThumbnail.visibility = View.GONE;
             }
 
             if(t.id == trackCurrent?.getItemId()?.toLongOrNull())

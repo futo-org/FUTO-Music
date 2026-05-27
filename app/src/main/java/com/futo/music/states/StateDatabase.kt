@@ -131,10 +131,23 @@ class StateDatabase(
     fun getPlaylistTracks(id: Long): List<DBTrack> {
         return db.tracksDao().getPlaylistTracks(id)
     }
+    fun getPlaylistTrackRefs(id: Long): List<DBPlaylistTrack> {
+        return db.playlistDao().getPlaylistTrackRefs(id)
+    }
     fun getTrackPlaylists(id: Long): List<DBPlaylist> {
         return db.playlistDao().getTrackPlaylists(id);
     }
 
+    fun reorderPlaylist(playlistId: Long, tracks: List<DBTrack>){
+        val playlistSongs = StateDatabase.instance.getPlaylistTrackRefs(playlistId);
+        for(track in playlistSongs) {
+            val index = track.ordering
+            val indexNew = tracks.indexOfFirst { it.id == track.trackId };
+            if(index != indexNew) {
+                db.playlistDao().setPlaylistOrder(DBPlaylistTrack(track.playlistId, track.trackId, indexNew));
+            }
+        }
+    }
 
 
     fun getTracksNew(count: Int): List<DBTrack> {

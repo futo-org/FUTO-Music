@@ -20,6 +20,9 @@ class TrackListEditorAdapter : RecyclerView.Adapter<TrackListEditorViewHolder> {
     var canEdit = false
         private set;
 
+    var isThumbnailsVisible: Boolean = false
+        private set;
+
     private var _trackCurrent: IPlayableTrack? = null;
     private val _trackCurrentChanged: Event1<IPlayableTrack?>;
 
@@ -46,11 +49,18 @@ class TrackListEditorAdapter : RecyclerView.Adapter<TrackListEditorViewHolder> {
 
     override fun onBindViewHolder(viewHolder: TrackListEditorViewHolder, position: Int) {
         val tracks = _tracks ?: return;
-        viewHolder.bind(tracks[position], canEdit);
+        viewHolder.bind(tracks[position], canEdit, isThumbnailsVisible);
     }
 
     fun setCanEdit(canEdit: Boolean, notify: Boolean = false) {
         this.canEdit = canEdit;
+        if (notify) {
+            _tracks?.let { notifyItemRangeChanged(0, it.size); };
+        }
+    }
+
+    fun setThumbnailsVisible(visible: Boolean, notify: Boolean = false) {
+        this.isThumbnailsVisible = visible;
         if (notify) {
             _tracks?.let { notifyItemRangeChanged(0, it.size); };
         }

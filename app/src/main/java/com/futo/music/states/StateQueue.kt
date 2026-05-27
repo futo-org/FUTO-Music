@@ -40,6 +40,7 @@ import java.io.File
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.map
 import kotlin.io.use
@@ -237,6 +238,7 @@ class StateQueue {
 
         setPersistentQueue(currentPlayable, items)
 
+        val oldQueue = _queue.toMutableList();
         val newQueue: List<IPlayableTrack>;
         synchronized(_queue) {
             _queue.clear();
@@ -255,14 +257,30 @@ class StateQueue {
                     val player = _player ?: return@launch;
 
                     //Reconstruct new queue without touching current item
+                    var addedCount = 0;
+                    for(newPos in 0..<newQueue.size) {
+                        val item = newQueue[newPos];
+                        val oldPos = oldQueue.indexOfFirst { it.getItemId() != null && it.getItemId() == item.getItemId() }
+                        if(oldPos > -1) {
+                            player.player.moveMediaItem(oldPos, newPos);
+                            Collections.swap(oldQueue, oldPos, newPos);
+                        }
+                        else {
+                            player.player.addMediaItem(newPos, mediaItems[newPos]);
+                            oldQueue.add(newPos, item);
+                            addedCount++;
+                        }
+                    }
+                    /*
                     for (i in 0..<oldCurrentIndex)
                         player.player.removeMediaItem(i);
-                    for (i in 1..<player.player.mediaItemCount - 1)
+                    for (i in 1+oldCurrentIndex..<player.player.mediaItemCount - 1)
                         player.player.removeMediaItem(i);
                     for (i in 0..<newCurrentIndex)
                         player.player.addMediaItem(i, mediaItems[i]);
                     for (i in newCurrentIndex + 1..<newQueue.size)
                         player.player.addMediaItem(i, mediaItems[i]);
+                    */
                 }
                 onQueueChanged.emit(newQueue);
             }
@@ -276,7 +294,14 @@ class StateQueue {
         val index = currentQueue.indexOf(currentPlaying);
         if(index < 0)
             return;
-        currentQueue.add(index + 1, playable);
+
+        val existingIndex = currentQueue.indexOfFirst { it.getItemId() == playable.getItemId() };
+        if(existingIndex >= 0) {
+            currentQueue.removeAt(existingIndex);
+            currentQueue.add(index + 1, playable);
+        }
+        else
+            currentQueue.add(index + 1, playable);
         setQueueModify(context, currentQueue)
     }
 

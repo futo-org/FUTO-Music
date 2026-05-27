@@ -1,6 +1,7 @@
 package com.futo.music
 
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Animatable
@@ -294,6 +295,107 @@ class UIDialogs {
             }
         }
 
+        fun showAddToPlaylistDialog(context: Context, scope: CoroutineScope, reason: String, playable: IPlayable) {
+            scope.launch(Dispatchers.IO) {
+                var dialog: BottomSheetDialog? = null;
+
+                val tracks = playable.getTracks(context);
+
+                val trackArt = if(playable is DBAlbum) playable.getImage()
+                    else if(playable is DBArtist) playable.getImage()
+                    else null;
+                val playlists = StateDatabase.instance.getPlaylistsByRecent()
+                val partOf = listOf<DBPlaylist>();
+                val list = playlists.map { ListPlaylistToggleViewHolder.Item(it, partOf.any{ part -> part.id == it.id}) }.sortedBy { if(it.added) 1 else 0 };
+                withContext(Dispatchers.Main) {
+                    val togglesView = PlaylistsToggleView(context,
+                        preViews = arrayListOf(
+                            TextView(context).apply {
+                                this.text = "Playlists"
+                                this.textSize = 6.dp(resources).toFloat();
+                                this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                                this.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                                    this.setMargins(0,15.dp(resources),0,10.dp(resources));
+                                }
+                            },
+                            TextView(context).apply {
+                                this.text = reason
+                                this.textSize = 4.dp(resources).toFloat();
+                                this.setTextColor(Color.rgb(150, 150, 150));
+                                this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+                                this.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                                    this.setMargins(0,0,0,15.dp(resources));
+                                }
+                            }),
+                        addButtonText = "New Playlist",
+                        addButtonHandler = {
+                            dialog?.hide();
+                            showCreatePlaylistDialog(context, scope) {
+                                showAddToPlaylistDialog(context, scope, reason, playable);
+                            }
+                        });
+                    togglesView.onPlaylistToggleChanged.subscribe { item ->
+                        if(!item.added){
+                            scope.launch(Dispatchers.IO) {
+                                for (track in tracks.filterIsInstance<DBTrack>())
+                                    StateDatabase.instance.removeTrackFromPlaylist(
+                                        item.playlist.id,
+                                        track.id
+                                    );
+                                StateDatabase.instance.updatePlaylistMetadata(item.playlist.id);
+                                StateDatabase.instance.onLibraryUpdated.emit();
+                                val playlist = StateDatabase.instance.getPlaylist(item.playlist.id);
+                                if(playlist != null) {
+                                    item.playlist = playlist;
+                                    withContext(Dispatchers.Main) {
+                                        togglesView.adapter.notifyContentChange(item);
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            showConfirmDialog(context, R.drawable.ic_playlist_add,
+                                "Add ${tracks.size} songs to playlist?",
+                                "After leaving the playlist add dialog, you cannot undo this in batch.", {
+                                    scope.launch(Dispatchers.IO) {
+                                        var currentTracks =
+                                            StateDatabase.instance.getPlaylistTracks(item.playlist.id);
+                                        var added = 0;
+                                        for (track in tracks.filterIsInstance<DBTrack>()
+                                            .filter { x -> !currentTracks.any { it.id == x.id } }) {
+                                            val id = StateDatabase.instance.addTrackToPlaylist(
+                                                item.playlist.id,
+                                                track.id
+                                            );
+                                            if (id > 0) {
+
+                                                StateDatabase.instance.updatePlaylistMetadata(item.playlist.id);
+                                                StateDatabase.instance.onLibraryUpdated.emit();
+                                                added++;
+                                            }
+                                        }
+                                        val playlist = StateDatabase.instance.getPlaylist(item.playlist.id);
+                                        if(playlist != null) {
+                                            item.playlist = playlist;
+                                            withContext(Dispatchers.Main) {
+                                                togglesView.adapter.notifyContentChange(item);
+                                            }
+                                        }
+                                    }
+                                }, {
+                                    item.added = false;
+                                    togglesView.adapter.notifyContentChange(item);
+                                });
+                        }
+                    }
+                    togglesView.setPlaylists(list);
+                    togglesView.setTopViews(listOf(
+                        SheetBar(context)
+                    ));
+                    dialog = showSheet(context, togglesView);
+                }
+            }
+        }
         fun showAddToPlaylistDialog(context: Context, scope: CoroutineScope, reason: String, track: DBTrack) {
             scope.launch(Dispatchers.IO) {
                 var dialog: BottomSheetDialog? = null;
@@ -344,8 +446,12 @@ class UIDialogs {
                                     StateDatabase.instance.onLibraryUpdated.emit();
                                 }
                             }
-                            withContext(Dispatchers.Main) {
-
+                            val playlist = StateDatabase.instance.getPlaylist(item.playlist.id);
+                            if(playlist != null) {
+                                item.playlist = playlist;
+                                withContext(Dispatchers.Main) {
+                                    togglesView.adapter.notifyContentChange(item);
+                                }
                             }
                         }
                     }
@@ -711,7 +817,14 @@ class UIDialogs {
             dialog.show();
             return dialog;
         }
+
+        fun showConfirmDialog(context: Context, icon: Int, title: String, description: String, onConfirm: ()->Unit, onDeny: (()->Unit)? = null): Dialog{
+            return showDialog(context, icon, title, description, null, 0,
+                UIDialogs.Action("Cancel", onDeny ?: {}, ActionStyle.NONE, true),
+                UIDialogs.Action("Confirm", onConfirm, ActionStyle.PRIMARY, true));
+        }
     }
+
 
     class Descriptor(val icon: Int, val text: String, val textDetails: String? = null, val code: String? = null, val defaultCloseAction: Int, vararg acts: Action) {
         var shouldShow: ()->Boolean = {true};

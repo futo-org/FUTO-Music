@@ -36,7 +36,7 @@ open class BaseAnyAdapterView<I, T, IT>
     fun notifyContentChanged() {
         adapter.notifyContentChanged();
     }
-    fun notifyContentChange(item: I) {
+    open fun notifyContentChange(item: I) {
         adapter.notifyContentChange(item);
     }
 }

@@ -27,6 +27,7 @@ import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithView
 import com.futo.music.ui.adapters.TrackAnyViewHolder
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.PlayableHeader
+import com.futo.music.ui.views.lists.TrackListEditorView
 import com.futo.music.withSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,10 +63,10 @@ class PlaylistFragment: MainFragment() {
         _view = null
     }
 
-    class FragView(frag: PlaylistFragment, inflater: LayoutInflater): MainFragView<PlaylistFragment>(frag, inflater, R.layout.fragment_album) {
+    class FragView(frag: PlaylistFragment, inflater: LayoutInflater): MainFragView<PlaylistFragment>(frag, inflater, R.layout.fragment_playlist) {
 
         val root: ConstraintLayout
-        val recycler: RecyclerView
+        //val recycler: RecyclerView
         val header: PlayableHeader
         val emptyView: NoResultsView
 
@@ -74,19 +75,23 @@ class PlaylistFragment: MainFragment() {
         var containerTop: ConstraintLayout
         val buttonBack: ImageButton
 
+        val trackList: TrackListEditorView;
+
         private val _containerButtons: LinearLayout
-        private val _adapter: AnyInsertedAdapterView<IPlayableTrack, TrackAnyViewHolder>
+        //private val _adapter: AnyInsertedAdapterView<IPlayableTrack, TrackAnyViewHolder>
         private var _adapterDataset: List<IPlayableTrack>? = null
 
         init {
             root = findViewById(R.id.root)
-            recycler = findViewById(R.id.recycler)
-            header = PlayableHeader(context)
+            header = findViewById<PlayableHeader>(R.id.header)//PlayableHeader(context)
             emptyView = NoResultsView(context)
+            trackList = findViewById(R.id.track_editor)
 
             containerTop = findViewById(R.id.container_top)
             buttonBack = findViewById(R.id.button_back)
             _containerButtons = findViewById(R.id.container_buttons)
+
+            trackList.setThumbnailsVisible(false);
 
             header.onPlayAll.subscribe {
                 playlistCurrent?.let {
@@ -99,7 +104,8 @@ class PlaylistFragment: MainFragment() {
                 }
             }
 
-            _adapter = recycler.asAnyWithViews<IPlayableTrack, TrackAnyViewHolder>(arrayListOf(header), arrayListOf(emptyView), RecyclerView.VERTICAL, false) {
+            /*
+            _adapter = recycler.asAnyWithViews<IPlayableTrack, TrackAnyViewHolder>(arrayListOf(), arrayListOf(emptyView), RecyclerView.VERTICAL, false) {
                 it.useFullName = true
                 it.onClick.subscribe {
                     if (it is DBTrack)
@@ -109,18 +115,42 @@ class PlaylistFragment: MainFragment() {
                     if (it is DBTrack)
                         it.openPlayable(fragment, true)
                 }
-            }
+            }*/
 
             val fadeOffset = 30.dp(resources)
+            /*
             recycler.setHeaderScrollFade(containerTop, fadeOffset) {
                 // no-op for now
+            }*/
+            trackList.onTrackClicked.subscribe {
+                if (it is DBTrack)
+                    it.openPlayable(fragment)
+            }
+            trackList.onTrackOptions.subscribe {
+                if (it is DBTrack)
+                    it.openPlayable(fragment, true)
+            }
+            trackList.onTrackRemoved.subscribe { track ->
+                if(track is DBTrack)
+                    fragment.lifecycleScope.launch(Dispatchers.IO) {
+                        StateDatabase.instance.removeTrackFromPlaylist(playlistCurrent?.id ?: return@launch, track.id);
+                    }
+            }
+            trackList.onTrackOrderChanged.subscribe {
+                val tracks = it.filterIsInstance<DBTrack>();
+                if(tracks.size > 0)
+                    fragment.lifecycleScope.launch(Dispatchers.IO) {
+                        StateDatabase.instance.reorderPlaylist(
+                            playlistCurrent?.id ?: return@launch, tracks
+                        );
+                    }
             }
 
             header.onSearchChanged.subscribe { q ->
                 if (q.isBlank())
-                    _adapter.setData(_adapterDataset ?: return@subscribe)
+                    ;//_adapter.setData(_adapterDataset ?: return@subscribe)
                 else
-                    _adapter.setData(_adapterDataset?.filter { if (it is DBTrack) it.filter(q) else true } ?: return@subscribe)
+                    ;//_adapter.setData(_adapterDataset?.filter { if (it is DBTrack) it.filter(q) else true } ?: return@subscribe)
             }
             buttonBack.setOnClickListener {
                 fragment.closeSegment()
@@ -152,7 +182,8 @@ class PlaylistFragment: MainFragment() {
                 val songs = StateDatabase.instance.getPlaylistTracks(playlist.id)
 
                 withContext(Dispatchers.Main) {
-                    _adapter.setData(songs)
+                    //_adapter.setData(songs)
+                    trackList.setTracks(ArrayList(songs), true);
                     _adapterDataset = songs
 
                     header.setMetadata("${songs.size} track" + (if (songs.size > 1) "s" else ""))

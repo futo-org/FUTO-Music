@@ -89,7 +89,11 @@ open class BaseAnyAdapter<I, T : AnyAdapter.AnyViewHolder<I>, IT : ViewHolder> {
     fun notifyContentChange(item: I) {
         val index = _items.indexOf(item);
         if(index >= 0)
-            notifyContentChanged(index);
+            notifyContentChanged(calculateOffset(index));
+    }
+
+    open fun calculateOffset(index: Int): Int{
+        return index;
     }
 
     companion object {
@@ -143,8 +147,11 @@ class AnyAdapter<I, T : AnyAdapter.AnyViewHolder<I>> : BaseAnyAdapter<I, T, T> {
 }
 
 class AnyInsertedAdapter<I, T : AnyAdapter.AnyViewHolder<I>> : BaseAnyAdapter<I, T, InsertedViewHolder<T>>{
+    private val _prepViewCount: Int;
+
     constructor(items: ArrayList<I>, holderClass: Class<T>, prepend: ArrayList<View> = arrayListOf(), append: ArrayList<View> = arrayListOf(), onCreate: ((T)->Unit)? = null)
             : super(items, holderClass, onCreate) {
+                _prepViewCount = prepend.size;
         adapter = InsertedViewAdapter(prepend, append,
             this::getChildCount,
             this::createChild,
@@ -152,10 +159,15 @@ class AnyInsertedAdapter<I, T : AnyAdapter.AnyViewHolder<I>> : BaseAnyAdapter<I,
     }
     constructor(holderClass: Class<T>, prepend: ArrayList<View> = arrayListOf(), append: ArrayList<View> = arrayListOf(), onCreate: ((T)->Unit)? = null)
             : super(holderClass, onCreate)  {
+        _prepViewCount = prepend.size;
         adapter = InsertedViewAdapter(prepend, append,
             this::getChildCount,
             this::createChild,
             this::bindChild)
+    }
+
+    override fun calculateOffset(index: Int): Int {
+        return index + _prepViewCount;
     }
 
     fun getChildCount(): Int {

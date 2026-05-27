@@ -53,10 +53,15 @@ class TrackListEditorView : FrameLayout {
                     for (i in fromPosition downTo toPosition + 1)
                         Collections.swap(_tracks, i, i - 1)
                 }
-                onTrackOrderChanged.emit(_tracks.toList());
+                //onTrackOrderChanged.emit(_tracks.toList());
                 adapterVideos.notifyItemMoved(fromPosition, toPosition);
             }
         };
+        itemMoveCallback.onRowClear.subscribe { holder, from, to ->
+            if(from != null && to != null && from != to) {
+                onTrackOrderChanged.emit(_tracks.toList());
+            }
+        }
 
         adapterVideos.onOptions.subscribe { v ->
             onTrackOptions?.emit(v);
@@ -79,6 +84,10 @@ class TrackListEditorView : FrameLayout {
         adapterVideos.onClick.subscribe(onTrackClicked::emit);
 
         _adapterTracks = adapterVideos;
+    }
+
+    fun setThumbnailsVisible(visible: Boolean) {
+        _adapterTracks?.setThumbnailsVisible(visible)
     }
 
     fun setCurrentTrack(track: IPlayableTrack?) {
