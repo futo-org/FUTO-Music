@@ -89,6 +89,13 @@ class TrackListEditorView : FrameLayout {
     fun setThumbnailsVisible(visible: Boolean) {
         _adapterTracks?.setThumbnailsVisible(visible)
     }
+    fun setEditable(editable: Boolean) {
+        _adapterTracks?.setCanEdit(editable, _adapterTracks?.canEdit != editable);
+    }
+
+    fun setFilter(str: String) {
+        _adapterTracks?.setFilter(str);
+    }
 
     fun setCurrentTrack(track: IPlayableTrack?) {
         _trackCurrent = track;

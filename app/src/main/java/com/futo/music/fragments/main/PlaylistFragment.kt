@@ -147,10 +147,14 @@ class PlaylistFragment: MainFragment() {
             }
 
             header.onSearchChanged.subscribe { q ->
-                if (q.isBlank())
-                    ;//_adapter.setData(_adapterDataset ?: return@subscribe)
-                else
-                    ;//_adapter.setData(_adapterDataset?.filter { if (it is DBTrack) it.filter(q) else true } ?: return@subscribe)
+                if (q.isBlank()) {
+                    trackList.setEditable(true);
+                    trackList.setFilter("");
+                }
+                else {
+                    trackList.setEditable(false);
+                    trackList.setFilter(q);
+                }
             }
             buttonBack.setOnClickListener {
                 fragment.closeSegment()
@@ -183,7 +187,7 @@ class PlaylistFragment: MainFragment() {
 
                 withContext(Dispatchers.Main) {
                     //_adapter.setData(songs)
-                    trackList.setTracks(ArrayList(songs), true);
+                    trackList.setTracks(ArrayList(songs), header.search.getText().isBlank());
                     _adapterDataset = songs
 
                     header.setMetadata("${songs.size} track" + (if (songs.size > 1) "s" else ""))

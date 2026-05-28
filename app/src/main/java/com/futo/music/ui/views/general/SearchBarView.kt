@@ -87,4 +87,7 @@ class SearchBarView: ConstraintLayout {
     fun setText(str: String) {
         _text.setText(str);
     }
+    fun getText(): String{
+        return _text.text.toString();
+    }
 }

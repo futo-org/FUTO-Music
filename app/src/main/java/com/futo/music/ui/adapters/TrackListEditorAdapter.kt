@@ -11,6 +11,7 @@ import com.futo.music.storage.db.DBTrack
 import kotlin.let
 
 class TrackListEditorAdapter : RecyclerView.Adapter<TrackListEditorViewHolder> {
+    private var _allTracks: ArrayList<IPlayableTrack> = arrayListOf();
     private var _tracks: ArrayList<IPlayableTrack>? = null;
     private val _touchHelper: ItemTouchHelper;
 
@@ -66,7 +67,18 @@ class TrackListEditorAdapter : RecyclerView.Adapter<TrackListEditorViewHolder> {
         }
     }
 
+    fun setFilter(str: String) {
+        val query = str.trim().lowercase()
+
+        _tracks = if (query.isEmpty())
+            ArrayList(_allTracks)
+        else
+            ArrayList(_allTracks.filter { track -> if(track is DBTrack) (track.name.lowercase().contains(query) || (track.artistLine?.lowercase()?.contains(query) ?: false)) else false })
+
+        notifyDataSetChanged()
+    }
     fun setTracks(tracks: ArrayList<IPlayableTrack>, canEdit: Boolean) {
+        _allTracks = tracks;
         _tracks = tracks;
         setCanEdit(canEdit, false);
         notifyDataSetChanged();
