@@ -109,6 +109,9 @@ import com.futo.music.models.playable.Artist
 import com.futo.music.models.playable.Track
 import com.futo.music.states.Announcement
 import com.futo.music.states.SessionAnnouncement
+import com.futo.music.storage.file.FragmentedStorage
+import com.futo.music.storage.file.ManagedStore
+import com.futo.music.storage.file.StringStorage
 import com.futo.music.toGradientDrawable
 import com.futo.music.toHumanBytesSize
 import com.futo.music.updater.Updater
@@ -388,6 +391,12 @@ class MainActivity : AppCompatActivity() {
         {
             _updater = Updater(Constants.URL_APK, Constants.URL_VERSION, File(this.filesDir, Constants.FILE_UPDATING));
             checkForUpdate(false);
+        }
+
+        val store = FragmentedStorage.get<StringStorage>("showedAlpha");
+        if(store.value != "v1") {
+            store.setAndSave("v1");
+            UIDialogs.showAlphaDialog(this, lifecycleScope);
         }
     }
 

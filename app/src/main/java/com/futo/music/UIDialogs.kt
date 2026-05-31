@@ -23,13 +23,10 @@ import android.widget.LinearLayout.LayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.extensions.assume
 import com.futo.music.logging.Logger
@@ -43,12 +40,12 @@ import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
 import com.futo.music.ui.buttons.PillButton
+import com.futo.music.ui.buttons.StandardButton
 import com.futo.music.ui.dialogs.ProgressDialog
 import com.futo.music.ui.viewholders.ListPlaylistToggleViewHolder
 import com.futo.music.ui.viewholders.ListPlaylistViewHolder
 import com.futo.music.ui.views.SheetBar
 import com.futo.music.ui.views.containers.PlaylistsToggleView
-import com.futo.music.ui.views.playback.PlayableOptionOverlay
 import com.futo.music.ui.views.playback.PlayableOptionsView
 import com.futo.music.ui.views.toasts.ToastView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -135,6 +132,110 @@ class UIDialogs {
             StateApp.instance.activity()?.let {
                 it.showAppToast(toast);
             }
+        }
+
+        fun showAlphaDialog(context: Context, scope: CoroutineScope): Dialog {
+
+            return showGuideDialog(context,scope, listOf(
+                GuideItem(
+                    "FUTO Music Alpha",
+                    "This is the alpha version of FUTO Music, an on-device music app. As this is an alpha version, it is under active development, and may have significant changes as it progresses.",
+                    R.mipmap.ic_launcher,
+                    ),
+                GuideItem(
+                    "Work in Progress",
+                    "We are actively working on several features to be released in the near future:",
+                    R.drawable.ic_settings,
+                    listOf(
+                        GuideItemOption(context, "Improved UI"),
+                        GuideItemOption(context, "Better Metadata Auto-Tagging"),
+                        GuideItemOption(context, "Weighted/Smart Shuffles")
+                    ))
+            ))
+        }
+
+        class GuideItem(
+            val title: String,
+            val text: String,
+            val icon: Int = 0,
+            val views: List<View>? = null
+        )
+        class GuideItemOption: androidx.appcompat.widget.AppCompatTextView {
+            constructor(context: Context, text: String): super(context) {
+                this.setBackgroundResource(R.drawable.background_pill_tblack_round);
+                this.textAlignment = TextView.TEXT_ALIGNMENT_CENTER;
+                this.text = text;
+                val dp5 = 10.dp(resources);
+                this.setPadding(dp5, dp5, dp5, dp5);
+                this.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                    setMargins(0, 0, 0, 5.dp(resources));
+                }
+            }
+        }
+
+        fun showGuideDialog(context: Context, scope: CoroutineScope, items: List<GuideItem>, cancellable: Boolean = false, onComplete: (()->Unit)? = null): Dialog {
+            val builder = AlertDialog.Builder(context);
+            val view = LayoutInflater.from(context).inflate(R.layout.dialog_guide, null);
+            builder.setView(view);
+            builder.setCancelable(cancellable);
+            val dialog = builder.create();
+            registerDialogOpened(dialog);
+            dialog.setOnDismissListener {
+                registerDialogClosed(dialog);
+            }
+
+            val img = view.findViewById<ImageView>(R.id.image);
+            val title = view.findViewById<TextView>(R.id.title);
+            val text = view.findViewById<TextView>(R.id.text);
+            val buttonBack = view.findViewById<StandardButton>(R.id.button_back);
+            val buttonNext = view.findViewById<StandardButton>(R.id.button_next);
+            val views = view.findViewById<LinearLayout>(R.id.views);
+
+            var index = 0;
+            fun setState(index: Int) {
+                val data = items[index];
+                img.setImageResource(data.icon);
+                title.setText(data.title);
+                text.setText(data.text);
+
+                views.removeAllViews()
+                if(data.views != null) {
+                    for(view in data.views){
+                        views.addView(view);
+                    }
+                }
+
+                if(index > 0)
+                    buttonBack.isVisible = true;
+                if(index < items.size - 1)
+                    buttonNext.isVisible = true;
+                if(index == 0)
+                    buttonBack.isVisible = false;
+                if(index == items.size - 1)
+                    buttonNext.text.setText("Get Started");
+                else
+                    buttonNext.text.setText("Next");
+                if(index >= items.size)
+                    dialog.hide();
+            }
+
+            buttonBack.onClick.subscribe {
+                index--;
+                index = Math.max(0, index);
+                setState(index);
+            }
+            buttonNext.onClick.subscribe {
+                index++;
+                if(index >= items.size) {
+                    dialog.hide();
+                    return@subscribe;
+                }
+                setState(index);
+            }
+
+            setState(0);
+            dialog.show();
+            return dialog;
         }
 
         fun showRatingDialog(context: Context, scope: CoroutineScope, track: DBTrack? = null, playlist: DBPlaylist? = null, album: DBAlbum? = null, artist: DBArtist? = null, onDismissed: (()->Unit)? = null) {
