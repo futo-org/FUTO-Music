@@ -24,6 +24,9 @@ class NavigationTopBarFragment : TopFragment() {
     private var _buttonNotifCount: TextView? = null;
     private var _textTitle: TextView? = null;
 
+    private var _buttonSettings: ConstraintLayout? = null;
+    private var _buttonSettingsIcon: ImageView? = null;
+
     private var _title: String = "";
 
     fun updateNotifCount() {
@@ -77,6 +80,8 @@ class NavigationTopBarFragment : TopFragment() {
         _buttonBack = view.findViewById(R.id.button_back);
         _buttonNotifIcon = view.findViewById(R.id.button_notifs_icon);
         _buttonNotifCount = view.findViewById(R.id.button_notifs_count);
+        _buttonSettings = view.findViewById(R.id.button_settings);
+        _buttonSettingsIcon = view.findViewById(R.id.button_settings_icon);
 
 
         _buttonBack?.setOnClickListener {

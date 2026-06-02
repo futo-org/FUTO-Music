@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="SearchBarView">
+        <attr name="SearchBarView_background" format="reference" />
         <attr name="SearchBarView_hint" format="reference" />
     </declare-styleable>
 </resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="BottomMenuButton">
+        <attr name="BottomMenuButton_image" format="reference" />
+        <attr name="BottomMenuButton_imageActive" format="reference" />
+        <attr name="BottomMenuButton_text" format="string" />
+    </declare-styleable>
+</resources>

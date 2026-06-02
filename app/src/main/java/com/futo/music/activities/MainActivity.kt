@@ -103,6 +103,7 @@ import com.futo.music.BuildConfig
 import com.futo.music.Constants
 import com.futo.music.fragments.main.AlbumFragment
 import com.futo.music.fragments.main.PlaylistFragment
+import com.futo.music.fragments.main.SettingsFragment
 import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.Album
 import com.futo.music.models.playable.Artist
@@ -151,6 +152,7 @@ class MainActivity : AppCompatActivity() {
     private val _fragArtist = ArtistFragment();
     private val _fragAlbum = AlbumFragment();
     private val _fragPlaylist = PlaylistFragment();
+    private val _fragSettings = SettingsFragment();
 
     //Main
 
@@ -176,7 +178,8 @@ class MainActivity : AppCompatActivity() {
         Pair(NotificationOverlayView.Frag::class, FragmentDefinition(null, null, { _fragNotifs })),
         Pair(ArtistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragArtist })),
         Pair(AlbumFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragAlbum })),
-        Pair(PlaylistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragPlaylist }))
+        Pair(PlaylistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragPlaylist })),
+        Pair(SettingsFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragSettings }))
     );
 
     init {
@@ -326,6 +329,10 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onMediaClose() {
                 }
+
+                override fun onProgressChanged(progressMs: Long, contentLengthMs: Long) {
+
+                }
             });
 
             _fragPlayer.setPlayer(it);
@@ -338,15 +345,23 @@ class MainActivity : AppCompatActivity() {
 
         hasAudioPermission {
             if(it) {
-                fragCurrent = _fragHome;
+                val startUpFrag = _fragHome;
+                val startUpBot = _fragBotMenu;
+
+                fragCurrent = startUpFrag;
+
                 supportFragmentManager.beginTransaction()
                     //.replace(R.id.fragment_top_bar, _fragTopGeneral)
-                    .replace(R.id.fragment_main, _fragHome)
-                    .replace(R.id.fragment_bottom_bar, _fragBotMenu)
+                    .replace(R.id.fragment_main, startUpFrag)
+                    .replace(R.id.fragment_bottom_bar, startUpBot)
                     .commitNow();
 
-                _fragTopGeneral.onShowFragment(_fragHome);
-                _fragHome.onShown(null, false);
+                _fragTopGeneral.onShowFragment(startUpFrag);
+                startUpFrag.onShown(null, false);
+                onNavigated.emit(_fragHome);
+
+                if(startUpBot is MenuBottomBarFragment)
+                    startUpBot.updateBottomMenuState(_fragHome)
 
                 val definitionNew = fragmentsMain.values.find { it.get() == _fragHome };
                 if(isConnectedTop != definitionNew?.connectTop) {

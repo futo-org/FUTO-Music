@@ -1,6 +1,7 @@
 package com.futo.music.ui.views.playback
 
 import android.content.Context
+import android.graphics.Color
 import android.util.AttributeSet
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -16,10 +17,12 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.futo.music.R
 import com.futo.music.constructs.Event0
+import com.futo.music.constructs.Event1
 import com.futo.music.extensions.setAlbumArt
 import com.futo.music.logic.PlayerManager
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateQueue
+import com.futo.music.ui.views.progress.ProgressBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,6 +36,8 @@ class PlaybackPeekView: ConstraintLayout {
     private val _buttonPlay: ImageButton;
     private val _buttonNext: ImageButton;
     private val _buttonClose: ImageButton;
+
+    private val _progress: ProgressBar;
 
     private var _player: PlayerManager? = null;
 
@@ -49,6 +54,9 @@ class PlaybackPeekView: ConstraintLayout {
         _buttonPlay = findViewById(R.id.button_play);
         _buttonNext = findViewById(R.id.button_next);
         _buttonClose = findViewById(R.id.button_close);
+
+        _progress = findViewById(R.id.progress);
+        _progress.activeColor = Color.argb(68, 255, 255, 255);
 
         _textTitle.isSelected = true;
 
@@ -127,6 +135,22 @@ class PlaybackPeekView: ConstraintLayout {
             override fun onMediaClose() {
                 this@PlaybackPeekView.visibility = GONE;
             }
+
+            override fun onProgressChanged(progressMs: Long, contentLengthMs: Long) {
+                if(contentLengthMs > 0) {
+                    _progress.progress = progressMs.toFloat() / contentLengthMs;
+                }
+                else {
+                    _progress.progress = 0f;
+                }
+            }
         })
+    }
+
+    companion object {
+        var isVisible: Boolean = false
+                private set;
+
+        val onVisibileChanged = Event1<Boolean>();
     }
 }

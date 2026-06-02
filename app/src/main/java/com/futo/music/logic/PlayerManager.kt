@@ -4,6 +4,8 @@ import android.R
 import android.content.Context
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -33,6 +35,8 @@ class PlayerManager {
     val onMediaClose = Event0();
 
     private val _listeners = mutableMapOf<Any, Listener>();
+
+    private val _progressMonitor: Handler;
 
     private val _listenerPlayer = object: Player.Listener {
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {
@@ -96,6 +100,20 @@ class PlayerManager {
         this.isPlaying = player.isPlaying;
         this.lastMediaMetadata = player.mediaMetadata;
         this.lastMediaItem = PlaybackService.getCurrentMediaItem() //Temporary workaround
+
+        _progressMonitor = Handler(Looper.getMainLooper()!!);
+        var progressChangedRunnable: Runnable? = null;
+        progressChangedRunnable = object: Runnable {
+            override fun run() {
+                if(isPlaying) {
+                    invokeListener {
+                        it.onProgressChanged(player.currentPosition, player.contentDuration);
+                    }
+                }
+                _progressMonitor.postDelayed(progressChangedRunnable!!, 500);
+            }
+        };
+        _progressMonitor.postDelayed(progressChangedRunnable, 500);
     }
 
     fun subscribe(tag: Any, listener: Listener) {
@@ -110,6 +128,7 @@ class PlayerManager {
         listener.onPlayingChanged(isPlaying);
         listener.onMediaMetadataChanged(player, lastMediaMetadata);
         listener.onMediaItemChanged(player, lastMediaItem, -1);
+        listener.onProgressChanged(player.currentPosition, player.contentDuration);
     }
     fun unsubscribe(tag: Any) {
         synchronized(_listeners) {
@@ -130,6 +149,9 @@ class PlayerManager {
         fun onMediaMetadataChanged(player: Player, mediaMetadata: MediaMetadata?);
         fun onMediaItemChanged(player: Player, mediaItem: MediaItem?, reason: Int);
         fun onMediaClose();
+
+        fun onProgressChanged(progressMs: Long, contentLengthMs: Long);
+
     }
 
     companion object {

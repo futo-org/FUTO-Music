@@ -36,9 +36,13 @@ class SearchBarView: ConstraintLayout {
 
 
         val attrArr = context.obtainStyledAttributes(attrs, R.styleable.SearchBarView, 0, 0);
+        val background = attrArr.getResourceId(R.styleable.SearchBarView_SearchBarView_background, 0);
         val attrHint = attrArr.getResourceId(R.styleable.SearchBarView_SearchBarView_hint, 0);
         if(attrHint > 0)
             _text.setHint(attrHint);
+
+        if(background > 0)
+            setBackgroundResource(background);
 
         _text.onFocusChangeListener = OnFocusChangeListener({ view, focused ->
             if(focused)

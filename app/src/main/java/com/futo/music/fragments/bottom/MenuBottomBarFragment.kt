@@ -11,11 +11,17 @@ import android.widget.*
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
+import com.futo.music.UIDialogs
+import com.futo.music.fragments.main.HomeFragment
+import com.futo.music.fragments.main.MainFragment
 import com.futo.music.fragments.main.PlaybackFragment
+import com.futo.music.fragments.main.SettingsFragment
 import com.futo.music.logging.Logger
 import com.futo.music.logic.PlayerManager
 import com.futo.music.states.SessionAnnouncement
 import com.futo.music.states.StateAnnouncement
+import com.futo.music.states.StateApp
+import com.futo.music.ui.buttons.MenuBottomButton
 import com.futo.music.ui.views.playback.PlaybackPeekView
 import com.futo.music.ui.views.progress.ProgressBar
 import kotlinx.coroutines.Dispatchers
@@ -26,13 +32,31 @@ class MenuBottomBarFragment : BotFragment() {
     private var _view: MenuBottomBarView? = null;
     private var _player: PlayerManager? = null;
 
+    private var _lastKnownView: MainFragment? = null;
+
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = MenuBottomBarView(this, inflater);
         _player?.let {
             view.setPlayer(it);
         }
+        _lastKnownView?.let {
+            view.updateBottomMenuState(it);
+        }
         _view = view;
         return view;
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState);
+        StateApp.instance.activity()?.onNavigated?.subscribe(this) {
+            updateBottomMenuState(it);
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        StateApp.instance.activity()?.onNavigated?.remove(this);
     }
 
     fun setPlayer(player: PlayerManager) {
@@ -51,6 +75,11 @@ class MenuBottomBarFragment : BotFragment() {
         _view = null;
     }
 
+    fun updateBottomMenuState(frag: MainFragment) {
+        _lastKnownView = frag;
+        _view?.updateBottomMenuState(frag);
+    }
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig);
     }
@@ -65,6 +94,12 @@ class MenuBottomBarFragment : BotFragment() {
 
             private val _progress: ProgressBar;
 
+            private val _buttonHome: MenuBottomButton;
+            private val _buttonFiles: MenuBottomButton;
+            private val _buttonSettings: MenuBottomButton;
+
+            private val _buttonsMenu: List<MenuBottomButton>
+
             constructor(
                 fragment: MenuBottomBarFragment,
                 inflater: LayoutInflater
@@ -72,6 +107,25 @@ class MenuBottomBarFragment : BotFragment() {
                 _fragment = fragment;
                 _inflater = inflater;
                 inflater.inflate(R.layout.fragment_overview_bottom_bar, this);
+
+                _buttonHome = findViewById(R.id.button_home);
+                _buttonFiles = findViewById(R.id.button_files);
+                _buttonSettings = findViewById(R.id.button_settings);
+                _buttonsMenu = listOf(_buttonHome, _buttonFiles, _buttonSettings);
+
+
+                _buttonHome.onClick.subscribe {
+                    _buttonsMenu.forEach { it.setActive(false) };
+                    fragment.navigate<HomeFragment>();
+                }
+                _buttonFiles.onClick.subscribe {
+                    _buttonsMenu.forEach { it.setActive(false) };
+                    UIDialogs.toast("Files implementation pending");
+                }
+                _buttonSettings.onClick.subscribe {
+                    _buttonsMenu.forEach { it.setActive(false) };
+                    fragment.navigate<SettingsFragment>();
+                }
 
                 _playerPeek = findViewById(R.id.player_peek);
                 _progress = findViewById(R.id.progress);
@@ -85,6 +139,28 @@ class MenuBottomBarFragment : BotFragment() {
                     findNewProgressAnnouncement();
                 }
                 findNewProgressAnnouncement()
+            }
+
+            override fun onAttachedToWindow() {
+                super.onAttachedToWindow();
+            }
+            override fun onDetachedFromWindow() {
+                super.onDetachedFromWindow()
+            }
+
+            fun updateBottomMenuState(currentFragment: MainFragment) {
+                if(currentFragment is HomeFragment) {
+                    _buttonsMenu.forEach { it.setActive(false) };
+                    _buttonHome.setActive(true);
+                }
+                else if(false) {
+                    _buttonsMenu.forEach { it.setActive(false) };
+                    _buttonFiles.setActive(true);
+                }
+                else if(currentFragment is SettingsFragment) {
+                    _buttonsMenu.forEach { it.setActive(false) };
+                    _buttonSettings.setActive(true);
+                }
             }
 
             private var _announcement_vis: SessionAnnouncement? = null;

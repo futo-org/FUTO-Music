@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.fragments.main.MainFragment
 import com.futo.music.fragments.main.NotificationOverlayView
+import com.futo.music.fragments.main.SettingsFragment
 import com.futo.music.states.StateAnnouncement
 import com.futo.music.states.StateApp
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,9 @@ class NavigationTopBarView: ConstraintLayout {
     private val _buttonNotifIcon: ImageView;
     private val _buttonNotifCount: TextView;
     private val _textTitle: TextView;
+
+    private val _buttonSettings: ConstraintLayout;
+    private val _buttonSettingsIcon: ImageView;
 
     private val _buttonBack: ImageButton;
 
@@ -41,6 +45,9 @@ class NavigationTopBarView: ConstraintLayout {
         _buttonNotifIcon = findViewById(R.id.button_notifs_icon);
         _buttonNotifCount = findViewById(R.id.button_notifs_count);
         _buttonBack = findViewById(R.id.button_back)
+
+        _buttonSettings = findViewById(R.id.button_settings);
+        _buttonSettingsIcon = findViewById(R.id.button_settings_icon);
 
         _buttonBack.setOnClickListener {
             val frag = _parentFragment;
@@ -60,6 +67,18 @@ class NavigationTopBarView: ConstraintLayout {
             }
             else
                 StateApp.instance.activity()?.navigate<NotificationOverlayView.Frag>();
+        }
+
+        _buttonSettings.setOnClickListener {
+            val frag = _parentFragment;
+            if(frag != null) {
+                if(frag is SettingsFragment)
+                    frag.closeSegment();
+                else
+                    frag.navigate<SettingsFragment>();
+            }
+            else
+                StateApp.instance.activity()?.navigate<SettingsFragment>();
         }
 
         if(attrs != null) {
@@ -100,6 +119,10 @@ class NavigationTopBarView: ConstraintLayout {
             _buttonNotifIcon.setImageResource(R.drawable.ic_notifications_filled);
         else
             _buttonNotifIcon.setImageResource(R.drawable.ic_notifications);
+        if(_parentFragment is SettingsFragment)
+            _buttonSettingsIcon.setImageResource(R.drawable.ic_gear_active)
+        else
+            _buttonSettingsIcon.setImageResource(R.drawable.ic_gear);
     }
 
     fun setTitleLongPress(handler: (()->Unit)?) {

@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.fragments.main.MainFragment
 import com.futo.music.fragments.main.NotificationOverlayView
+import com.futo.music.fragments.main.SettingsFragment
 import com.futo.music.states.StateAnnouncement
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,6 +23,10 @@ class GeneralTopBarFragment : TopFragment() {
     private var _buttonNotifs: ConstraintLayout? = null;
     private var _buttonNotifIcon: ImageView? = null;
     private var _buttonNotifCount: TextView? = null;
+
+    private var _buttonSettings: ConstraintLayout? = null;
+    private var _buttonSettingsIcon: ImageView? = null;
+
     private var _textTitle: TextView? = null;
 
     private var _title: String = "";
@@ -95,6 +100,8 @@ class GeneralTopBarFragment : TopFragment() {
         _buttonNotifs = view.findViewById(R.id.button_notifs);
         _buttonNotifIcon = view.findViewById(R.id.button_notifs_icon);
         _buttonNotifCount = view.findViewById(R.id.button_notifs_count);
+        _buttonSettings = view.findViewById(R.id.button_settings);
+        _buttonSettingsIcon = view.findViewById(R.id.button_settings_icon);
 
         if(_titleLongPress != null)
             _textTitle?.setOnLongClickListener { _titleLongPress?.invoke(); return@setOnLongClickListener true };
@@ -108,6 +115,13 @@ class GeneralTopBarFragment : TopFragment() {
                 closeSegment();
             else
                 navigate<NotificationOverlayView.Frag>();
+        }
+
+        _buttonSettings?.setOnClickListener {
+            if(currentMain is SettingsFragment)
+                closeSegment();
+            else
+                navigate<SettingsFragment>();
         }
 
         updateNotifCount();

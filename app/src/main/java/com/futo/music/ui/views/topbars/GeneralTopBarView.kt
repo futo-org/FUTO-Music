@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.fragments.main.MainFragment
 import com.futo.music.fragments.main.NotificationOverlayView
+import com.futo.music.fragments.main.SettingsFragment
 import com.futo.music.states.StateAnnouncement
 import com.futo.music.states.StateApp
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,9 @@ class GeneralTopBarView: ConstraintLayout {
     private val _buttonNotifCount: TextView;
     private val _textTitle: TextView;
     private val _textMiniMeta: TextView;
+
+    private val _buttonSettings: ConstraintLayout;
+    private val _buttonSettingsIcon: ImageView;
 
     private var _parentFragment: MainFragment? = null;
 
@@ -40,6 +44,10 @@ class GeneralTopBarView: ConstraintLayout {
         _buttonNotifCount = findViewById(R.id.button_notifs_count);
         _textMiniMeta = findViewById(R.id.text_minimeta);
 
+        _buttonSettings = findViewById(R.id.button_settings)
+        _buttonSettingsIcon = findViewById(R.id.button_settings_icon);
+
+
         _buttonNotifs.setOnClickListener {
             val frag = _parentFragment;
             if(frag != null) {
@@ -50,6 +58,18 @@ class GeneralTopBarView: ConstraintLayout {
             }
             else
                 StateApp.instance.activity()?.navigate<NotificationOverlayView.Frag>();
+        }
+
+        _buttonSettings.setOnClickListener {
+            val frag = _parentFragment;
+            if(frag != null) {
+                if(frag is SettingsFragment)
+                    frag.closeSegment();
+                else
+                    frag.navigate<SettingsFragment>();
+            }
+            else
+                StateApp.instance.activity()?.navigate<SettingsFragment>();
         }
 
         if(attrs != null) {

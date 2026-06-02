@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="60dp"
-    android:background="@drawable/background_bar_semi_transparant_round_4dp"
+    android:background="@drawable/background_bar_transparant_round_15dp"
     android:id="@+id/root"
     android:layout_marginTop="1dp"
     android:layout_marginBottom="1dp"
@@ -12,9 +12,12 @@
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/image_art"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_margin="5dp"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="5dp"
         app:shapeAppearanceOverlay="@style/roundedCorners_4dp"
         android:background="@color/black"
         app:layout_constraintTop_toTopOf="parent"
@@ -108,5 +111,15 @@
             android:layout_marginRight="2dp" />
 
     </LinearLayout>
+
+    <com.futo.music.ui.views.progress.ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

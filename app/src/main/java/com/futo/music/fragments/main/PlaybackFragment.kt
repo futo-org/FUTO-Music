@@ -168,6 +168,10 @@ class PlaybackFragment: MainFragment() {
             override fun onMediaClose() {
                 setPlayButtonState(false);
             }
+
+            override fun onProgressChanged(progressMs: Long, contentLengthMs: Long) {
+
+            }
         }
 
         init {

@@ -2,8 +2,11 @@
 <resources>
 
     <color name="colorPrimaryDark">#1044C8</color>
-    <color name="colorPrimary">#2D63ED</color>
-    <color name="primary">#2D63ED</color>
+    <color name="colorPrimarOld">#2D63ED</color>
+    <color name="primaryOld">#2D63ED</color>
+
+    <color name="primary">#126A6C</color>
+    <color name="colorPrimary">#126A6C</color>
 
     <color name="pastel_red">#C25353</color>
 

@@ -10,26 +10,68 @@
         android:id="@+id/player_peek"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toTopOf="@id/bottom_bar_buttons" />
+
+    <LinearLayout
+        android:id="@+id/bottom_bar_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@drawable/background_bar_transparant_round_15dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.futo.music.ui.buttons.MenuBottomButton
+            android:id="@+id/button_home"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            app:BottomMenuButton_image="@drawable/ic_home"
+            app:BottomMenuButton_imageActive="@drawable/ic_home_active"
+            app:BottomMenuButton_text="Home"
+            android:layout_weight="1" />
+
+        <!--
+        <com.futo.music.ui.buttons.MenuBottomButton
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            app:BottomMenuButton_image="@drawable/ic_playlist"
+            app:BottomMenuButton_text="Home"
+            android:layout_weight="1" /> -->
+
+        <com.futo.music.ui.buttons.MenuBottomButton
+            android:id="@+id/button_files"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            app:BottomMenuButton_image="@drawable/ic_files"
+            app:BottomMenuButton_imageActive="@drawable/ic_files_active"
+            app:BottomMenuButton_text="Files"
+            android:layout_weight="1" />
+
+        <com.futo.music.ui.buttons.MenuBottomButton
+            android:id="@+id/button_settings"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            app:BottomMenuButton_image="@drawable/ic_gear"
+            app:BottomMenuButton_imageActive="@drawable/ic_gear_active"
+            app:BottomMenuButton_text="Settings"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
 
     <com.futo.music.ui.views.progress.ProgressBar
         android:id="@+id/progress"
         android:visibility="gone"
         android:layout_width="match_parent"
-        android:layout_height="1dp" />
-    <LinearLayout
-        android:id="@+id/bottom_bar_buttons"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-    </LinearLayout>
-
-
+        android:layout_height="1dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
