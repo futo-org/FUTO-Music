@@ -12,12 +12,16 @@ import com.futo.music.constructs.Event1
 import com.futo.music.dp
 import com.futo.music.models.playable.Album
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.states.StateApp
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.toHumanTime
 import com.futo.music.toHumanTimeIndicator
 import com.futo.music.ui.views.AutoSizeLayout
 import com.google.android.material.imageview.ShapeableImageView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
 
@@ -57,11 +61,16 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
     override fun bind(playable: IPlayable) {
         playableItem = playable;
         textName.text = playable.name.trim();
-        playable.getImage().let {
-            if(it?.isEmpty == false)
-                it.setImageView(imageThumbnail, R.drawable.unknown_music);
-            else
-                imageThumbnail.setImageResource(R.drawable.unknown_music);
+        StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
+            playable.getImage().let {
+                withContext(Dispatchers.Main) {
+                    if(playableItem != playable) return@withContext
+                    if (it?.isEmpty == false)
+                        it.setImageView(imageThumbnail, R.drawable.unknown_music);
+                    else
+                        imageThumbnail.setImageResource(R.drawable.unknown_music);
+                }
+            }
         }
         if(playable is DBTrack) {
             if(playable.author.isNotBlank()) {

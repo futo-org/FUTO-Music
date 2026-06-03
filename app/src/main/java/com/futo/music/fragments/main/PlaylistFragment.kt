@@ -124,7 +124,7 @@ class PlaylistFragment: MainFragment() {
             }*/
             trackList.onTrackClicked.subscribe {
                 if (it is DBTrack)
-                    it.openPlayable(fragment)
+                    it.openPlayable(fragment, parentPlayable = playlistCurrent)
             }
             trackList.onTrackOptions.subscribe {
                 if (it is DBTrack)

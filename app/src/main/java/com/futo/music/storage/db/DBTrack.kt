@@ -1,6 +1,9 @@
 package com.futo.music.storage.db
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
 import androidx.media3.common.MediaItem
@@ -20,9 +23,12 @@ import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.models.playable.Track
+import com.futo.music.settings.Settings
+import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.toSafeFileName
 import java.io.InputStream
+import java.net.URI
 import java.time.OffsetDateTime
 
 @Entity(tableName = "tracks")
@@ -68,7 +74,13 @@ class DBTrack(
 
 
     override fun getImage(): ImageVariable? {
-        return null;
+        if(!Settings.instance.media.loadTrackArt) return null;
+        val mediaDataRetriever = MediaMetadataRetriever();
+        val context = StateApp.instance.activity() ?: return null;
+        mediaDataRetriever.setDataSource(context, Uri.parse(contentUrl));
+        return mediaDataRetriever?.embeddedPicture?.let {
+            return@let ImageVariable.fromBitmap(BitmapFactory.decodeByteArray(it, 0, it.size));
+        }
     }
 
     override fun getTracks(context: Context): List<IPlayableTrack> {

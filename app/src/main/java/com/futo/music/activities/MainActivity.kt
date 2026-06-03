@@ -170,6 +170,9 @@ class MainActivity : AppCompatActivity() {
 
     var isConnectedTop: Boolean = false;
 
+    var isSyncing: Boolean = false
+        private set;
+
     val fragmentsMain = mapOf<KClassifier, FragmentDefinition>(
         Pair(HomeFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragHome }, connectTop = true)),
         Pair(SearchFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragSearch })),
@@ -179,7 +182,7 @@ class MainActivity : AppCompatActivity() {
         Pair(ArtistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragArtist })),
         Pair(AlbumFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragAlbum })),
         Pair(PlaylistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragPlaylist })),
-        Pair(SettingsFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragSettings }))
+        Pair(SettingsFragment::class, FragmentDefinition(null, null, { _fragSettings }))
     );
 
     init {
@@ -525,6 +528,7 @@ class MainActivity : AppCompatActivity() {
                 shouldSync = countDB < countMS;
             }
             if(shouldSync) {
+                isSyncing = true;
                 val announce = StateAnnouncement.instance.registerLoading("Syncing Mediastore", "Importing new music from your phone", null,
                     "importing", true);
                 UIDialogs.appToast("We're importing your music!\nGive us a minute.")
@@ -541,6 +545,9 @@ class MainActivity : AppCompatActivity() {
                     Logger.e(TAG, "Import failed", ex);
                     StateAnnouncement.instance.deleteAnnouncement(announce.id);
                     StateAnnouncement.instance.registerAnnouncement("import-failed-" + UUID.randomUUID().toString(), "Import failed", ex.message ?: "", AnnouncementType.SESSION);
+                }
+                finally {
+                    isSyncing = false;
                 }
             }
         }

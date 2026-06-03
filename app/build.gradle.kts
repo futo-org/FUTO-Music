@@ -98,6 +98,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.2.0")
 
     implementation("androidx.media3:media3-exoplayer:1.10.0-rc02")
     implementation("androidx.media3:media3-ui:1.10.0-rc02")

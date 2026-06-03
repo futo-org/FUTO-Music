@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/background_setting">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:maxHeight="40dp"
+        android:paddingLeft="20dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/icon"
+        app:layout_constraintRight_toLeftOf="@id/arrow"
+        android:gravity="center_vertical"
+        android:padding="20dp"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/text"
+            android:fontFamily="@font/inter_light"
+            android:textSize="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/description"
+            android:fontFamily="@font/inter_light"
+            android:textSize="11dp"
+            android:textColor="#AAFFFFFF"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/arrow"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_chev_right"
+        android:scaleType="fitCenter"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:paddingLeft="10dp"
+        android:layout_margin="10dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

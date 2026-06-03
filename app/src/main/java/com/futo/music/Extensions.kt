@@ -26,12 +26,17 @@ import com.futo.music.fragments.main.MainFragment
 import com.futo.music.fragments.main.PlaybackFragment
 import com.futo.music.fragments.main.PlaylistFragment
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.models.playable.IPlayableTrack
+import com.futo.music.settings.Settings
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateQueue
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import jp.wasabeef.glide.transformations.BitmapTransformation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -90,14 +95,15 @@ class IPlayableWithPlaySettings(
     val playSettings: PlaySettings);
 
 class PlaySettings(
-    val shuffle: Boolean = false
+    val shuffle: Boolean = false,
+    val index: Int = -1
 )
 fun IPlayable.withSettings(settings: PlaySettings): IPlayableWithPlaySettings {
     return IPlayableWithPlaySettings(this, settings);
 }
 
 
-fun IPlayable.openPlayable(fragment: MainFragment, preferMenu: Boolean = false) {
+fun IPlayable.openPlayable(fragment: MainFragment, preferMenu: Boolean = false, parentPlayable: IPlayable? = null) {
     if(this is DBArtist && !preferMenu)
         fragment.navigate<ArtistFragment>(this);
     else if(this is DBAlbum && !preferMenu)
@@ -108,7 +114,26 @@ fun IPlayable.openPlayable(fragment: MainFragment, preferMenu: Boolean = false) 
         if (preferMenu || StateQueue.instance.getCurrentTrack() != null) {
             UIDialogs.overlayPlayable(this);
         } else {
-            fragment.navigate<PlaybackFragment>(this);
+            if(parentPlayable != null && Settings.instance.general.queueEntireCollection && this is IPlayableTrack) {
+                StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
+                    val parentTracks = parentPlayable.getTracks(fragment.context ?: return@launch);
+                    val index = parentTracks.indexOfFirst { it.getItemId() == this@openPlayable.getItemId() };
+                    withContext(Dispatchers.Main) {
+                        if (index >= 0)
+                            fragment.navigate<PlaybackFragment>(
+                                parentPlayable.withSettings(
+                                    PlaySettings(
+                                        index = index
+                                    )
+                                )
+                            );
+                        else
+                            fragment.navigate<PlaybackFragment>(this);
+                    }
+                }
+            }
+            else
+                fragment.navigate<PlaybackFragment>(this);
         }
     }
 }

@@ -124,7 +124,7 @@ class ArtistFragment: MainFragment() {
                 it.useFullName = false;
                 it.onClick.subscribe {
                     if(it is DBTrack)
-                        it.openPlayable(fragment);
+                        it.openPlayable(fragment, parentPlayable = artistCurrent);
                 }
                 it.onLongClick.subscribe {
                     if(it is DBTrack)

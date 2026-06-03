@@ -119,7 +119,7 @@ class AlbumFragment: MainFragment() {
                 it.useFullName = true;
                 it.onClick.subscribe {
                     if(it is DBTrack)
-                        it.openPlayable(fragment);
+                        it.openPlayable(fragment, parentPlayable = albumCurrent);
                 }
                 it.onLongClick.subscribe {
                     if(it is DBTrack)

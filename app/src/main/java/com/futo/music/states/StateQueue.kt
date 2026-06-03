@@ -137,7 +137,7 @@ class StateQueue {
             _lastSetQueuePlayable = playable;
         }
     }
-    fun setQueue(context: Context, playable: IPlayable, cb: ((List<IPlayableTrack>)->Unit)? = null) {
+    fun setQueue(context: Context, playable: IPlayable, cb: ((List<IPlayableTrack>)->Unit)? = null, index: Int = -1) {
         StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
             if(playable is DBAlbum)
                 StateDatabase.instance.setPlayedAlbum(playable.id);
@@ -164,7 +164,10 @@ class StateQueue {
             val mediaItems = newQueue.map { it.getMediaItem() }
             setLastMediaItems(mediaItems);
             withContext(Dispatchers.Main) {
-                _player?.player?.setMediaItems(mediaItems);
+                if(index > 0)
+                    _player?.player?.setMediaItems(mediaItems, index, 0);
+                else
+                    _player?.player?.setMediaItems(mediaItems);
                 _player?.player?.prepare();
                 _player?.player?.play();
             }

@@ -2,10 +2,13 @@ package com.futo.music.fragments.main
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Parcel
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -53,6 +56,14 @@ class HomeFragment: MainFragment() {
     private var _dataSongNew: List<IPlayable>? = null;
     private var _dataVibeWeighted: Vibe? = null;
 
+    var _scrollY: Int? = null;
+    var _recentStateSave: Parcelable? = null;
+    var _playlistStateSave: Parcelable? = null;
+    var _artistStateSave: Parcelable? = null;
+    var _albumStateSave: Parcelable? = null;
+    var _songNewStateSave: Parcelable? = null;
+    var _globalStateSave: Parcelable? = null;
+
     fun clearCache() {
         _dataAlbums = null;
         _dataArtists = null;
@@ -92,6 +103,9 @@ class HomeFragment: MainFragment() {
     }
 
     override fun onCreateMainView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val prevView = _view;
+        if(prevView != null) //Temporary solution
+            return prevView;
         val view = FragView(this, inflater);
         _view = view;
         StateLibrary.instance.onSyncCompleted.subscribe("homeFrag", {
@@ -105,12 +119,20 @@ class HomeFragment: MainFragment() {
     override fun onDestroyMainView() {
         super.onDestroyMainView();
         StateLibrary.instance.onSyncCompleted.remove("homeFrag");
+
+        _recentStateSave = _view?.gridRecent?.recycler?.layoutManager?.onSaveInstanceState();
+        _playlistStateSave = _view?.gridPlaylists?.recycler?.layoutManager?.onSaveInstanceState();
+        _artistStateSave = _view?.gridArtists?.recycler?.layoutManager?.onSaveInstanceState();
+        _albumStateSave = _view?.gridAlbums?.recycler?.layoutManager?.onSaveInstanceState();
+        _songNewStateSave = _view?.gridSongRecent?.recycler?.layoutManager?.onSaveInstanceState();
+        _scrollY = _view?.scroller?.scrollY;
         _view = null;
     }
 
 
     class FragView(frag: HomeFragment, inflater: LayoutInflater): MainFragView<HomeFragment>(frag, inflater, R.layout.fragment_home) {
 
+        val scroller: ScrollView;
         val search: SearchBarView;
         val gridRecent: ContentGrid;
         val gridPlaylists: ContentGrid;
@@ -128,6 +150,7 @@ class HomeFragment: MainFragment() {
 
         init {
             search = findViewById(R.id.view_search);
+            scroller = findViewById(R.id.scroller);
             gridRecent = findViewById(R.id.grid_recent);
             gridPlaylists = findViewById(R.id.grid_playlists);
             gridArtists = findViewById(R.id.grid_artists);
@@ -298,6 +321,11 @@ class HomeFragment: MainFragment() {
                     else {
                         gridRecent.setData(recent);
                         gridRecent.visibility = View.VISIBLE;
+                        fragment._recentStateSave?.let {
+                            gridRecent.recycler.post {
+                                gridRecent.recycler.layoutManager?.onRestoreInstanceState(it);
+                            }
+                        }
                     }
                     if(playlists.isNullOrEmpty()) {
                         gridPlaylists.visibility = View.GONE;
@@ -307,18 +335,33 @@ class HomeFragment: MainFragment() {
                         gridPlaylists.setData(playlists);
                         gridPlaylists.visibility = View.VISIBLE;
                         containerPlaylistsCreate.visibility = View.GONE;
+                        fragment._playlistStateSave?.let {
+                            gridPlaylists.recycler.post {
+                                gridPlaylists.recycler.layoutManager?.onRestoreInstanceState(it);
+                            }
+                        }
                     }
                     if(artists.isNullOrEmpty())
                         gridArtists.visibility = View.GONE;
                     else {
                         gridArtists.setData(artists);
                         gridArtists.visibility = View.VISIBLE;
+                        fragment._artistStateSave?.let {
+                            gridArtists.recycler.post {
+                                gridArtists.recycler.layoutManager?.onRestoreInstanceState(it);
+                            }
+                        }
                     }
                     if(albums.isNullOrEmpty())
                         gridAlbums.visibility = View.GONE;
                     else {
                         gridAlbums.setData(albums);
                         gridAlbums.visibility = View.VISIBLE;
+                        fragment._albumStateSave?.let {
+                            gridAlbums.recycler.post {
+                                gridAlbums.recycler.layoutManager?.onRestoreInstanceState(it);
+                            }
+                        }
                     }
 
                     if(songNew.isNullOrEmpty())
@@ -326,10 +369,19 @@ class HomeFragment: MainFragment() {
                     else {
                         gridSongRecent.setData(songNew);
                         gridSongRecent.visibility = View.VISIBLE;
+                        fragment._songNewStateSave?.let {
+                            gridSongRecent.recycler.post {
+                                gridSongRecent.recycler.layoutManager?.onRestoreInstanceState(it);
+                            }
+                        }
+                    }
+                    fragment._scrollY?.let {
+                        scroller.post {
+                            scroller.scrollTo(0, it);
+                        }
                     }
                 }
             }
-
             //val artists = StateLibrary.instance.getArtists(fragment.requireContext(), ArtistOrdering.TrackCount).map { it.toArtist() } as List<IPlayable>;
             //val albums = StateLibrary.instance.getAlbums(fragment.requireContext()).map { it.toAlbum() } as List<IPlayable>;
 

@@ -36,6 +36,7 @@ import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.dp
 import com.futo.music.extensions.setAlbumArt
+import com.futo.music.extractBitmap
 import com.futo.music.fragments.MainFragView
 import com.futo.music.gestures.OnSwipeTouchListener
 import com.futo.music.logic.PlayerManager
@@ -432,15 +433,32 @@ class PlaybackFragment: MainFragment() {
                         if((it?.dominant ?: it?.darkVibrant) != null)
                         StateApp.instance.activity()?.setBackgroundBottomGradient((it!!.dominant ?: it.darkVibrant!!), 0.5f, 0.6f);
                     })*/
-                    _imageArt.setAlbumArt(mediaMetadata, bitmapIntercept = {
-                        if(it != null)
-                            StateApp.instance.activity()?.let { act ->
-                                act.setBackgroundTop(BitmapDrawable(it), 2.3f, 0.4f, {
-                                    it.transform(BlurTransformation(25, 3))
-                                });
-                                //act.setBackgroundBottomGradient(android.graphics.Color.BLACK, 0.3f);
-                            };
-                    })
+
+                    val result = withContext(Dispatchers.IO) {
+                        val trackImage = _trackCurrent?.getImage();
+                        return@withContext trackImage;
+                    }
+                    if(result != null)
+                        result.getGlideLoad(_imageArt)!!
+                            .extractBitmap({
+                                if(it != null)
+                                    StateApp.instance.activity()?.let { act ->
+                                        act.setBackgroundTop(BitmapDrawable(it), 2.3f, 0.4f, {
+                                            it.transform(BlurTransformation(25, 3))
+                                        });
+                                        //act.setBackgroundBottomGradient(android.graphics.Color.BLACK, 0.3f);
+                                    };
+                            }).into(_imageArt);
+                    else
+                        _imageArt.setAlbumArt(mediaMetadata, bitmapIntercept = {
+                            if(it != null)
+                                StateApp.instance.activity()?.let { act ->
+                                    act.setBackgroundTop(BitmapDrawable(it), 2.3f, 0.4f, {
+                                        it.transform(BlurTransformation(25, 3))
+                                    });
+                                    //act.setBackgroundBottomGradient(android.graphics.Color.BLACK, 0.3f);
+                                };
+                        })
                     _textTitle.text = (track?.name ?: mediaMetadata.title);
                     _textArtist.text = (track?.artistLine ?: mediaMetadata.artist);
                     _textAlbum.text = (track?.albumLine ?: mediaMetadata.albumTitle);
@@ -536,7 +554,7 @@ class PlaybackFragment: MainFragment() {
                     player.shuffleModeEnabled = false;
                     setShuffleButtonState(player.shuffleModeEnabled);
                 }
-                StateQueue.instance.setQueue(context, parameter) {
+                StateQueue.instance.setQueue(context, parameter, {
                     if(it.size == 0) {
                         fragment.lifecycleScope.launch(Dispatchers.Main) {
                             fragment.closeSegment();
@@ -544,7 +562,7 @@ class PlaybackFragment: MainFragment() {
 
                         }
                     }
-                };
+                });
                 if(parameter is Track) {
                     _buttonsRating.setRatingsFor(null);
                     setRatingFrom(null);
@@ -558,7 +576,7 @@ class PlaybackFragment: MainFragment() {
                         setShuffleButtonState(player.shuffleModeEnabled);
                     }
                 }
-                StateQueue.instance.setQueue(context, parameter.playable) {
+                StateQueue.instance.setQueue(context, parameter.playable, {
                     if(it.size == 0) {
                         fragment.lifecycleScope.launch(Dispatchers.Main) {
                             fragment.closeSegment();
@@ -566,7 +584,7 @@ class PlaybackFragment: MainFragment() {
 
                         }
                     }
-                };
+                }, parameter.playSettings.index);
             }
             if(parameter == null) {
                 val player = PlaybackService._lastPlayer ?: return;
