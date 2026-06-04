@@ -6,6 +6,8 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Animatable
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.text.method.ScrollingMovementMethod
 import android.util.TypedValue
 import android.view.Gravity
@@ -14,8 +16,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -46,8 +50,10 @@ import com.futo.music.ui.viewholders.ListPlaylistToggleViewHolder
 import com.futo.music.ui.viewholders.ListPlaylistViewHolder
 import com.futo.music.ui.views.SheetBar
 import com.futo.music.ui.views.containers.PlaylistsToggleView
+import com.futo.music.ui.views.containers.TextInputForm
 import com.futo.music.ui.views.playback.PlayableOptionsView
 import com.futo.music.ui.views.toasts.ToastView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -623,6 +629,7 @@ class UIDialogs {
         }
         fun showCreatePlaylistDialog(context: Context, scope: CoroutineScope, onResult: (Long?)->Unit) {
 
+            /*
             val dialog = UIDialogs.showDialog(context, R.drawable.ic_playlist, false, "New Playlist", "Enter a name for your new playlist", null, "", "Playlist name...", 0,
                 UIDialogs.Action("Cancel", {
                     onResult(null);
@@ -641,6 +648,64 @@ class UIDialogs {
                         }
                     }
                 }, UIDialogs.ActionStyle.PRIMARY, true));
+            */
+            var sheet: BottomSheetDialog? = null;
+            var textInputForm: TextInputForm? = null;
+            textInputForm = TextInputForm(context).apply {
+                this.setData(
+                    "New Playlist",
+                    "Enter a name for your new playlist",
+                    "Playlist name..",
+                    "Create",
+                    {
+                        hideKeyboard(context, textInputForm!!.input);
+                        sheet?.hide();
+                        if (it.isNullOrBlank()) {
+                            UIDialogs.appToast("No name provided for playlist");
+                            onResult(null);
+                            return@setData;
+                        }
+                        scope.launch(Dispatchers.IO) {
+                            val existing = StateDatabase.instance.getPlaylistByName(it);
+
+                            if(existing != null) {
+                                withContext(Dispatchers.Main) {
+                                    showConfirmDialog(
+                                        context,
+                                        R.drawable.ic_playlist,
+                                        "Playlist [${it}] already exists",
+                                        "Are you sure you want to create a playlist with the same name?",
+                                        {
+                                            scope.launch(Dispatchers.IO) {
+                                                val id = StateDatabase.instance.createPlaylist(it);
+                                                withContext(Dispatchers.Main) {
+                                                    onResult(id);
+                                                }
+                                            }
+                                        },
+                                        {
+                                            onResult(null);
+                                        })
+                                }
+                            }
+                            else {
+                                val id = StateDatabase.instance.createPlaylist(it);
+                                withContext(Dispatchers.Main) {
+                                    onResult(id);
+                                }
+                            }
+                        }
+                    },
+                    {
+                        hideKeyboard(context, textInputForm!!.input);
+                        sheet?.hide();
+                        onResult(null);
+                    })
+            };
+            sheet = showSheet(context, textInputForm, {
+                hideKeyboard(context, textInputForm!!.input);
+                onResult(null)
+            }, true)
         }
 
         fun showSheet(context: Context, view: View, onClose: (()->Unit)? = null, addTopHandle: Boolean = false): BottomSheetDialog? {
@@ -656,6 +721,18 @@ class UIDialogs {
                 } else view;
 
                 dialog.setContentView(viewToUse);
+
+
+                dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+                dialog.setOnShowListener {
+                    Handler(Looper.getMainLooper()).post {
+                        val bottomSheet = (dialog as? BottomSheetDialog)?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as? FrameLayout
+                        bottomSheet?.let {
+                            BottomSheetBehavior.from(it).state = BottomSheetBehavior.STATE_EXPANDED
+                        }
+                    }
+                }
+
                 dialog.show();
 
                 //TODO: add to theme
@@ -924,7 +1001,15 @@ class UIDialogs {
                 UIDialogs.Action("Cancel", onDeny ?: {}, ActionStyle.NONE, true),
                 UIDialogs.Action("Confirm", onConfirm, ActionStyle.PRIMARY, true));
         }
+
+        fun hideKeyboard(context: Context, inputView: View){
+            val inputManager = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager?
+                ?: return;
+            inputManager?.hideSoftInputFromWindow(inputView.windowToken, 0);
+            inputView.clearFocus();
+        }
     }
+
 
 
     class Descriptor(val icon: Int, val text: String, val textDetails: String? = null, val code: String? = null, val defaultCloseAction: Int, vararg acts: Action) {

@@ -91,6 +91,7 @@ class StateDatabase(
     fun getTrack(id: Long): DBTrack? = db.tracksDao().get(id);
     fun getArtist(id: Long): DBArtist? = db.artistDao().get(id);
     fun getPlaylist(id: Long): DBPlaylist? = db.playlistDao().get(id);
+    fun getPlaylistByName(name: String): DBPlaylist? = db.playlistDao().getByName(name);
 
 
     fun getAlbums(): List<DBAlbum> {

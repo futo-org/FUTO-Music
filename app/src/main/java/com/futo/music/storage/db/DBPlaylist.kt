@@ -85,6 +85,9 @@ interface DBPlaylistDao {
     @Query("SELECT * FROM playlists WHERE id = :id")
     fun get(id: Long): DBPlaylist?;
 
+    @Query("SELECT * FROM playlists WHERE name = :name")
+    fun getByName(name: String): DBPlaylist?;
+
     @Query("SELECT COUNT(*) FROM playlists")
     fun count(): Int;
 
