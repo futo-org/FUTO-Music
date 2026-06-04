@@ -17,7 +17,9 @@ import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Update
+import com.futo.music.R
 import com.futo.music.audioContainerToExtension
+import com.futo.music.logging.Logger
 import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
@@ -74,12 +76,18 @@ class DBTrack(
 
 
     override fun getImage(): ImageVariable? {
-        if(!Settings.instance.media.loadTrackArt) return null;
-        val mediaDataRetriever = MediaMetadataRetriever();
-        val context = StateApp.instance.activity() ?: return null;
-        mediaDataRetriever.setDataSource(context, Uri.parse(contentUrl));
-        return mediaDataRetriever?.embeddedPicture?.let {
-            return@let ImageVariable.fromBitmap(BitmapFactory.decodeByteArray(it, 0, it.size));
+        try {
+            if (!Settings.instance.media.loadTrackArt) return null;
+            val mediaDataRetriever = MediaMetadataRetriever();
+            val context = StateApp.instance.activity() ?: return null;
+            mediaDataRetriever.setDataSource(context, Uri.parse(contentUrl));
+            return mediaDataRetriever?.embeddedPicture?.let {
+                return@let ImageVariable.fromBitmap(BitmapFactory.decodeByteArray(it, 0, it.size));
+            }
+        }
+        catch(ex: Throwable) {
+            Logger.e("DBTrack", "Could not get track art for [${name}]: ${ex.message}", ex);
+            return ImageVariable.fromResource(R.drawable.ic_image_broken)
         }
     }
 

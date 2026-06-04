@@ -33,6 +33,9 @@ import com.futo.music.states.StateQueue
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
+import com.futo.music.storage.db.DBTrack
+import com.futo.music.ui.views.general.SortDropdown
+import com.futo.music.ui.views.general.SortDropdownType
 import jp.wasabeef.glide.transformations.BitmapTransformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -138,7 +141,54 @@ fun IPlayable.openPlayable(fragment: MainFragment, preferMenu: Boolean = false, 
     }
 }
 
+fun List<IPlayable>.sort(sortType: SortDropdownType?): List<IPlayable> {
+    if(sortType == null)
+        return this;
+    return when(sortType){
+        SortDropdownType.Alphabetic -> this.sortedBy { it.name.lowercase() };
+        SortDropdownType.AlphabeticDesc -> this.sortedByDescending { it.name.lowercase() };
+        SortDropdownType.Added -> this.sortedBy { it.getAddedDate() };
+        SortDropdownType.AddedDesc -> this.sortedByDescending { it.getAddedDate() };
+        SortDropdownType.Played -> this.sortedBy { it.getPlayedDate() };
+        SortDropdownType.PlayedDesc -> this.sortedByDescending { it.getPlayedDate() };
+        SortDropdownType.Count -> this.sortedBy { it.getItemCount() }
+        SortDropdownType.CountDesc -> this.sortedByDescending { it.getItemCount() }
+    }
+}
 
+fun IPlayable.getAddedDate(): OffsetDateTime {
+    if(this is DBArtist)
+        return this.dateAdded;
+    if(this is DBAlbum)
+        return this.dateAdded;
+    if(this is DBPlaylist)
+        return this.dateAdded;
+    if(this is DBTrack)
+        return this.dateAdded;
+    return OffsetDateTime.MIN;
+}
+fun IPlayable.getPlayedDate(): OffsetDateTime {
+    if(this is DBArtist)
+        return this.datePlayed;
+    if(this is DBAlbum)
+        return this.datePlayed;
+    if(this is DBPlaylist)
+        return this.datePlayed;
+    if(this is DBTrack)
+        return this.datePlayed;
+    return OffsetDateTime.MIN;
+}
+fun IPlayable.getItemCount(): Int {
+    if(this is DBArtist)
+        return this.trackCount;
+    if(this is DBAlbum)
+        return this.trackCount;
+    if(this is DBPlaylist)
+        return this.trackCount;
+    if(this is DBTrack)
+        return 1;
+    return 1;
+}
 
 class GlidePaletteGenerator(val callback: (PaletteColors?)->Unit): BitmapTransformation() {
     override fun transform(context: Context, pool: BitmapPool, toTransform: Bitmap, outWidth: Int, outHeight: Int): Bitmap? {

@@ -31,7 +31,7 @@ class Settings : FragmentedStorageFileJson() {
     @Serializable
     class GeneralSettings {
 
-        @Setting("Queue entire collections", "When tapping specific track in collection, queue entire collection instead of just one track")
+        @Setting("Queue Entire Collections", "When tapping specific track in collection, queue entire collection instead of just one track")
         public var queueEntireCollection = true;
 
     }
@@ -43,7 +43,7 @@ class Settings : FragmentedStorageFileJson() {
     @Serializable
     class MediaSettings {
 
-        @Setting("Scan for new media", "Checks the Android Mediastore for new media, this is automatically done on startup too.", icon = "ic_database_search", order = 0)
+        @Setting("Scan For New Media", "Checks the Android Mediastore for new media, this is automatically done on startup too.", icon = "ic_database_search", order = 0)
         fun scanForNewMedia() {
             val act = StateApp.instance.activity() ?: return;
             if(act.isSyncing)

@@ -15,6 +15,7 @@ import com.futo.music.UIDialogs
 import com.futo.music.fragments.main.HomeFragment
 import com.futo.music.fragments.main.MainFragment
 import com.futo.music.fragments.main.PlaybackFragment
+import com.futo.music.fragments.main.SearchFragment
 import com.futo.music.fragments.main.SettingsFragment
 import com.futo.music.logging.Logger
 import com.futo.music.logic.PlayerManager
@@ -95,8 +96,9 @@ class MenuBottomBarFragment : BotFragment() {
             private val _progress: ProgressBar;
 
             private val _buttonHome: MenuBottomButton;
+            private val _buttonSearch: MenuBottomButton;
             private val _buttonFiles: MenuBottomButton;
-            private val _buttonSettings: MenuBottomButton;
+            private val _buttonSettings: MenuBottomButton?;
 
             private val _buttonsMenu: List<MenuBottomButton>
 
@@ -109,20 +111,25 @@ class MenuBottomBarFragment : BotFragment() {
                 inflater.inflate(R.layout.fragment_overview_bottom_bar, this);
 
                 _buttonHome = findViewById(R.id.button_home);
+                _buttonSearch = findViewById(R.id.button_search);
                 _buttonFiles = findViewById(R.id.button_files);
                 _buttonSettings = findViewById(R.id.button_settings);
-                _buttonsMenu = listOf(_buttonHome, _buttonFiles, _buttonSettings);
+                _buttonsMenu = listOf(_buttonHome, _buttonSearch, _buttonFiles);
 
 
                 _buttonHome.onClick.subscribe {
                     _buttonsMenu.forEach { it.setActive(false) };
                     fragment.navigate<HomeFragment>();
                 }
-                _buttonFiles.onClick.subscribe {
+                _buttonSearch?.onClick?.subscribe {
                     _buttonsMenu.forEach { it.setActive(false) };
+                    fragment.navigate<SearchFragment>();
+                }
+                _buttonFiles.onClick.subscribe {
+                    //_buttonsMenu.forEach { it.setActive(false) };
                     UIDialogs.toast("Files implementation pending");
                 }
-                _buttonSettings.onClick.subscribe {
+                _buttonSettings?.onClick?.subscribe {
                     _buttonsMenu.forEach { it.setActive(false) };
                     fragment.navigate<SettingsFragment>();
                 }
@@ -159,7 +166,11 @@ class MenuBottomBarFragment : BotFragment() {
                 }
                 else if(currentFragment is SettingsFragment) {
                     _buttonsMenu.forEach { it.setActive(false) };
-                    _buttonSettings.setActive(true);
+                    _buttonSettings?.setActive(true);
+                }
+                else if(currentFragment is SearchFragment) {
+                    _buttonsMenu.forEach { it.setActive(false) };
+                    _buttonSearch?.setActive(true);
                 }
             }
 

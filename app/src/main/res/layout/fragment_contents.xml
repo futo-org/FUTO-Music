@@ -21,7 +21,16 @@
         app:SearchBarView_hint="@string/hint_filter"
         app:layout_constraintTop_toBottomOf="@id/topbar"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toLeftOf="@id/dropdown_sort" />
+    <com.futo.music.ui.views.general.SortDropdown
+        android:id="@+id/dropdown_sort"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/view_search"
+        app:layout_constraintBottom_toBottomOf="@id/view_search"
+        android:layout_marginBottom="20dp" />
+
 
     <com.futo.music.ui.views.containers.ContentGrid
         android:id="@+id/grid_search"

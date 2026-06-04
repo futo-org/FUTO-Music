@@ -48,6 +48,15 @@
             android:layout_weight="1" /> -->
 
         <com.futo.music.ui.buttons.MenuBottomButton
+            android:id="@+id/button_search"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            app:BottomMenuButton_image="@drawable/ic_search"
+            app:BottomMenuButton_imageActive="@drawable/ic_search"
+            app:BottomMenuButton_text="Search"
+            android:layout_weight="1" />
+
+        <com.futo.music.ui.buttons.MenuBottomButton
             android:id="@+id/button_files"
             android:layout_width="0dp"
             android:layout_height="60dp"
@@ -56,6 +65,7 @@
             app:BottomMenuButton_text="Files"
             android:layout_weight="1" />
 
+        <!--
         <com.futo.music.ui.buttons.MenuBottomButton
             android:id="@+id/button_settings"
             android:layout_width="0dp"
@@ -63,7 +73,7 @@
             app:BottomMenuButton_image="@drawable/ic_gear"
             app:BottomMenuButton_imageActive="@drawable/ic_gear_active"
             app:BottomMenuButton_text="Settings"
-            android:layout_weight="1" />
+            android:layout_weight="1" />-->
 
     </LinearLayout>
 

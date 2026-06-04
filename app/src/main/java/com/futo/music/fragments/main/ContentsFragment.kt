@@ -16,12 +16,15 @@ import com.futo.music.fragments.top.GeneralTopBarFragment
 import com.futo.music.fragments.top.NavigationTopBarFragment
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.openPlayable
+import com.futo.music.sort
 import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
+import com.futo.music.ui.views.general.SortDropdown
+import com.futo.music.ui.views.general.SortDropdownType
 import com.futo.music.ui.views.topbars.NavigationTopBarView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,17 +69,28 @@ class ContentsFragment: MainFragment() {
         val search: SearchBarView;
         val gridContent: ContentGrid;
         val emptyView: NoResultsView;
+        val dropdownSort: SortDropdown;
 
         var contents: List<IPlayable>? = null;
 
         val topbar: NavigationTopBarView;
 
+        private var _lastPlayables: List<IPlayable>? = null;
+        private var _selectedSort: SortDropdownType = SortDropdownType.CountDesc;
 
         init {
             search = findViewById(R.id.view_search);
             gridContent = findViewById(R.id.grid_search);
             emptyView = findViewById(R.id.view_empty);
             topbar = findViewById(R.id.topbar);
+            dropdownSort = findViewById(R.id.dropdown_sort);
+            dropdownSort.setSelected(_selectedSort);
+            dropdownSort.onSelectedChanged.subscribe {
+                _selectedSort = it;
+                _lastPlayables?.let {
+                    updateContent(it);
+                }
+            }
 
             gridContent.onClick.subscribe {
                 //fragment.navigate<PlaybackFragment>(it);
@@ -96,6 +110,8 @@ class ContentsFragment: MainFragment() {
         }
 
         fun updateContent(contents: List<IPlayable>) {
+            val newContents = sort(contents);
+            _lastPlayables = newContents;
             if(contents.size  == 0) {
                 emptyView.isVisible = true;
                 gridContent.isVisible = false;
@@ -103,10 +119,13 @@ class ContentsFragment: MainFragment() {
             }
             else {
                 emptyView.isVisible = false;
-                gridContent.setData(contents);
+                gridContent.setData(newContents);
                 gridContent.isVisible = true;
             }
 
+        }
+        fun sort(contents: List<IPlayable>): List<IPlayable> {
+            return contents.sort(_selectedSort);
         }
 
         fun onShown(parameter: Any? = null) {
