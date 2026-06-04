@@ -149,7 +149,7 @@ class UIDialogs {
                     listOf(
                         GuideItemOption(context, "Improved UI"),
                         GuideItemOption(context, "Better Metadata Auto-Tagging"),
-                        GuideItemOption(context, "Weighted/Smart Shuffles")
+                        GuideItemOption(context, "Improved Smart Shuffles")
                     ))
             ))
         }
