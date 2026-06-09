@@ -146,6 +146,7 @@ class HomeFragment: MainFragment() {
         val containerShuffles: LinearLayout;
         val buttonShuffle: StandardButton;
         val buttonWshuffle: StandardButton;
+        val buttonHelp: StandardButton;
 
 
         init {
@@ -160,6 +161,7 @@ class HomeFragment: MainFragment() {
             containerShuffles = findViewById(R.id.container_shuffles);
             buttonShuffle = findViewById(R.id.button_shuffle);
             buttonWshuffle = findViewById(R.id.button_wshuffle);
+            buttonHelp = findViewById(R.id.button_help);
 
             findViewById<GeneralTopBarView>(R.id.topbar).apply {
                 setTitleLongPress {
@@ -269,6 +271,7 @@ class HomeFragment: MainFragment() {
                     }
                 }
             }
+
             buttonWshuffle.onClick.subscribe {
                 fragment.lifecycleScope.launch(Dispatchers.IO) {
                     val tracks = StateDatabase.instance.getTrackListWeighted(500);
@@ -276,6 +279,26 @@ class HomeFragment: MainFragment() {
                         fragment.navigate<PlaybackFragment>(Vibe("Weighted", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks));
                     }
                 }
+            }
+            fragment.lifecycleScope.launch(Dispatchers.IO) {
+                val tracks = StateDatabase.instance.getTrackListWeighted(10);
+                if(tracks.size < 10) {
+                    withContext(Dispatchers.Main) {
+                        buttonWshuffle.onClick.clear();
+                        buttonWshuffle.alpha = 0.5f;
+                        buttonWshuffle.onClick.subscribe {
+                            UIDialogs.appToast("Rate more songs before using Smart Shuffle.");
+                        }
+                    }
+                }
+            }
+
+            buttonHelp.onClick.subscribe {
+                UIDialogs.showGuideDialog(context, fragment.lifecycleScope, listOf(
+                    UIDialogs.Companion.GuideItem("Shuffle", "This will shuffle all music known to the app.", R.drawable.ic_shuffle),
+                    UIDialogs.Companion.GuideItem("Smart Shuffle", "This will shuffle your rated music, with higher ratings showing up earlier/more likely.\n\nThis is being improved.", R.drawable.ic_imagine),
+                    UIDialogs.Companion.GuideItem("Home", "Here you find various subsections of items.\nMost are self explanatory.\ntems are ordered by last played, otherwise by item count.", R.drawable.ic_home)
+                ), true)
             }
 
             updateContent();

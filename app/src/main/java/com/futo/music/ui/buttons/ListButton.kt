@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.collection.emptyLongSet
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.futo.music.R
 import com.futo.music.constructs.Event0
@@ -44,4 +45,15 @@ class ListButton: ConstraintLayout {
             image.visibility = GONE;
     }
 
+    fun withData(icon: Int, text: String, handler: ()->Unit): ListButton {
+        if(icon > 0) {
+            this.image.setImageResource(icon);
+            this.image.visibility = VISIBLE;
+        }
+        else
+            this.image.visibility = GONE;
+        this.text.text = text;
+        onClick.subscribe(handler);
+        return this;
+    }
 }

@@ -13,6 +13,7 @@ import androidx.compose.animation.core.updateTransition
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.load.resource.bitmap.Rotate
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.activities.MainActivity
@@ -22,6 +23,7 @@ import com.futo.music.logging.Logger
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.settings.Settings
 import com.futo.music.states.ArtistOrdering
+import com.futo.music.states.StateApp
 import com.futo.music.states.StateLibrary
 import com.futo.music.ui.adapters.TabAdapter
 import com.futo.music.ui.adapters.TabDescriptor
@@ -31,6 +33,7 @@ import com.futo.music.ui.views.general.SearchBarView
 import com.futo.music.ui.views.topbars.NavigationTopBarView
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import jp.wasabeef.glide.transformations.BlurTransformation
 
 class SettingsFragment: MainFragment() {
     override val isMainView : Boolean = true;
@@ -99,6 +102,9 @@ class SettingsFragment: MainFragment() {
 
 
         fun onShown(paramter: Any? = null) {
+            StateApp.instance.activity()?.setBackgroundTop(resources.getDrawable(R.drawable.background_glow), 2.5f, 0.5f, {
+                it.transform(Rotate(180))
+            });
         }
 
         fun onHide() {

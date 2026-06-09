@@ -13,6 +13,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.futo.music.PlaySettings
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.audioContainerToExtension
@@ -20,6 +21,7 @@ import com.futo.music.constructs.Event0
 import com.futo.music.fragments.main.ArtistFragment
 import com.futo.music.fragments.main.PlaybackFragment
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateQueue
@@ -30,6 +32,7 @@ import com.futo.music.storage.db.DBTrack
 import com.futo.music.toSafeFileName
 import com.futo.music.ui.buttons.IconButton
 import com.futo.music.ui.buttons.ListButton
+import com.futo.music.withSettings
 import com.futo.music.zipArrays
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +43,7 @@ import kotlin.jvm.Throws
 class PlayableOptionsView: ConstraintLayout {
 
     private var _currentPlayable: IPlayable? = null;
+    private var _currentPlayableParent: IPlayable? = null;
 
     private val _root: ConstraintLayout;
 
@@ -88,10 +92,29 @@ class PlayableOptionsView: ConstraintLayout {
 
 
         _buttonPlay.onClick.subscribe {
-            _currentPlayable?.let {
-                StateApp.instance.activity()?.navigate<PlaybackFragment>(it);
-            }
             hide();
+            val parent = _currentPlayableParent;
+            val current = _currentPlayable;
+            val currentItemID = if(current is IPlayableTrack) current.getItemId() else null;
+            if(parent != null && currentItemID != null) {
+                getScope()?.launch(Dispatchers.IO) {
+                    try {
+                        val tracks = parent.getTracks(context);
+                        val trackIndex = tracks.indexOfFirst { it.getItemId() != null && it.getItemId() == currentItemID};
+                        if(trackIndex >= 0) {
+                            StateApp.instance.activity()?.navigate<PlaybackFragment>(parent.withSettings(
+                                PlaySettings(index = trackIndex)));
+                        }
+                        else
+                            StateApp.instance.activity()?.navigate<PlaybackFragment>(current);
+                    }
+                    catch(ex: Throwable) {
+                        StateApp.instance.activity()?.navigate<PlaybackFragment>(current);
+                    }
+                }
+            }
+            else if(current != null)
+                StateApp.instance.activity()?.navigate<PlaybackFragment>(current);
         }
         _buttonPlayNext.onClick.subscribe {
             _currentPlayable?.let {
@@ -205,10 +228,11 @@ class PlayableOptionsView: ConstraintLayout {
         return findViewTreeLifecycleOwner()?.lifecycleScope ?: StateApp.instance.scopeOrNull!!
     }
 
-    fun setPlayable(playable: IPlayable) {
+    fun setPlayable(playable: IPlayable, parentPlayable: IPlayable? = null) {
         _currentPlayable = playable;
+        _currentPlayableParent = parentPlayable;
 
-        setButtons(playable);
+        setButtons(playable, parentPlayable);
 
         _textTitle.text = playable.name;
         if(_textTitle.text.isEmpty())
@@ -221,7 +245,7 @@ class PlayableOptionsView: ConstraintLayout {
     }
 
 
-    fun setButtons(playable: IPlayable) {
+    fun setButtons(playable: IPlayable, parentPlayable: IPlayable? = null) {
         if(playable is DBTrack) {
             _buttonPlayNext.isVisible = true;
             _buttonQueueAdd.isVisible = true;

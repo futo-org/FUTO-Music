@@ -95,11 +95,11 @@ class UIDialogs {
             _openDialogs.clear();
         }
 
-        fun overlayPlayable(playable: IPlayable) {
+        fun overlayPlayable(playable: IPlayable, parentPlayable: IPlayable? = null) {
             StateApp.instance.activity()?.let {
                 var dialog: BottomSheetDialog? = null;
                 val overlay = PlayableOptionsView(it);
-                overlay.setPlayable(playable)
+                overlay.setPlayable(playable, parentPlayable)
                 overlay.onHide.subscribe {
                     dialog?.hide();
                 }
@@ -179,7 +179,7 @@ class UIDialogs {
             }
         }
 
-        fun showGuideDialog(context: Context, scope: CoroutineScope, items: List<GuideItem>, cancellable: Boolean = false, onComplete: (()->Unit)? = null): Dialog {
+        fun showGuideDialog(context: Context, scope: CoroutineScope, items: List<GuideItem>, cancellable: Boolean = false, onComplete: (()->Unit)? = null, finalText: String = "Get Started"): Dialog {
             val builder = AlertDialog.Builder(context);
             val view = LayoutInflater.from(context).inflate(R.layout.dialog_guide, null);
             builder.setView(view);
@@ -218,7 +218,7 @@ class UIDialogs {
                 if(index == 0)
                     buttonBack.isVisible = false;
                 if(index == items.size - 1)
-                    buttonNext.text.setText("Get Started");
+                    buttonNext.text.setText(finalText);
                 else
                     buttonNext.text.setText("Next");
                 if(index >= items.size)
@@ -797,6 +797,113 @@ class UIDialogs {
         fun showDialog(context: Context, icon: Int, animated: Boolean, text: String, textDetails: String? = null, code: String? = null, defaultCloseAction: Int, vararg actions: Action): AlertDialog
                 = showDialog(context, icon, animated, text, textDetails, code, null, null, defaultCloseAction, *actions);
 
+        fun getDialogView(context: Context, icon: Int, animated: Boolean, text: String, textDetails: String? = null, code: String? = null, input: String?, placeholder: String?, onDismissed: (() -> Unit)? = null, immersive: Boolean = false, fillButtons: Boolean = false, vararg actions: Action): View {
+            val view = LayoutInflater.from(context).inflate(R.layout.dialog_multi_button, null);
+
+            if(immersive) {
+                view.setBackgroundColor(Color.TRANSPARENT);
+                view.findViewById<LinearLayout>(R.id.container_parent).setPadding(0, 0, 0, 0);
+            }
+
+            view.findViewById<ImageView>(R.id.dialog_icon).apply {
+                this.setImageResource(icon);
+                if(animated)
+                    this.drawable.assume<Animatable, Unit> { it.start() };
+                if(icon == 0)
+                    this.visibility = View.GONE;
+            }
+
+            view.findViewById<TextView>(R.id.dialog_text).apply {
+                this.text = text;
+            };
+            view.findViewById<TextView>(R.id.dialog_text_details).apply {
+                if (textDetails == null)
+                    this.visibility = View.GONE;
+                else {
+                    this.text = textDetails;
+                }
+            };
+            var inputView = view.findViewById<TextView>(R.id.dialog_text_input);
+            fun hideKeyboard() {
+                val inputManager = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager?
+                    ?: return;
+                inputManager?.hideSoftInputFromWindow(inputView.windowToken, 0);
+                inputView.clearFocus();
+            }
+            inputView.apply {
+                if (input == null && placeholder == null) this.visibility = View.GONE;
+                else {
+                    this.text = input ?: "";
+                    this.hint = placeholder ?: "";
+                    this.visibility = View.VISIBLE;
+                    this.textAlignment = if(actions.any { it.center }) View.TEXT_ALIGNMENT_CENTER else View.TEXT_ALIGNMENT_TEXT_START
+                }
+                this.addTextChangedListener {
+                    if(it == null)
+                        return@addTextChangedListener;
+                    for (i in it.length - 1 downTo 0) {
+                        if (it[i] === '\n') {
+                            it.delete(i, i + 1)
+                            hideKeyboard()
+                            return@addTextChangedListener;
+                        }
+                    }
+                }
+            };
+            view.findViewById<TextView>(R.id.dialog_text_code).apply {
+                if (code == null) this.visibility = View.GONE;
+                else {
+                    this.text = code;
+                    this.movementMethod = ScrollingMovementMethod.getInstance();
+                    this.visibility = View.VISIBLE;
+                    this.textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                }
+            };
+            view.findViewById<LinearLayout>(R.id.dialog_buttons).apply {
+                val center = actions.any { it?.center == true };
+                val buttons = actions.map<Action, TextView> { act ->
+                    val buttonView = TextView(context);
+                    val dp10 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, resources.displayMetrics).toInt();
+                    val dp28 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 28f, resources.displayMetrics).toInt();
+                    val dp14 = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14.0f, resources.displayMetrics).toInt();
+                    buttonView.layoutParams = LinearLayout.LayoutParams(if(fillButtons) 0 else WRAP_CONTENT, WRAP_CONTENT).apply {
+                        this.marginStart = if(actions.size >= 2) dp14 / 2 else dp28 / 2;
+                        this.marginEnd = if(actions.size >= 2) dp14 / 2 else dp28 / 2;
+                        if(fillButtons)
+                            this.weight = 1f;
+                    };
+                    buttonView.setTextColor(Color.WHITE);
+                    buttonView.textSize = 14f;
+                    buttonView.typeface = resources.getFont(R.font.inter_regular);
+                    buttonView.text = act.text;
+                    buttonView.setOnClickListener { act.invokeAction(DialogResult(inputView?.text?.toString())); onDismissed?.invoke() };
+                    when(act.style) {
+                        ActionStyle.PRIMARY -> buttonView.setBackgroundResource(R.drawable.background_button_primary);
+                        ActionStyle.ACCENT -> buttonView.setBackgroundResource(R.drawable.background_button_accent);
+                        ActionStyle.DANGEROUS -> buttonView.setBackgroundResource(R.drawable.background_button_pred);
+                        ActionStyle.DANGEROUS_TEXT -> buttonView.setTextColor(ContextCompat.getColor(context, R.color.pastel_red))
+                        else -> buttonView.setTextColor(ContextCompat.getColor(context, R.color.white))
+                    }
+                    val paddingSpecialButtons = if(actions.size > 2) dp14 else dp28;
+                    if(act.style != ActionStyle.NONE && act.style != ActionStyle.DANGEROUS_TEXT)
+                        buttonView.setPadding(paddingSpecialButtons, dp10, paddingSpecialButtons, dp10);
+                    else
+                        buttonView.setPadding(dp10, dp10, dp10, dp10);
+
+                    if(fillButtons)
+                        buttonView.textAlignment = TextView.TEXT_ALIGNMENT_CENTER;
+
+                    return@map buttonView;
+                };
+                if(actions.size <= 1 || center)
+                    this.gravity = Gravity.CENTER;
+                else
+                    this.gravity = Gravity.END;
+                for(button in buttons)
+                    this.addView(button);
+            };
+            return view;
+        }
         fun showDialog(context: Context, icon: Int, animated: Boolean, text: String, textDetails: String? = null, code: String? = null, input: String?, placeholder: String?, defaultCloseAction: Int, vararg actions: Action): AlertDialog {
             val builder = AlertDialog.Builder(context);
             val view = LayoutInflater.from(context).inflate(R.layout.dialog_multi_button, null);
@@ -1000,6 +1107,18 @@ class UIDialogs {
             return showDialog(context, icon, title, description, null, 0,
                 UIDialogs.Action("Cancel", onDeny ?: {}, ActionStyle.NONE, true),
                 UIDialogs.Action("Confirm", onConfirm, ActionStyle.PRIMARY, true));
+        }
+        fun showConfirmSheet(context: Context, icon: Int, title: String, description: String, onConfirm: ()->Unit, onDeny: (()->Unit)? = null): Dialog{
+            var sheet: BottomSheetDialog? = null;
+            sheet = showSheet(context, getDialogView(context, 0, false, title, description, null, null, null, {
+                sheet!!.hide();
+            }, true, true,
+                UIDialogs.Action("Cancel", onDeny ?: {}, ActionStyle.ACCENT, true),
+                UIDialogs.Action("Confirm", onConfirm, ActionStyle.PRIMARY, true)).apply {
+                    this.setBackgroundColor(Color.TRANSPARENT)
+            },
+                onDeny, true);
+            return sheet!!;
         }
 
         fun hideKeyboard(context: Context, inputView: View){

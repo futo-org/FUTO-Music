@@ -72,12 +72,21 @@
                         android:id="@+id/button_wshuffle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="-5dp"
                         app:StandardButton_Color="#99222222"
                         app:StandardButton_Background="@drawable/background_bar_transparant_round_15dp"
                         app:StandardButton_Icon="@drawable/ic_imagine"
                         app:StandardButton_Text="Smart Shuffle"
                         android:layout_weight="1.3" />
 
+                    <com.futo.music.ui.buttons.StandardButton
+                        android:id="@+id/button_help"
+                        android:layout_width="50dp"
+                        android:layout_height="wrap_content"
+                        app:StandardButton_Color="#99222222"
+                        android:layout_marginLeft="-5dp"
+                        app:StandardButton_Background="@drawable/background_bar_transparant_round_15dp"
+                        app:StandardButton_Text="\?" />
                 </LinearLayout>
 
 

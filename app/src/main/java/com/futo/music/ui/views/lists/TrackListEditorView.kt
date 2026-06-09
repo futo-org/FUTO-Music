@@ -23,6 +23,8 @@ class TrackListEditorView : FrameLayout {
 
     private var _adapterTracks: TrackListEditorAdapter? = null;
 
+    val recycler: RecyclerView;
+
     val onTrackOrderChanged = Event1<List<IPlayableTrack>>()
     val onTrackRemoved = Event1<IPlayableTrack>();
     val onTrackOptions = Event1<IPlayableTrack>();
@@ -32,6 +34,7 @@ class TrackListEditorView : FrameLayout {
 
     constructor(context: Context, attrs: AttributeSet? = null) : super(context, attrs) {
         val recyclerPlaylist = RecyclerView(context, attrs);
+        recycler = recyclerPlaylist;
         recyclerPlaylist.isSaveEnabled = false;
 
         recyclerPlaylist.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);

@@ -115,7 +115,7 @@ fun IPlayable.openPlayable(fragment: MainFragment, preferMenu: Boolean = false, 
         fragment.navigate<PlaylistFragment>(this);
     else {
         if (preferMenu || StateQueue.instance.getCurrentTrack() != null) {
-            UIDialogs.overlayPlayable(this);
+            UIDialogs.overlayPlayable(this, parentPlayable);
         } else {
             if(parentPlayable != null && Settings.instance.general.queueEntireCollection && this is IPlayableTrack) {
                 StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {

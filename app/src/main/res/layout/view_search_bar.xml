@@ -19,7 +19,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/button_clear"
         android:fontFamily="@font/inter_regular"
-        android:textColorHint="#333333"
+        android:textColorHint="#444444"
         android:background="@null"
         android:paddingLeft="10dp"
         />

@@ -10,6 +10,7 @@
     android:background="#1C1C1C">
 
     <LinearLayout
+        android:id="@+id/container_parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
