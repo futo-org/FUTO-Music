@@ -164,12 +164,12 @@ class HomeFragment: MainFragment() {
             buttonHelp = findViewById(R.id.button_help);
 
             findViewById<GeneralTopBarView>(R.id.topbar).apply {
-                setTitleLongPress {
-                    UIDialogs.showDialogVertical(context, 0, false, "Hidden Menu", "Some hidden options for testing", null, null, null, -1,
-                        UIDialogs.Action("Rescan", {
-                            StateApp.instance.activity()?.sync(true)
-                        }, ActionStyle.PRIMARY));
+                setTitlePress {
+                    StateApp.instance.activity()?.let {
+                        it.showAlphaNotice()
+                    }
                 }
+
                 setFragment(fragment);
                 setTitleMini($"(v${BuildConfig.VERSION_CODE})")
             }
@@ -301,7 +301,6 @@ class HomeFragment: MainFragment() {
                 ), true)
             }
 
-            updateContent();
         }
 
         fun showNewPlaylistDialog() {
@@ -411,6 +410,7 @@ class HomeFragment: MainFragment() {
         }
 
         fun onShown(paramter: Any? = null) {
+            updateContent();
             //StateApp.instance.activity()?.setBackgroundTopGradient(Color.rgb(10, 9, 39), 2f, 1f)
             StateApp.instance.activity()?.setBackgroundTop(resources.getDrawable(R.drawable.background_glow), 2.5f, 0.5f);
         }

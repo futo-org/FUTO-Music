@@ -414,7 +414,7 @@ class MainActivity : AppCompatActivity() {
         val store = FragmentedStorage.get<StringStorage>("showedAlpha");
         if(store.value != "v1") {
             store.setAndSave("v1");
-            UIDialogs.showAlphaDialog(this, lifecycleScope);
+            showAlphaNotice();
         }
     }
 
@@ -436,6 +436,11 @@ class MainActivity : AppCompatActivity() {
             UIDialogs.appToast("Failed to resume install process:\n" + ex.message);
         }
     };
+
+    fun showAlphaNotice() {
+        UIDialogs.showAlphaDialog(this, lifecycleScope);
+    }
+
     fun checkForUpdate(skipDownloadQuery: Boolean) {
         fun downloadUpdate(version: Int) {
             val announcement = SessionAnnouncement(
@@ -759,6 +764,12 @@ class MainActivity : AppCompatActivity() {
 
 
     //#region Navigation
+    fun refresh() {
+        val currentMain = fragCurrent;
+        val currentParams = _parameterCurrent;
+        if(currentMain != null)
+            navigate(currentMain, currentParams, false, false, true);
+    }
 
     inline fun <reified T : Fragment> navigate(parameter: Any? = null, withHistory: Boolean = true, isBack: Boolean = false) {
         val fragment = getFragment<T>();
@@ -771,10 +782,10 @@ class MainActivity : AppCompatActivity() {
      * A parameter can be provided which becomes available in the onShow of said fragment
      */
     @SuppressLint("CommitTransaction")
-    fun navigate(segment: MainFragment, parameter: Any? = null, withHistory: Boolean = true, isBack: Boolean = false) {
+    fun navigate(segment: MainFragment, parameter: Any? = null, withHistory: Boolean = true, isBack: Boolean = false, forceReload: Boolean = false) {
         //Logger.i(TAG, "Navigate to $segment (parameter=$parameter, withHistory=$withHistory, isBack=$isBack)")
 
-        if (segment != fragCurrent) {
+        if (segment != fragCurrent || forceReload) {
             fragCurrent?.onHide();
 
             setBackgroundTopColor(Color.BLACK, 0f);

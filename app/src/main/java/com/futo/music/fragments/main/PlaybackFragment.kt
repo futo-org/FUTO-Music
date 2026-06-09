@@ -323,7 +323,21 @@ class PlaybackFragment: MainFragment() {
                     super.onSwipeBottom();
                     fragment.closeSegment();
                 }
-            })
+
+                override fun onSwipeRight() {
+                    super.onSwipeRight();
+                    if(fragment._player?.player?.hasPreviousMediaItem() ?: false) {
+                        fragment._player?.player?.seekToPreviousMediaItem();
+                    }
+                }
+
+                override fun onSwipeLeft() {
+                    super.onSwipeLeft();
+                    if(fragment._player?.player?.hasNextMediaItem() ?: false) {
+                        fragment._player?.player?.seekToNextMediaItem();
+                    }
+                }
+            });
 
 
             frag._player?.let {

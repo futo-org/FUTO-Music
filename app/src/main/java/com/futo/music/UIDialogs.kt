@@ -145,19 +145,19 @@ class UIDialogs {
             return showGuideDialog(context,scope, listOf(
                 GuideItem(
                     "FUTO Music Alpha",
-                    "This is the alpha version of FUTO Music, an on-device music app. As this is an alpha version, it is under active development, and may have significant changes as it progresses.",
+                    "This is the alpha version of FUTO Music, an on-device music app.\n\nAs this is an alpha version, it is under active development, and may have significant changes as it progresses.",
                     R.mipmap.ic_launcher,
                     ),
                 GuideItem(
                     "Work in Progress",
-                    "We are actively working on several features to be released in the near future:",
+                    "We are actively working on several features to be released in the near future such as:",
                     R.drawable.ic_settings,
                     listOf(
-                        GuideItemOption(context, "Improved UI"),
                         GuideItemOption(context, "Better Metadata Auto-Tagging"),
-                        GuideItemOption(context, "Improved Smart Shuffles")
+                        GuideItemOption(context, "Improved Smart Shuffles"),
+                        GuideItemOption(context, "Improved UI"),
                     ))
-            ))
+            ), true)
         }
 
         class GuideItem(

@@ -116,6 +116,13 @@ class GeneralTopBarView: ConstraintLayout {
         _textMiniMeta.text = str;
     }
 
+    fun setTitlePress(handler: (()->Unit)?) {
+        if(handler == null)
+            _textTitle?.setOnClickListener { };
+        else
+            _textTitle?.setOnClickListener { handler!!(); };
+    }
+
     fun setTitleLongPress(handler: (()->Unit)?) {
         if(handler == null)
             _textTitle?.setOnLongClickListener { return@setOnLongClickListener false};

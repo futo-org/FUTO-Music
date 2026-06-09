@@ -110,6 +110,13 @@
                 app:ListButton_image="@drawable/ic_stars"
                 app:ListButton_text="Rate" />
 
+            <com.futo.music.ui.buttons.ListButton
+                android:id="@+id/button_delete"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                app:ListButton_image="@drawable/ic_trash"
+                app:ListButton_text="Delete" />
+
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

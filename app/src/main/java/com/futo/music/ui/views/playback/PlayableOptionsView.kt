@@ -38,6 +38,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.Dispatcher
 import kotlin.jvm.Throws
 
 class PlayableOptionsView: ConstraintLayout {
@@ -55,6 +56,7 @@ class PlayableOptionsView: ConstraintLayout {
     private val _buttonArtist: ListButton;
     private val _buttonRate: ListButton;
     private val _buttonShare: ListButton;
+    private val _buttonDelete: ListButton;
 
     private val _textTitle: TextView;
 
@@ -83,6 +85,8 @@ class PlayableOptionsView: ConstraintLayout {
         _buttonArtist = findViewById(R.id.button_artist);
         _buttonRate = findViewById(R.id.button_rate);
         _buttonShare = findViewById(R.id.button_share);
+
+        _buttonDelete = findViewById(R.id.button_delete);
 
         //this.translationY = 1f;
         this.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
@@ -222,6 +226,25 @@ class PlayableOptionsView: ConstraintLayout {
                 }
             }
         }
+        _buttonDelete.onClick.subscribe {
+            hide();
+            _currentPlayable?.let {
+                if(it is DBPlaylist) {
+                    UIDialogs.showConfirmSheet(context, 0, "Delete [${it.name}]", "Are you sure you want to delete [${it.name}]?", {
+                        getScope().launch(Dispatchers.IO) {
+                            StateDatabase.instance.deletePlaylist(it.id);
+                            withContext(Dispatchers.Main) {
+                                StateApp.instance.activity()?.refresh();
+                            }
+                            //StateApp.instance.activity()?.refresh();
+                        }
+                    }, {
+
+                    });
+                }
+
+            }
+        }
     }
 
     fun getScope(): CoroutineScope {
@@ -269,6 +292,12 @@ class PlayableOptionsView: ConstraintLayout {
             _buttonArtist.isVisible = true;
         else
             _buttonArtist.isVisible = false;
+
+        if(playable is DBPlaylist) {
+            _buttonDelete.isVisible = true;
+        }
+        else
+            _buttonDelete.isVisible = false;
     }
 
 
