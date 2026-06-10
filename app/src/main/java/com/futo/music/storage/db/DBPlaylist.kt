@@ -1,6 +1,7 @@
 package com.futo.music.storage.db
 
 import android.content.Context
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Entity
@@ -41,6 +42,9 @@ class DBPlaylist(
 
     var trackCount: Int = -1,
     var trackDurations: Int = -1,
+
+    @ColumnInfo(defaultValue = "FALSE")
+    var hidden: Boolean = false
 ): IPlayable {
     override val type: PlayableType get() = PlayableType.Playlist;
 
@@ -72,11 +76,11 @@ class DBPlaylistTrack(
 
 @Dao
 interface DBPlaylistDao {
-    @Query("SELECT * FROM playlists")
+    @Query("SELECT * FROM playlists WHERE hidden != 1")
     fun getAll(): List<DBPlaylist>;
-    @Query("SELECT * FROM playlists ORDER BY datePlayed DESC")
+    @Query("SELECT * FROM playlists WHERE hidden != 1 ORDER BY datePlayed DESC")
     fun getAllByRecentPlayed(): List<DBPlaylist>;
-    @Query("SELECT * FROM playlists ORDER BY datePlayed DESC LIMIT :count")
+    @Query("SELECT * FROM playlists WHERE hidden != 1 ORDER BY datePlayed DESC LIMIT :count")
     fun getTopByRecentPlayed(count: Int): List<DBPlaylist>;
 
     @Query("SELECT MAX(ordering) FROM playlist_tracks WHERE playlistId = :playlistId")
@@ -118,6 +122,9 @@ interface DBPlaylistDao {
 
     @Update(entity = DBPlaylist::class)
     fun setRating(update: DBPlaylistUpdateRating): Int
+
+    @Update(entity = DBPlaylist::class)
+    fun setHidden(update: DBSetHidden): Int
 
     @Update(entity = DBPlaylist::class)
     fun setTrackMetadata(update: DBPlaylistUpdateTrackMetadata)

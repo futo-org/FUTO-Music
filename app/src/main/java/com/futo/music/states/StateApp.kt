@@ -13,10 +13,18 @@ import com.futo.music.storage.file.FragmentedStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import java.io.File
+import java.time.OffsetDateTime
 
 class StateApp {
 
     private var _activity: MainActivity? = null;
+
+    var homeRefreshTime: OffsetDateTime = OffsetDateTime.now()
+        private set;
+
+    fun refreshHome() {
+        homeRefreshTime = OffsetDateTime.now();
+    }
 
     fun registerContext(context: Context) {
         if(context is MainActivity)

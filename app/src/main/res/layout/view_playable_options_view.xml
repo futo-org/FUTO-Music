@@ -104,5 +104,17 @@
             app:ListButton_image="@drawable/ic_trash"
             app:ListButton_text="Delete" />
 
+        <com.futo.music.ui.buttons.ListButton
+            android:id="@+id/button_hide"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            app:ListButton_image="@drawable/ic_hide"
+            app:ListButton_text="Hide" />
+        <com.futo.music.ui.buttons.ListButton
+            android:id="@+id/button_unhide"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            app:ListButton_image="@drawable/ic_unhide"
+            app:ListButton_text="Unhide" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -190,6 +190,18 @@ fun IPlayable.getItemCount(): Int {
     return 1;
 }
 
+fun IPlayable.isHidden(): Boolean {
+    if(this is DBArtist)
+        return this.hidden;
+    if(this is DBAlbum)
+        return this.hidden;
+    if(this is DBPlaylist)
+        return this.hidden;
+    if(this is DBTrack)
+        return this.hidden;
+    return false;
+}
+
 class GlidePaletteGenerator(val callback: (PaletteColors?)->Unit): BitmapTransformation() {
     override fun transform(context: Context, pool: BitmapPool, toTransform: Bitmap, outWidth: Int, outHeight: Int): Bitmap? {
 

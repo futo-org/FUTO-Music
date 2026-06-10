@@ -14,6 +14,7 @@ import com.futo.music.models.playable.Album
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.Vibe
 import com.futo.music.storage.db.DBAlbum
+import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.ui.views.AutoSizeLayout
 import com.google.android.material.imageview.ShapeableImageView
 
@@ -56,10 +57,16 @@ class ContentAlbumGridView(viewGroup: ViewGroup) : IContentGridView {
         playableItem = playable;
         textName.text = playable.name.trim();
         playable.getImage().let {
-            if(it?.isEmpty == false)
-                it.setImageView(imageThumbnail, R.drawable.unknown_music);
+            val fallback = if(playable is DBAlbum)
+                R.drawable.unknown_album
+            else if(playable is DBPlaylist)
+                R.drawable.unknown_playlist
             else
-                imageThumbnail.setImageResource(R.drawable.unknown_music);
+                R.drawable.unknown_music;
+            if(it?.isEmpty == false)
+                it.setImageView(imageThumbnail, fallback);
+            else
+                imageThumbnail.setImageResource(fallback);
         }
         if(playable is Album) {
             if(playable.artist == null) {

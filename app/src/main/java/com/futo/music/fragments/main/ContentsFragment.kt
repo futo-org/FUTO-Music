@@ -20,6 +20,7 @@ import com.futo.music.sort
 import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
+import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
@@ -142,6 +143,14 @@ class ContentsFragment: MainFragment() {
                 topbar.setTitle(parameter.first as String);
                 contents = (parameter.second as List<*>).filterIsInstance<IPlayable>()
                 updateContent((parameter.second as List<*>).filterIsInstance<IPlayable>());
+            }
+            contents?.let {
+                if(it.all { it is DBTrack }) {
+                    dropdownSort.setFilters(SortDropdown.OPTIONS.filter { it != SortDropdownType.Count && it != SortDropdownType.CountDesc });
+                }
+                else {
+                    dropdownSort.setFilters(SortDropdown.OPTIONS);
+                }
             }
         }
 

@@ -20,6 +20,8 @@ import com.futo.music.audioContainerToExtension
 import com.futo.music.constructs.Event0
 import com.futo.music.fragments.main.ArtistFragment
 import com.futo.music.fragments.main.PlaybackFragment
+import com.futo.music.getPlayedDate
+import com.futo.music.isHidden
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.states.StateApp
@@ -28,6 +30,7 @@ import com.futo.music.states.StateQueue
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
+import com.futo.music.storage.db.DBSetHidden
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.toSafeFileName
 import com.futo.music.ui.buttons.IconButton
@@ -57,6 +60,8 @@ class PlayableOptionsView: ConstraintLayout {
     private val _buttonRate: ListButton;
     private val _buttonShare: ListButton;
     private val _buttonDelete: ListButton;
+    private val _buttonHide: ListButton;
+    private val _buttonUnhide: ListButton;
 
     private val _textTitle: TextView;
 
@@ -87,6 +92,8 @@ class PlayableOptionsView: ConstraintLayout {
         _buttonShare = findViewById(R.id.button_share);
 
         _buttonDelete = findViewById(R.id.button_delete);
+        _buttonHide = findViewById(R.id.button_hide);
+        _buttonUnhide = findViewById(R.id.button_unhide);
 
         //this.translationY = 1f;
         this.measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
@@ -245,6 +252,63 @@ class PlayableOptionsView: ConstraintLayout {
 
             }
         }
+        _buttonHide.onClick.subscribe {
+            hide();
+            _currentPlayable?.let {
+                UIDialogs.showConfirmSheet(context, 0, "Hide [${it.name}]", "Are you sure you want to hide [${it.name}]?\n\nHidden items can be found through settings to unhide.", {
+                    getScope().launch(Dispatchers.IO) {
+                        if(it is DBAlbum)
+                            StateDatabase.instance.db.albumDao().setHidden(DBSetHidden(it.id, true));
+                        else if(it is DBArtist)
+                            StateDatabase.instance.db.artistDao().setHidden(DBSetHidden(it.id, true));
+                        else if(it is DBPlaylist)
+                            StateDatabase.instance.db.playlistDao().setHidden(DBSetHidden(it.id, true));
+                        else if(it is DBTrack)
+                            StateDatabase.instance.db.tracksDao().setHidden(DBSetHidden(it.id, true));
+
+                        withContext(Dispatchers.Main) {
+                            StateApp.instance.activity()?.refresh();
+
+
+                            if(it is DBAlbum || it is DBArtist) {
+                                UIDialogs.showConfirmSheet(context, 0, "Hide tracks of [${it.name}]?", "Would you like to hide all tracks part of [${it.name}] as well?", {
+                                    getScope().launch(Dispatchers.IO) {
+                                        val tracks = it.getTracks(context);
+
+                                        for(track in tracks) {
+                                            if(track is DBTrack)
+                                                StateDatabase.instance.db.tracksDao().setHidden(DBSetHidden(track.id, true));
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                        //StateApp.instance.activity()?.refresh();
+                    }
+                }, {
+
+                });
+            }
+        }
+        _buttonUnhide.onClick.subscribe {
+            hide();
+            _currentPlayable?.let {getScope().launch(Dispatchers.IO) {
+                if(it is DBAlbum)
+                    StateDatabase.instance.db.albumDao().setHidden(DBSetHidden(it.id, true));
+                else if(it is DBArtist)
+                    StateDatabase.instance.db.artistDao().setHidden(DBSetHidden(it.id, true));
+                else if(it is DBPlaylist)
+                    StateDatabase.instance.db.playlistDao().setHidden(DBSetHidden(it.id, true));
+                else if(it is DBTrack)
+                    StateDatabase.instance.db.tracksDao().setHidden(DBSetHidden(it.id, true));
+
+                withContext(Dispatchers.Main) {
+                    StateApp.instance.activity()?.refresh();
+                }
+                //StateApp.instance.activity()?.refresh();
+            }
+            }
+        }
     }
 
     fun getScope(): CoroutineScope {
@@ -298,6 +362,22 @@ class PlayableOptionsView: ConstraintLayout {
         }
         else
             _buttonDelete.isVisible = false;
+
+        if(playable is DBTrack || playable is DBPlaylist || playable is DBAlbum || playable is DBArtist) {
+            if(playable.isHidden()) {
+                _buttonUnhide.isVisible = true;
+                _buttonHide.isVisible = false;
+            }
+            else
+            {
+                _buttonUnhide.isVisible = false;
+                _buttonHide.isVisible = true;
+            }
+        }
+        else {
+            _buttonUnhide.isVisible = false;
+            _buttonHide.isVisible = false;
+        }
     }
 
 

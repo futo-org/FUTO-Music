@@ -39,6 +39,7 @@ import com.futo.music.ui.views.topbars.GeneralTopBarView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.OffsetDateTime
 
 class HomeFragment: MainFragment() {
     override val isMainView : Boolean = true;
@@ -55,6 +56,7 @@ class HomeFragment: MainFragment() {
     private var _dataPlaylists: List<DBPlaylist>? = null;
     private var _dataSongNew: List<IPlayable>? = null;
     private var _dataVibeWeighted: Vibe? = null;
+    private var _dataCacheTime: OffsetDateTime? = null;
 
     var _scrollY: Int? = null;
     var _recentStateSave: Parcelable? = null;
@@ -312,6 +314,17 @@ class HomeFragment: MainFragment() {
 
         fun updateContent() {
             fragment.lifecycleScope.launch(Dispatchers.IO) {
+                fragment._dataCacheTime?.let {
+                    if(it < StateApp.instance.homeRefreshTime) {
+                        fragment._dataRecent = null;
+                        fragment._dataAlbums = null;
+                        fragment._dataArtists = null;
+                        fragment._dataSongNew = null;
+                        fragment._dataPlaylists = null;
+                        fragment._dataCacheTime = null;
+                    }
+                }
+
                 val recent = fragment._dataRecent ?: StateDatabase.instance.getRecentPlays();
                 val artists = fragment._dataArtists ?: StateDatabase.instance.getArtistsByRecent();
                 val albums = fragment._dataAlbums ?:  StateDatabase.instance.getAlbumsByRecent();
@@ -326,6 +339,7 @@ class HomeFragment: MainFragment() {
                 fragment._dataAlbums = albums;
                 fragment._dataSongNew = songNew;
                 //fragment._dataVibeWeighted = vibeWeighted;
+                fragment._dataCacheTime = OffsetDateTime.now();
 
                 //if(vibeWeighted != null && vibeWeighted.singles.size > 5)
                 //    playlists = listOf(vibeWeighted) + (playlists);

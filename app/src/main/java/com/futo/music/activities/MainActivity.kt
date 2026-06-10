@@ -765,6 +765,8 @@ class MainActivity : AppCompatActivity() {
 
     //#region Navigation
     fun refresh() {
+        if(fragCurrent is HomeFragment)
+            StateApp.instance.refreshHome();
         val currentMain = fragCurrent;
         val currentParams = _parameterCurrent;
         if(currentMain != null)

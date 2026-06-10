@@ -1,6 +1,7 @@
 package com.futo.music.storage.db
 
 import android.content.Context
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -35,7 +36,10 @@ class DBArtist(
 
     val metadataType: MetadataType = MetadataType.UNKNOWN,
 
-    val mediaStoreId: Long = -1
+    val mediaStoreId: Long = -1,
+
+    @ColumnInfo(defaultValue = "FALSE")
+    val hidden: Boolean = false
 ): IPlayable {
     override val type: PlayableType get() = PlayableType.Artist;
 
@@ -62,11 +66,11 @@ class DBArtistTrack(
 
 @Dao
 interface DBArtistDao {
-    @Query("SELECT * FROM artists")
+    @Query("SELECT * FROM artists WHERE hidden != 1")
     fun getAll(): List<DBArtist>;
-    @Query("SELECT * FROM artists ORDER BY datePlayed DESC, trackCount DESC")
+    @Query("SELECT * FROM artists WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC")
     fun getAllByRecentPlayed(): List<DBArtist>;
-    @Query("SELECT * FROM artists ORDER BY datePlayed DESC, trackCount DESC LIMIT :count")
+    @Query("SELECT * FROM artists WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC LIMIT :count")
     fun getTopByRecentPlayed(count: Int): List<DBArtist>;
     @Query("SELECT * FROM artists WHERE id = :id")
     fun get(id: Long): DBArtist?;
@@ -74,7 +78,7 @@ interface DBArtistDao {
     fun getByMSID(id: Long): DBArtist?;
 
 
-    @Query("SELECT * FROM artists WHERE INSTR(lower(name), lower(:str))")
+    @Query("SELECT * FROM artists WHERE hidden != 1 AND INSTR(lower(name), lower(:str))")
     fun search(str: String): List<DBArtist>;
 
 
@@ -96,6 +100,9 @@ interface DBArtistDao {
 
     @Update(entity = DBArtist::class)
     fun setRating(update: DBArtistUpdateRating): Int
+
+    @Update(entity = DBArtist::class)
+    fun setHidden(update: DBSetHidden): Int
 
     @Update(entity = DBArtist::class)
     fun setTrackMetadata(update: DBArtistUpdateTrackMetadata)

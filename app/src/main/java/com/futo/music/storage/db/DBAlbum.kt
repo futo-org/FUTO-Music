@@ -1,6 +1,7 @@
 package com.futo.music.storage.db
 
 import android.content.Context
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -36,7 +37,10 @@ class DBAlbum(
     val metadataType: MetadataType = MetadataType.UNKNOWN,
 
     val mediaStoreId: Long = -1,
-    val mediaStoreArtistId: Long = -1
+    val mediaStoreArtistId: Long = -1,
+
+    @ColumnInfo(defaultValue = "FALSE")
+    val hidden: Boolean = false
 ): IPlayable {
     override val type: PlayableType get() = PlayableType.Album;
 
@@ -74,11 +78,11 @@ class DBAlbumArtist(
 
 @Dao
 interface DBAlbumDao {
-    @Query("SELECT * FROM albums")
+    @Query("SELECT * FROM albums WHERE hidden != 1")
     fun getAll(): List<DBAlbum>;
-    @Query("SELECT * FROM albums ORDER BY datePlayed DESC, trackCount DESC")
+    @Query("SELECT * FROM albums WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC")
     fun getAllByRecentPlayed(): List<DBAlbum>;
-    @Query("SELECT * FROM albums ORDER BY datePlayed DESC, trackCount DESC LIMIT :count")
+    @Query("SELECT * FROM albums WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC LIMIT :count")
     fun getTopByRecentPlayed(count: Int): List<DBAlbum>;
 
     @Query("SELECT * FROM albums WHERE id = :id")
@@ -132,8 +136,18 @@ interface DBAlbumDao {
     fun setRating(update: DBAlbumUpdateRating): Int
 
     @Update(entity = DBAlbum::class)
+    fun setHidden(update: DBSetHidden): Int
+
+    @Update(entity = DBAlbum::class)
     fun setTrackMetadata(update: DBAlbumUpdateTrackMetadata)
 }
+
+@Entity
+class DBSetHidden (
+    val id: Long,
+    val hidden: Boolean
+);
+
 @Entity
 class DBAlbumUpdatePlayed(
     val id: Long,
