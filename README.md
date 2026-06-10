@@ -21,22 +21,33 @@ We try to avoid any incompatibility between updates, but it is not impossible to
 ## Quickly Access Your Content
 The home papge allows you to access the content you listen to most quick. This is also where you will find a global shuffle button, and a smart shuffle we are improving.
 
-<TODO Image Home Page\>
+<img src="https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/home.jpg?ref_type=heads" height="700" />
 
 ## Search Your Entire Collection
 Quickly search your entire collection by artist, album, or track names
 
-<TODO Image Search Page\>
+<img src="https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/search.jpg?ref_type=heads" height="700" />
+
 
 ## Albums and Artists Grouping
 View your music organized by artists or albums.
 
-<TODO Album/Artist Page\>
+<table border="0">
+ <tr>
+    <td><b style="font-size:30px"><img src="https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/artist.jpg?ref_type=heads" height="700" /></b></td>
+    <td><b style="font-size:30px"><img src="https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/album.jpg?ref_type=heads" height="700" /></b></td>
+ </tr>
+ <tr>
+    <td>Artist</td>
+    <td>Album</td>
+ </tr>
+</table>
 
 ## Manage Your Playlists
 Create playlists fitting your mood or occasion.
 
-<TODO Playlists Page\>
+<img src="https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/playlist.jpg?ref_type=heads" height="700" />
+
 
 
 ## How to obtain Music (DRM-Free)
