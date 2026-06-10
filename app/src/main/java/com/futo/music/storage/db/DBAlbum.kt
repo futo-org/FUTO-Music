@@ -80,6 +80,8 @@ class DBAlbumArtist(
 interface DBAlbumDao {
     @Query("SELECT * FROM albums WHERE hidden != 1")
     fun getAll(): List<DBAlbum>;
+    @Query("SELECT * FROM albums WHERE hidden == 1")
+    fun getAllHidden(): List<DBAlbum>;
     @Query("SELECT * FROM albums WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC")
     fun getAllByRecentPlayed(): List<DBAlbum>;
     @Query("SELECT * FROM albums WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC LIMIT :count")

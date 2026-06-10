@@ -39,7 +39,7 @@
         app:layout_constraintTop_toBottomOf="@id/view_search"
         app:layout_constraintBottom_toBottomOf="parent"
         app:ContentGrid_row_height="150dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="5dp"
         app:ContentGrid_vertical="true" />
 
     <com.futo.music.ui.views.NoResultsView

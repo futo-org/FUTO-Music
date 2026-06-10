@@ -63,6 +63,7 @@ class SearchFragment: MainFragment() {
         val gridSearch: ContentGrid;
         val emptyView: NoResultsView;
 
+        private var _isHidden = false;
 
         init {
             search = findViewById(R.id.view_search);

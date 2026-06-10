@@ -157,6 +157,8 @@ class DBTrack(
 interface DBTrackDao {
     @Query("SELECT * FROM tracks WHERE hidden != 1")
     fun getAll(): List<DBTrack>;
+    @Query("SELECT * FROM tracks WHERE hidden == 1")
+    fun getAllHidden(): List<DBTrack>;
     @Query("SELECT * FROM tracks WHERE id = :id")
     fun get(id: Long): DBTrack?;
     @Query("SELECT * FROM tracks WHERE mediaStoreId = :id")

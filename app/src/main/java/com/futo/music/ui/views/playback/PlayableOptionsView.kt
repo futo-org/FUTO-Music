@@ -294,13 +294,13 @@ class PlayableOptionsView: ConstraintLayout {
             hide();
             _currentPlayable?.let {getScope().launch(Dispatchers.IO) {
                 if(it is DBAlbum)
-                    StateDatabase.instance.db.albumDao().setHidden(DBSetHidden(it.id, true));
+                    StateDatabase.instance.db.albumDao().setHidden(DBSetHidden(it.id, false));
                 else if(it is DBArtist)
-                    StateDatabase.instance.db.artistDao().setHidden(DBSetHidden(it.id, true));
+                    StateDatabase.instance.db.artistDao().setHidden(DBSetHidden(it.id, false));
                 else if(it is DBPlaylist)
-                    StateDatabase.instance.db.playlistDao().setHidden(DBSetHidden(it.id, true));
+                    StateDatabase.instance.db.playlistDao().setHidden(DBSetHidden(it.id, false));
                 else if(it is DBTrack)
-                    StateDatabase.instance.db.tracksDao().setHidden(DBSetHidden(it.id, true));
+                    StateDatabase.instance.db.tracksDao().setHidden(DBSetHidden(it.id, false));
 
                 withContext(Dispatchers.Main) {
                     StateApp.instance.activity()?.refresh();

@@ -114,7 +114,7 @@ fun IPlayable.openPlayable(fragment: MainFragment, preferMenu: Boolean = false, 
     else if(this is DBPlaylist && !preferMenu)
         fragment.navigate<PlaylistFragment>(this);
     else {
-        if (preferMenu || StateQueue.instance.getCurrentTrack() != null) {
+        if (preferMenu || (StateQueue.instance.getCurrentTrack() != null && Settings.instance.general.overlayWhenPlaying)) {
             UIDialogs.overlayPlayable(this, parentPlayable);
         } else {
             if(parentPlayable != null && Settings.instance.general.queueEntireCollection && this is IPlayableTrack) {

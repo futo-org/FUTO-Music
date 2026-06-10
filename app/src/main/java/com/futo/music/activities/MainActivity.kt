@@ -163,6 +163,7 @@ class MainActivity : AppCompatActivity() {
     private val _queue: LinkedList<Pair<MainFragment, Any?>> = LinkedList();
     var fragCurrent: MainFragment? = null; private set;
     private var _parameterCurrent: Any? = null;
+    private var _refresher: (()->Unit)? = null
 
     var fragBeforeOverlay: MainFragment? = null; private set;
 
@@ -769,14 +770,21 @@ class MainActivity : AppCompatActivity() {
             StateApp.instance.refreshHome();
         val currentMain = fragCurrent;
         val currentParams = _parameterCurrent;
-        if(currentMain != null)
-            navigate(currentMain, currentParams, false, false, true);
+        if(currentMain != null) {
+            if(_refresher != null)
+                _refresher?.invoke();
+            else
+                navigate(currentMain, currentParams, false, false, true);
+        }
     }
 
-    inline fun <reified T : Fragment> navigate(parameter: Any? = null, withHistory: Boolean = true, isBack: Boolean = false) {
+    inline fun <reified T : Fragment> navigate(parameter: Any? = null, withHistory: Boolean = true, isBack: Boolean = false, forceReload: Boolean = false) {
         val fragment = getFragment<T>();
         if(fragment is MainFragment)
-            navigate(fragment, parameter, withHistory, isBack);
+            navigate(fragment, parameter, withHistory, isBack, forceReload = forceReload);
+    }
+    fun setRefresher(refresher: (()->Unit)? = null) {
+        _refresher = refresher;
     }
 
     /**
@@ -784,7 +792,7 @@ class MainActivity : AppCompatActivity() {
      * A parameter can be provided which becomes available in the onShow of said fragment
      */
     @SuppressLint("CommitTransaction")
-    fun navigate(segment: MainFragment, parameter: Any? = null, withHistory: Boolean = true, isBack: Boolean = false, forceReload: Boolean = false) {
+    fun navigate(segment: MainFragment, parameter: Any? = null, withHistory: Boolean = true, isBack: Boolean = false, forceReload: Boolean = false, refresher: (()->Unit)? = null) {
         //Logger.i(TAG, "Navigate to $segment (parameter=$parameter, withHistory=$withHistory, isBack=$isBack)")
 
         if (segment != fragCurrent || forceReload) {
@@ -868,6 +876,7 @@ class MainActivity : AppCompatActivity() {
 
             fragCurrent = segment;
             _parameterCurrent = parameter;
+            _refresher = refresher;
         }
 
         segment.topBar?.onShown(parameter);

@@ -79,6 +79,8 @@ class ContentsFragment: MainFragment() {
         private var _lastPlayables: List<IPlayable>? = null;
         private var _selectedSort: SortDropdownType = SortDropdownType.CountDesc;
 
+        private var _alwaysOptions = false;
+
         init {
             search = findViewById(R.id.view_search);
             gridContent = findViewById(R.id.grid_search);
@@ -95,7 +97,7 @@ class ContentsFragment: MainFragment() {
 
             gridContent.onClick.subscribe {
                 //fragment.navigate<PlaybackFragment>(it);
-                it.openPlayable(fragment);
+                it.openPlayable(fragment, _alwaysOptions);
             }
             search.onChange.subscribe {
                 contents?.let { contents ->
@@ -142,6 +144,17 @@ class ContentsFragment: MainFragment() {
                 }
                 topbar.setTitle(parameter.first as String);
                 contents = (parameter.second as List<*>).filterIsInstance<IPlayable>()
+                updateContent((parameter.second as List<*>).filterIsInstance<IPlayable>());
+            }
+            else if(parameter is Triple<*, *, *> && parameter.first is String && parameter.second is List<*> && parameter.third is List<*>) {
+                fragment.customTitle = parameter.first as String;
+                fragment.topBar?.let {
+                    if(it is GeneralTopBarFragment)
+                        it.setTitle(parameter.first as String);
+                }
+                topbar.setTitle(parameter.first as String);
+                contents = (parameter.second as List<*>).filterIsInstance<IPlayable>()
+                _alwaysOptions = (parameter.third as List<*>).contains(1);
                 updateContent((parameter.second as List<*>).filterIsInstance<IPlayable>());
             }
             contents?.let {

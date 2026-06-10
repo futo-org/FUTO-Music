@@ -68,6 +68,8 @@ class DBArtistTrack(
 interface DBArtistDao {
     @Query("SELECT * FROM artists WHERE hidden != 1")
     fun getAll(): List<DBArtist>;
+    @Query("SELECT * FROM artists WHERE hidden == 1")
+    fun getAllHidden(): List<DBArtist>;
     @Query("SELECT * FROM artists WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC")
     fun getAllByRecentPlayed(): List<DBArtist>;
     @Query("SELECT * FROM artists WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC LIMIT :count")
