@@ -7,10 +7,12 @@ Little to no AI/Agentic generated code was used in the making of this codebase.
 We are actively working on this app, and lots may improve and change in short amounts of time. 
 
 Updates are provided through the in-app updater (through in-app notifications).
-
 Metadata tagging is planned for a release very soon.
 
 We try to avoid any incompatibility between updates, but it is not impossible to happen in these early versions.
+
+[![Download Button](https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/download_button.png?ref_type=heads)](http://music.grayjay.app/music/app-release.apk)
+
 
 ## Goals
  - A polished music player
