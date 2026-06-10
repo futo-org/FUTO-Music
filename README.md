@@ -11,7 +11,7 @@ Metadata tagging is planned for a release very soon.
 
 We try to avoid any incompatibility between updates, but it is not impossible to happen in these early versions.
 
-[![Download Button](https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/download_button.png?ref_type=heads)](http://music.grayjay.app/music/app-release.apk)
+[![Download Button](https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/download_button.png?ref_type=heads)](https://music.grayjay.app/music/app-release.apk)
 
 
 ## Goals
