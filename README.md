@@ -7,10 +7,12 @@ Little to no AI/Agentic generated code was used in the making of this codebase.
 We are actively working on this app, and lots may improve and change in short amounts of time. 
 
 Updates are provided through the in-app updater (through in-app notifications).
-
 Metadata tagging is planned for a release very soon.
 
 We try to avoid any incompatibility between updates, but it is not impossible to happen in these early versions.
+
+[![Download Button](https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/download_button.png?ref_type=heads)](https://music.grayjay.app/music/app-release.apk)
+
 
 ## Goals
  - A polished music player
@@ -21,22 +23,33 @@ We try to avoid any incompatibility between updates, but it is not impossible to
 ## Quickly Access Your Content
 The home papge allows you to access the content you listen to most quick. This is also where you will find a global shuffle button, and a smart shuffle we are improving.
 
-<TODO Image Home Page\>
+<img src="https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/home.jpg?ref_type=heads" height="700" />
 
 ## Search Your Entire Collection
 Quickly search your entire collection by artist, album, or track names
 
-<TODO Image Search Page\>
+<img src="https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/search.jpg?ref_type=heads" height="700" />
+
 
 ## Albums and Artists Grouping
 View your music organized by artists or albums.
 
-<TODO Album/Artist Page\>
+<table border="0">
+ <tr>
+    <td><b style="font-size:30px"><img src="https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/artist.jpg?ref_type=heads" height="700" /></b></td>
+    <td><b style="font-size:30px"><img src="https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/album.jpg?ref_type=heads" height="700" /></b></td>
+ </tr>
+ <tr>
+    <td>Artist</td>
+    <td>Album</td>
+ </tr>
+</table>
 
 ## Manage Your Playlists
 Create playlists fitting your mood or occasion.
 
-<TODO Playlists Page\>
+<img src="https://gitlab.futo.org/videostreaming/futo-music/-/raw/master/demo/playlist.jpg?ref_type=heads" height="700" />
+
 
 
 ## How to obtain Music (DRM-Free)
