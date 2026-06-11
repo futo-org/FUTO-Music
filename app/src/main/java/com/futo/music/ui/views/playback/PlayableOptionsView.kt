@@ -22,6 +22,7 @@ import com.futo.music.fragments.main.ArtistFragment
 import com.futo.music.fragments.main.PlaybackFragment
 import com.futo.music.getPlayedDate
 import com.futo.music.isHidden
+import com.futo.music.logging.Logger
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.states.StateApp
@@ -112,15 +113,21 @@ class PlayableOptionsView: ConstraintLayout {
                     try {
                         val tracks = parent.getTracks(context);
                         val trackIndex = tracks.indexOfFirst { it.getItemId() != null && it.getItemId() == currentItemID};
-                        if(trackIndex >= 0) {
-                            StateApp.instance.activity()?.navigate<PlaybackFragment>(parent.withSettings(
-                                PlaySettings(index = trackIndex)));
+
+                        withContext(Dispatchers.Main) {
+                            if(trackIndex >= 0) {
+                                StateApp.instance.activity()?.navigate<PlaybackFragment>(parent.withSettings(
+                                    PlaySettings(index = trackIndex)));
+                            }
+                            else
+                                StateApp.instance.activity()?.navigate<PlaybackFragment>(current);
                         }
-                        else
-                            StateApp.instance.activity()?.navigate<PlaybackFragment>(current);
                     }
                     catch(ex: Throwable) {
-                        StateApp.instance.activity()?.navigate<PlaybackFragment>(current);
+                        Logger.e("PlayableOptionsView", "Failed to play as collection", ex);
+                            withContext(Dispatchers.Main) {
+                            StateApp.instance.activity()?.navigate<PlaybackFragment>(current);
+                        }
                     }
                 }
             }
@@ -133,6 +140,14 @@ class PlayableOptionsView: ConstraintLayout {
                     StateQueue.instance.setQueuePlayNext(context, it);
             }
             hide();
+        }
+        _buttonQueueAdd.onClick.subscribe {
+            _currentPlayable?.let {
+                if(it is DBTrack)
+                {
+                    //TODO: QueueAdd
+                }
+            }
         }
         _buttonPlaylistAdd.onClick.subscribe {
             _currentPlayable?.let {
