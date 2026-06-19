@@ -4,10 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
@@ -22,6 +25,7 @@ import com.futo.music.openPlayable
 import com.futo.music.setHeaderScrollFade
 import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.DBPlaylist
+import com.futo.music.storage.db.DBPlaylistUpdateShuffleCombined
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.AnyInsertedAdapterView
 import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
@@ -29,6 +33,8 @@ import com.futo.music.ui.adapters.TrackAnyViewHolder
 import com.futo.music.ui.buttons.ListButton
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.PlayableHeader
+import com.futo.music.ui.views.containers.SettingsToggleView
+import com.futo.music.ui.views.general.Toggle
 import com.futo.music.ui.views.lists.TrackListEditorView
 import com.futo.music.withSettings
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -181,6 +187,21 @@ class PlaylistFragment: MainFragment() {
                             }
                         });
                     });
+                    this.addView(SettingsToggleView(context).apply {
+                        this.setLabel("Shuffle Combined", "Play all songs in sequence if smart shuffle selects this track.");
+                        this.setValue(playlistCurrent?.shuffleCombined ?: false);
+                        this.onValueChanged.subscribe { value ->
+                            playlistCurrent?.let {
+                                fragment.lifecycleScope.launch(Dispatchers.IO) {
+                                    StateDatabase.instance.db.playlistDao().setShuffleCombined(DBPlaylistUpdateShuffleCombined(it.id, value as Boolean));
+                                }
+                            }
+                        }
+                        this.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                            val dp5 = 5.dp(resources);
+                            this.setMargins(dp5, dp5, dp5, dp5);
+                        }
+                    })
                 }, {
 
                 }, true)

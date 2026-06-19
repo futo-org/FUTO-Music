@@ -9,6 +9,7 @@ import com.futo.music.constructs.Event0
 import com.futo.music.levenshtein
 import com.futo.music.levenshteinDistance
 import com.futo.music.logging.Logger
+import com.futo.music.logic.shuffles.ScoreContainer
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.storage.db.AppDatabase
@@ -70,6 +71,11 @@ class StateDatabase(
         //.fallbackToDestructiveMigration(true)
         .build();
 
+
+    fun getScoresContainer(): ScoreContainer {
+        return ScoreContainer.retrieve();
+    }
+
     fun getRecentPlays(): List<IPlayable> {
         val recentAlbums = db.albumDao().getTopByRecentPlayed(15).filter { it.datePlayed.year > 2000 };
         val recentArtists = db.artistDao().getTopByRecentPlayed(15).filter { it.datePlayed.year > 2000 };
@@ -103,6 +109,9 @@ class StateDatabase(
     fun getAlbumTracks(id: Long): List<DBTrack> {
         return db.tracksDao().getAlbumTracks(id);
     }
+    fun getAlbumTrackIds(id: Long): List<Long> {
+        return db.tracksDao().getAlbumTrackIds(id);
+    }
     fun getTrackAlbums(id: Long): List<DBAlbum> {
         return db.albumDao().getTrackAlbums(id);
     }
@@ -115,6 +124,9 @@ class StateDatabase(
     }
     fun getArtistTracks(id: Long): List<DBTrack> {
         return db.tracksDao().getArtistTracks(id);
+    }
+    fun getArtistTrackIds(id: Long): List<Long> {
+        return db.tracksDao().getArtistTrackIds(id);
     }
     fun getArtistAlbums(id: Long): List<DBAlbum> {
         return db.albumDao().getArtistAlbums(id);
@@ -131,6 +143,9 @@ class StateDatabase(
     }
     fun getPlaylistTracks(id: Long): List<DBTrack> {
         return db.tracksDao().getPlaylistTracks(id)
+    }
+    fun getPlaylistTrackIds(id: Long): List<Long> {
+        return db.tracksDao().getPlaylistTrackIds(id)
     }
     fun getPlaylistTrackRefs(id: Long): List<DBPlaylistTrack> {
         return db.playlistDao().getPlaylistTrackRefs(id)
@@ -159,6 +174,9 @@ class StateDatabase(
     }
     fun getAllTracks(): List<DBTrack> {
         return db.tracksDao().getAll();
+    }
+    fun getTracks(ids: List<Long>): List<DBTrack> {
+        return db.tracksDao().getList(ids);
     }
 
     fun updatePlaylistMetadata(playlistId: Long) {
@@ -209,6 +227,11 @@ class StateDatabase(
         val tracks = db.tracksDao().getRandomWeightedTracks(count);
 
         return tracks;
+    }
+    fun getTrackIdsWeighted(count: Int): List<Long> {
+        val trackIds = db.tracksDao().getRandomWeightedTrackIds(count);
+
+        return trackIds;
     }
     fun getTrackListShuffled(count: Int): List<DBTrack> {
         val tracks = db.tracksDao().getRandomShuffledTracks(count);

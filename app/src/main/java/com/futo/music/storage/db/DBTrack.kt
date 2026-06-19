@@ -26,6 +26,7 @@ import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.models.playable.Track
 import com.futo.music.settings.Settings
+import com.futo.music.states.DBPlayableType
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.toSafeFileName
@@ -161,6 +162,8 @@ interface DBTrackDao {
     fun getAllHidden(): List<DBTrack>;
     @Query("SELECT * FROM tracks WHERE id = :id")
     fun get(id: Long): DBTrack?;
+    @Query("SELECT * FROM tracks WHERE id IN (:ids)")
+    fun getList(ids: List<Long>): List<DBTrack>;
     @Query("SELECT * FROM tracks WHERE mediaStoreId = :id")
     fun getByMSID(id: Long): DBTrack?;
     @Query("SELECT * FROM tracks WHERE fileName = :fileName")
@@ -171,10 +174,22 @@ interface DBTrackDao {
 
     @Query("SELECT t.* FROM tracks t INNER JOIN album_tracks at ON t.id = at.trackId WHERE at.albumId = :albumId ORDER BY at.ordering")
     fun getAlbumTracks(albumId: Long): List<DBTrack>
+    @Query("SELECT t.id FROM tracks t INNER JOIN album_tracks at ON t.id = at.trackId WHERE at.albumId = :albumId ORDER BY at.ordering")
+    fun getAlbumTrackIds(albumId: Long): List<Long>
     @Query("SELECT t.* FROM tracks t INNER JOIN artist_tracks at ON t.id = at.trackId WHERE at.artistId = :artistId")
     fun getArtistTracks(artistId: Long): List<DBTrack>
+    @Query("SELECT t.id FROM tracks t INNER JOIN artist_tracks at ON t.id = at.trackId WHERE at.artistId = :artistId")
+    fun getArtistTrackIds(artistId: Long): List<Long>
     @Query("SELECT t.* FROM tracks t INNER JOIN playlist_tracks at ON t.id = at.trackId WHERE at.playlistId = :playlistId ORDER BY at.ordering")
     fun getPlaylistTracks(playlistId: Long): List<DBTrack>
+    @Query("SELECT t.id FROM tracks t INNER JOIN playlist_tracks at ON t.id = at.trackId WHERE at.playlistId = :playlistId ORDER BY at.ordering")
+    fun getPlaylistTrackIds(playlistId: Long): List<Long>
+
+    @Query("SELECT id, score FROM tracks")
+    fun getAllScores(): List<ScoredItem>;
+    @Query("SELECT id, score FROM tracks WHERE id IN (SELECT id FROM albums ORDER BY RANDOM() LIMIT :count)")
+    fun getRandomScores(count: Int): List<ScoredItem>;
+
 
     @Query("SELECT * FROM tracks WHERE hidden != 1 ORDER BY dateAdded DESC LIMIT :count")
     fun getTracksNew(count: Int): List<DBTrack>
@@ -182,6 +197,8 @@ interface DBTrackDao {
 
     @Query("SELECT t.* FROM tracks t WHERE hidden != 1 AND t.scoreCalculated > 0 ORDER BY (ABS(RANDOM())/ 9223372036854775808.0) * t.scoreCalculated / 100 DESC LIMIT :count")
     fun getRandomWeightedTracks(count: Int): List<DBTrack>
+    @Query("SELECT t.id FROM tracks t WHERE hidden != 1 AND t.scoreCalculated > 0 ORDER BY (ABS(RANDOM())/ 9223372036854775808.0) * t.scoreCalculated / 100 DESC LIMIT :count")
+    fun getRandomWeightedTrackIds(count: Int): List<Long>
     @Query("SELECT t.* FROM tracks t WHERE hidden != 1 ORDER BY RANDOM() DESC LIMIT :count")
     fun getRandomShuffledTracks(count: Int): List<DBTrack>
 
@@ -237,3 +254,15 @@ class DBTrackUpdateRatingCalculated(
     val scoreLevel: Int,
     val scoreCalculated: Int
 )
+
+class ScoredItem(
+    val id: Long,
+    val score: Int
+) {
+    var type: DBPlayableType? = null;
+
+    fun withType(type: DBPlayableType): ScoredItem{
+        this.type = type;
+        return this;
+    }
+}

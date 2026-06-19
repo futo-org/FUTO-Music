@@ -119,6 +119,7 @@ class RatingsButton: ConstraintLayout {
     }
 
     private fun getGhostRating(item: IPlayable): Int {
+        //return 0;
         return if(item is DBTrack && item.scoreLevel != DBPlayableType.Track.value && item.scoreCalculated > 0) item.scoreCalculated / 20 else 0;
     }
     fun setRatingsFor(itemInput: IPlayable?, ratingChanged: ((Int, Int, DBPlayableType?)->Unit)? = null) {

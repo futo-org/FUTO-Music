@@ -92,6 +92,8 @@ class StateApp {
         return File(cacheDir, name);
     }
 
+
+
     companion object {
 
         private val TAG = "StateApp";

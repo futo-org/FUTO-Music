@@ -20,6 +20,7 @@ import com.futo.music.activities.MainActivity
 import com.futo.music.extensions.assume
 import com.futo.music.fragments.MainFragView
 import com.futo.music.fragments.top.GeneralTopBarFragment
+import com.futo.music.logic.shuffles.ESmartShuffle
 import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.Vibe
@@ -276,7 +277,11 @@ class HomeFragment: MainFragment() {
 
             buttonWshuffle.onClick.subscribe {
                 fragment.lifecycleScope.launch(Dispatchers.IO) {
-                    val tracks = StateDatabase.instance.getTrackListWeighted(500);
+
+                    val scores = StateDatabase.instance.getScoresContainer();
+                    val shuffle = ESmartShuffle(scores);
+
+                    val tracks = shuffle.getTracks(500);
                     withContext(Dispatchers.Main) {
                         fragment.navigate<PlaybackFragment>(Vibe("Weighted", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks));
                     }

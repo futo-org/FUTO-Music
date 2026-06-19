@@ -71,7 +71,7 @@
             android:paddingEnd="11dp"
             android:paddingTop="1dp"
             android:paddingBottom="1dp"
-            android:src="@drawable/ic_dots"
+            android:src="@drawable/ic_gear"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:scaleType="fitCenter" />

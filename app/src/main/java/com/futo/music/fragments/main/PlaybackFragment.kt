@@ -473,6 +473,8 @@ class PlaybackFragment: MainFragment() {
                                     //act.setBackgroundBottomGradient(android.graphics.Color.BLACK, 0.3f);
                                 };
                         })
+                    if(track == null)
+                        return@launch;
                     _textTitle.text = (track?.name ?: mediaMetadata.title);
                     _textArtist.text = (track?.artistLine ?: mediaMetadata.artist);
                     _textAlbum.text = (track?.albumLine ?: mediaMetadata.albumTitle);

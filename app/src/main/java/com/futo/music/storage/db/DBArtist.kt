@@ -74,6 +74,13 @@ interface DBArtistDao {
     fun getAllByRecentPlayed(): List<DBArtist>;
     @Query("SELECT * FROM artists WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC LIMIT :count")
     fun getTopByRecentPlayed(count: Int): List<DBArtist>;
+
+
+    @Query("SELECT id, score FROM artists")
+    fun getAllScores(): List<ScoredItem>;
+    @Query("SELECT id, score FROM artists WHERE id IN (SELECT id FROM albums ORDER BY RANDOM() LIMIT :count)")
+    fun getRandomScores(count: Int): List<ScoredItem>;
+
     @Query("SELECT * FROM artists WHERE id = :id")
     fun get(id: Long): DBArtist?;
     @Query("SELECT * FROM artists WHERE mediaStoreId = :id")

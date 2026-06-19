@@ -44,7 +44,10 @@ class DBPlaylist(
     var trackDurations: Int = -1,
 
     @ColumnInfo(defaultValue = "FALSE")
-    var hidden: Boolean = false
+    var hidden: Boolean = false,
+
+    @ColumnInfo(defaultValue = "FALSE")
+    var shuffleCombined: Boolean = false
 ): IPlayable {
     override val type: PlayableType get() = PlayableType.Playlist;
 
@@ -84,6 +87,11 @@ interface DBPlaylistDao {
     fun getAllByRecentPlayed(): List<DBPlaylist>;
     @Query("SELECT * FROM playlists WHERE hidden != 1 ORDER BY datePlayed DESC LIMIT :count")
     fun getTopByRecentPlayed(count: Int): List<DBPlaylist>;
+
+    @Query("SELECT id, score FROM playlists")
+    fun getAllScores(): List<ScoredItem>;
+    @Query("SELECT id, score FROM playlists WHERE id IN (SELECT id FROM albums ORDER BY RANDOM() LIMIT :count)")
+    fun getRandomScores(count: Int): List<ScoredItem>;
 
     @Query("SELECT MAX(ordering) FROM playlist_tracks WHERE playlistId = :playlistId")
     fun getPlaylistMaxOrder(playlistId: Long): Int;
@@ -133,6 +141,9 @@ interface DBPlaylistDao {
 
     @Update(entity = DBPlaylistTrack::class)
     fun setPlaylistOrder(track: DBPlaylistTrack);
+
+    @Update(entity = DBPlaylist::class)
+    fun setShuffleCombined(track: DBPlaylistUpdateShuffleCombined);
 }
 @Entity
 class DBPlaylistUpdatePlayed(
@@ -143,6 +154,11 @@ class DBPlaylistUpdatePlayed(
 class DBPlaylistUpdateRating(
     val id: Long,
     val score: Int
+)
+@Entity
+class DBPlaylistUpdateShuffleCombined(
+    val id: Long,
+    val shuffleCombined: Boolean
 )
 @Entity
 class DBPlaylistUpdateTrackMetadata(
