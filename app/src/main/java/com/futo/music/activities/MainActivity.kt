@@ -103,6 +103,7 @@ import com.futo.music.BuildConfig
 import com.futo.music.Constants
 import com.futo.music.fragments.main.AlbumFragment
 import com.futo.music.fragments.main.PlaylistFragment
+import com.futo.music.fragments.main.RatingsListFragment
 import com.futo.music.fragments.main.SettingsFragment
 import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.Album
@@ -153,6 +154,7 @@ class MainActivity : AppCompatActivity() {
     private val _fragAlbum = AlbumFragment();
     private val _fragPlaylist = PlaylistFragment();
     private val _fragSettings = SettingsFragment();
+    private val _fragRatingsList = RatingsListFragment();
 
     //Main
 
@@ -183,7 +185,8 @@ class MainActivity : AppCompatActivity() {
         Pair(ArtistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragArtist })),
         Pair(AlbumFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragAlbum })),
         Pair(PlaylistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragPlaylist })),
-        Pair(SettingsFragment::class, FragmentDefinition(null, null, { _fragSettings }))
+        Pair(SettingsFragment::class, FragmentDefinition(null, null, { _fragSettings })),
+        Pair(RatingsListFragment::class, FragmentDefinition(_fragTopNavigation, _fragBotMenu, { _fragRatingsList }))
     );
 
     init {
@@ -829,11 +832,14 @@ class MainActivity : AppCompatActivity() {
                         transaction = transaction.hide(_fragBotMenu);
                 }
                 else {
-                    if(fragCurrent?.hasBottomBar ?: false)
+                    if(fragCurrent?.hasBottomBar ?: false) {
+                        if(fragCurrent!!.botBar == null)
+                            throw NullPointerException("Missing Botbar definition despite it being enabled for this view..");
                         transaction = transaction
                             .hide(fragCurrent!!.botBar!!)
                             .show(segment.botBar!!)
                             .replace(R.id.fragment_bottom_bar, segment.botBar!!);
+                    }
                     else if(segment.botBar != fragCurrent?.botBar)
                         transaction = transaction
                             .show(segment.botBar!!)

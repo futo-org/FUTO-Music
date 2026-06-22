@@ -193,6 +193,10 @@ interface DBTrackDao {
 
     @Query("SELECT * FROM tracks WHERE hidden != 1 ORDER BY dateAdded DESC LIMIT :count")
     fun getTracksNew(count: Int): List<DBTrack>
+    @Query("SELECT * FROM tracks WHERE hidden != 1 AND score <= 0 ORDER BY dateAdded DESC LIMIT :count")
+    fun getTracksNewUnrated(count: Int): List<DBTrack>
+    @Query("SELECT id FROM tracks WHERE hidden != 1 AND score <= 0 ORDER BY RANDOM() DESC LIMIT :count")
+    fun getTracksUnratedIds(count: Int): List<Long>
 
 
     @Query("SELECT t.* FROM tracks t WHERE hidden != 1 AND t.scoreCalculated > 0 ORDER BY (ABS(RANDOM())/ 9223372036854775808.0) * t.scoreCalculated / 100 DESC LIMIT :count")

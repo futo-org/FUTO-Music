@@ -80,6 +80,7 @@ class PlayableOptionOverlay: ConstraintLayout {
         _buttonRate = findViewById(R.id.button_rate);
         _buttonShare = findViewById(R.id.button_share);
 
+
         //this.translationY = 1f;
         this.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         //this.alpha = 0f;

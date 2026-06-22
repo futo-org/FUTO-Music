@@ -55,6 +55,7 @@ class HomeFragment: MainFragment() {
     private var _dataArtists: List<DBArtist>? = null;
     private var _dataRecent: List<IPlayable>? = null;
     private var _dataPlaylists: List<DBPlaylist>? = null;
+    private var _dataUnrated: List<IPlayable>? = null;
     private var _dataSongNew: List<IPlayable>? = null;
     private var _dataVibeWeighted: Vibe? = null;
     private var _dataCacheTime: OffsetDateTime? = null;
@@ -64,6 +65,7 @@ class HomeFragment: MainFragment() {
     var _playlistStateSave: Parcelable? = null;
     var _artistStateSave: Parcelable? = null;
     var _albumStateSave: Parcelable? = null;
+    var _unratedStateSave: Parcelable? = null;
     var _songNewStateSave: Parcelable? = null;
     var _globalStateSave: Parcelable? = null;
 
@@ -73,6 +75,7 @@ class HomeFragment: MainFragment() {
         _dataRecent = null;
         _dataPlaylists = null;
         _dataSongNew = null;
+        _dataUnrated = null;
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -127,6 +130,7 @@ class HomeFragment: MainFragment() {
         _playlistStateSave = _view?.gridPlaylists?.recycler?.layoutManager?.onSaveInstanceState();
         _artistStateSave = _view?.gridArtists?.recycler?.layoutManager?.onSaveInstanceState();
         _albumStateSave = _view?.gridAlbums?.recycler?.layoutManager?.onSaveInstanceState();
+        _unratedStateSave = _view?.gridUnrated?.recycler?.layoutManager?.onSaveInstanceState();
         _songNewStateSave = _view?.gridSongRecent?.recycler?.layoutManager?.onSaveInstanceState();
         _scrollY = _view?.scroller?.scrollY;
         _view = null;
@@ -142,6 +146,7 @@ class HomeFragment: MainFragment() {
         val gridArtists: ContentGrid;
         val gridAlbums: ContentGrid;
         val gridSongRecent: ContentGrid;
+        val gridUnrated: ContentGrid;
 
         val containerPlaylistsCreate: ConstraintLayout;
         val buttonPlaylistsCreate: RoundButton;
@@ -159,6 +164,7 @@ class HomeFragment: MainFragment() {
             gridPlaylists = findViewById(R.id.grid_playlists);
             gridArtists = findViewById(R.id.grid_artists);
             gridAlbums = findViewById(R.id.grid_albums);
+            gridUnrated = findViewById(R.id.grid_unrated);
             gridSongRecent = findViewById(R.id.grid_songs_recent);
 
             containerShuffles = findViewById(R.id.container_shuffles);
@@ -222,6 +228,12 @@ class HomeFragment: MainFragment() {
                         }
                     }
                 }
+            }
+            gridUnrated.onClick.subscribe {
+                it.openPlayable(fragment, true);
+            }
+            gridUnrated.setButtonListener {
+                fragment.navigate<RatingsListFragment>();
             }
 
             gridArtists.onClick.subscribe {
@@ -327,6 +339,7 @@ class HomeFragment: MainFragment() {
                         fragment._dataSongNew = null;
                         fragment._dataPlaylists = null;
                         fragment._dataCacheTime = null;
+                        fragment._dataUnrated = null;
                     }
                 }
 
@@ -336,6 +349,7 @@ class HomeFragment: MainFragment() {
                 var playlists = (fragment._dataPlaylists ?: StateDatabase.instance.getPlaylistsByRecent()).map { it as IPlayable };
                 val songNew = fragment._dataSongNew ?: StateDatabase.instance.getTracksNew(20);
 
+                val unrated = fragment._dataUnrated ?: StateDatabase.instance.getTracksUnrated(20);
 
                 //val vibeWeighted = fragment._dataVibeWeighted ?: Vibe("Suggested", ImageVariable.fromResource(R.drawable.ic_playlist), listOf(), listOf(), StateDatabase.instance.getTrackListWeighted(100));
 
@@ -345,6 +359,7 @@ class HomeFragment: MainFragment() {
                 fragment._dataSongNew = songNew;
                 //fragment._dataVibeWeighted = vibeWeighted;
                 fragment._dataCacheTime = OffsetDateTime.now();
+                fragment._dataUnrated = unrated;
 
                 //if(vibeWeighted != null && vibeWeighted.singles.size > 5)
                 //    playlists = listOf(vibeWeighted) + (playlists);
@@ -405,6 +420,17 @@ class HomeFragment: MainFragment() {
                         }
                     }
 
+                    if(unrated.isNullOrEmpty())
+                        gridUnrated.visibility = View.GONE;
+                    else {
+                        gridUnrated.setData(unrated);
+                        gridUnrated.visibility = View.VISIBLE;
+                        fragment._unratedStateSave?.let {
+                            gridUnrated.recycler.post {
+                                gridUnrated.recycler.layoutManager?.onRestoreInstanceState(it);
+                            }
+                        }
+                    }
                     if(songNew.isNullOrEmpty())
                         gridSongRecent.visibility = View.GONE;
                     else {

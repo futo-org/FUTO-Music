@@ -36,6 +36,7 @@ import com.futo.music.storage.db.DBTrack
 import com.futo.music.toSafeFileName
 import com.futo.music.ui.buttons.IconButton
 import com.futo.music.ui.buttons.ListButton
+import com.futo.music.ui.buttons.RatingsButton
 import com.futo.music.withSettings
 import com.futo.music.zipArrays
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +56,8 @@ class PlayableOptionsView: ConstraintLayout {
     private val _buttonPlay: IconButton;
     private val _buttonPlayNext: IconButton;
     private val _buttonQueueAdd: IconButton;
+
+    private val _ratings: RatingsButton;
 
     private val _buttonPlaylistAdd: ListButton;
     private val _buttonArtist: ListButton;
@@ -86,6 +89,7 @@ class PlayableOptionsView: ConstraintLayout {
         _buttonQueueAdd = findViewById(R.id.button_queue_add);
         _textTitle = findViewById(R.id.text_title);
 
+        _ratings = findViewById(R.id.ratings);
 
         _buttonPlaylistAdd = findViewById(R.id.button_add_playlist);
         _buttonArtist = findViewById(R.id.button_artist);
@@ -341,6 +345,8 @@ class PlayableOptionsView: ConstraintLayout {
             _textTitle.isVisible = false;
         else
             _textTitle.isVisible = true;
+
+        _ratings.setRatingsFor(playable);
     }
     fun hide() {
         onHide.emit();
@@ -358,9 +364,10 @@ class PlayableOptionsView: ConstraintLayout {
         }
 
         if(playable is DBTrack || playable is DBPlaylist || playable is DBAlbum || playable is DBArtist)
-            _buttonRate.isVisible = true;
+            _ratings.isVisible = true;
         else
-            _buttonRate.isVisible = false;
+            _ratings.isVisible = false;
+        _buttonRate.isVisible = false;
 
         if(playable is DBTrack || playable is DBArtist || playable is DBAlbum)
             _buttonPlaylistAdd.isVisible = true;

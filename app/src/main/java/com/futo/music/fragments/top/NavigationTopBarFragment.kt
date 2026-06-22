@@ -48,6 +48,9 @@ class NavigationTopBarFragment : TopFragment() {
         _buttonNotifCount?.let {
             it.isVisible = false;
         }
+        _buttonSettings?.let {
+            it.isVisible = false;
+        }
     }
 
     override fun onShown(parameter: Any?) {

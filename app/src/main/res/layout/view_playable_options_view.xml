@@ -21,8 +21,8 @@
         android:id="@+id/buttons_primary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/buttons_secondary"
-        android:paddingBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@id/ratings"
+        android:paddingBottom="5dp"
         android:paddingTop="10dp"
         android:gravity="center">
 
@@ -61,6 +61,14 @@
             app:IconButton_text="Add to Playlist" />
         -->
     </LinearLayout>
+    <com.futo.music.ui.buttons.RatingsButton
+        android:id="@+id/ratings"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        app:layout_constraintBottom_toTopOf="@id/buttons_secondary" />
     <LinearLayout
         android:id="@+id/buttons_secondary"
         android:layout_width="match_parent"
