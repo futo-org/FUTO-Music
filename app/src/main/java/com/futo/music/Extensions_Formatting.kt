@@ -28,6 +28,13 @@ import kotlin.text.substring
 import kotlin.text.trim
 import kotlin.text.trimStart
 
+fun Int.toStarRating(): Int {
+    return Math.max(0, Math.min(5, this / 20));
+}
+fun Int.toScoreRating(): Int {
+    return this * 20;
+}
+
 
 //Long
 val countInKilo = 1000;

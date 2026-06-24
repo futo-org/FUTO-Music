@@ -172,13 +172,13 @@ interface DBTrackDao {
     @Query("SELECT * FROM tracks WHERE hidden != 1 AND INSTR(lower(name), lower(:str))")
     fun search(str: String): List<DBTrack>;
 
-    @Query("SELECT t.* FROM tracks t INNER JOIN album_tracks at ON t.id = at.trackId WHERE at.albumId = :albumId ORDER BY at.ordering")
+    @Query("SELECT t.* FROM tracks t INNER JOIN album_tracks at ON t.id = at.trackId WHERE at.albumId = :albumId AND t.hidden != 1 ORDER BY at.ordering")
     fun getAlbumTracks(albumId: Long): List<DBTrack>
-    @Query("SELECT t.id FROM tracks t INNER JOIN album_tracks at ON t.id = at.trackId WHERE at.albumId = :albumId ORDER BY at.ordering")
+    @Query("SELECT t.id FROM tracks t INNER JOIN album_tracks at ON t.id = at.trackId WHERE at.albumId = :albumId AND t.hidden != 1 ORDER BY at.ordering")
     fun getAlbumTrackIds(albumId: Long): List<Long>
-    @Query("SELECT t.* FROM tracks t INNER JOIN artist_tracks at ON t.id = at.trackId WHERE at.artistId = :artistId")
+    @Query("SELECT t.* FROM tracks t INNER JOIN artist_tracks at ON t.id = at.trackId WHERE at.artistId = :artistId AND t.hidden != 1")
     fun getArtistTracks(artistId: Long): List<DBTrack>
-    @Query("SELECT t.id FROM tracks t INNER JOIN artist_tracks at ON t.id = at.trackId WHERE at.artistId = :artistId")
+    @Query("SELECT t.id FROM tracks t INNER JOIN artist_tracks at ON t.id = at.trackId WHERE at.artistId = :artistId AND t.hidden != 1")
     fun getArtistTrackIds(artistId: Long): List<Long>
     @Query("SELECT t.* FROM tracks t INNER JOIN playlist_tracks at ON t.id = at.trackId WHERE at.playlistId = :playlistId ORDER BY at.ordering")
     fun getPlaylistTracks(playlistId: Long): List<DBTrack>
@@ -198,6 +198,8 @@ interface DBTrackDao {
     @Query("SELECT id FROM tracks WHERE hidden != 1 AND score <= 0 ORDER BY RANDOM() DESC LIMIT :count")
     fun getTracksUnratedIds(count: Int): List<Long>
 
+    @Query("SELECT * FROM tracks WHERE hidden != 1 AND plays > 0 ORDER BY plays DESC LIMIT :count")
+    fun getMostPlayed(count: Int): List<DBTrack>
 
     @Query("SELECT t.* FROM tracks t WHERE hidden != 1 AND t.scoreCalculated > 0 ORDER BY (ABS(RANDOM())/ 9223372036854775808.0) * t.scoreCalculated / 100 DESC LIMIT :count")
     fun getRandomWeightedTracks(count: Int): List<DBTrack>
@@ -208,6 +210,9 @@ interface DBTrackDao {
 
     @Query("SELECT * FROM tracks WHERE hidden != 1 AND dateOpened IS NOT NULL ORDER BY dateOpened DESC LIMIT :count")
     fun getTopByRecentOpened(count: Int): List<DBTrack>;
+
+    @Query("UPDATE tracks SET plays = plays + 1 WHERE id == :id")
+    fun incrementTrackPlayed(id: Long);
 
     @Query("SELECT COUNT(*) FROM tracks")
     fun count(): Int;

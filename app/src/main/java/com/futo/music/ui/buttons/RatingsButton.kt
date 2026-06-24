@@ -39,6 +39,18 @@ class RatingsButton: ConstraintLayout {
         get() = field;
         private set(v: Int) { field = v }
 
+    private var _disableSwipe: Boolean = false;
+    private var _hideGhost: Boolean = false;
+    fun hideGhost() {
+        _hideGhost = true;
+    }
+
+
+    fun disableSwipe() {
+        _disableSwipe = true;
+        _container.setOnTouchListener { a,b -> return@setOnTouchListener false }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     constructor(context: Context, attrs: AttributeSet? = null): super(context, attrs) {
         inflate(context, R.layout.button_ratings, this);
@@ -110,7 +122,7 @@ class RatingsButton: ConstraintLayout {
             button.apply {
                 if (rating > 0 && rating > index)
                     button.setImageResource(R.drawable.ic_star_gold);
-                else if(ghost > 0 && ghost > index)
+                else if(ghost > 0 && ghost > index && !_hideGhost)
                     button.setImageResource(R.drawable.ic_star_gold_transparant);
                 else
                     button.setImageResource(R.drawable.ic_star_transparent);
@@ -119,8 +131,8 @@ class RatingsButton: ConstraintLayout {
     }
 
     private fun getGhostRating(item: IPlayable): Int {
-        //return 0;
-        return if(item is DBTrack && item.scoreLevel != DBPlayableType.Track.value && item.scoreCalculated > 0) item.scoreCalculated / 20 else 0;
+        return 0;
+        //return if(item is DBTrack && item.scoreLevel != DBPlayableType.Track.value && item.scoreCalculated > 0) item.scoreCalculated / 20 else 0;
     }
     fun setRatingsFor(itemInput: IPlayable?, ratingChanged: ((Int, Int, DBPlayableType?)->Unit)? = null) {
         onRatingChanged.remove(this);

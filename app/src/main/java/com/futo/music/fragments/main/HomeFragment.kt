@@ -1,8 +1,6 @@
 package com.futo.music.fragments.main
 
-import android.graphics.Color
 import android.os.Bundle
-import android.os.Parcel
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
@@ -15,15 +13,12 @@ import androidx.lifecycle.lifecycleScope
 import com.futo.music.BuildConfig
 import com.futo.music.R
 import com.futo.music.UIDialogs
-import com.futo.music.UIDialogs.ActionStyle
-import com.futo.music.activities.MainActivity
-import com.futo.music.extensions.assume
 import com.futo.music.fragments.MainFragView
-import com.futo.music.fragments.top.GeneralTopBarFragment
 import com.futo.music.logic.shuffles.ESmartShuffle
 import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.Vibe
+import com.futo.music.models.playable.QueueType
 import com.futo.music.openPlayable
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
@@ -35,7 +30,6 @@ import com.futo.music.ui.buttons.RoundButton
 import com.futo.music.ui.buttons.StandardButton
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
-import com.futo.music.ui.views.playback.PlayableOptionOverlay
 import com.futo.music.ui.views.topbars.GeneralTopBarView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -56,6 +50,7 @@ class HomeFragment: MainFragment() {
     private var _dataRecent: List<IPlayable>? = null;
     private var _dataPlaylists: List<DBPlaylist>? = null;
     private var _dataUnrated: List<IPlayable>? = null;
+    private var _dataMostPlayed: List<IPlayable>? = null;
     private var _dataSongNew: List<IPlayable>? = null;
     private var _dataVibeWeighted: Vibe? = null;
     private var _dataCacheTime: OffsetDateTime? = null;
@@ -67,6 +62,7 @@ class HomeFragment: MainFragment() {
     var _albumStateSave: Parcelable? = null;
     var _unratedStateSave: Parcelable? = null;
     var _songNewStateSave: Parcelable? = null;
+    var _mostPlayedStateSave: Parcelable? = null;
     var _globalStateSave: Parcelable? = null;
 
     fun clearCache() {
@@ -76,6 +72,7 @@ class HomeFragment: MainFragment() {
         _dataPlaylists = null;
         _dataSongNew = null;
         _dataUnrated = null;
+        _dataMostPlayed = null;
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,6 +129,7 @@ class HomeFragment: MainFragment() {
         _albumStateSave = _view?.gridAlbums?.recycler?.layoutManager?.onSaveInstanceState();
         _unratedStateSave = _view?.gridUnrated?.recycler?.layoutManager?.onSaveInstanceState();
         _songNewStateSave = _view?.gridSongRecent?.recycler?.layoutManager?.onSaveInstanceState();
+        _mostPlayedStateSave = _view?.gridMostPlayed?.recycler?.layoutManager?.onSaveInstanceState();
         _scrollY = _view?.scroller?.scrollY;
         _view = null;
     }
@@ -147,6 +145,7 @@ class HomeFragment: MainFragment() {
         val gridAlbums: ContentGrid;
         val gridSongRecent: ContentGrid;
         val gridUnrated: ContentGrid;
+        val gridMostPlayed: ContentGrid;
 
         val containerPlaylistsCreate: ConstraintLayout;
         val buttonPlaylistsCreate: RoundButton;
@@ -165,12 +164,15 @@ class HomeFragment: MainFragment() {
             gridArtists = findViewById(R.id.grid_artists);
             gridAlbums = findViewById(R.id.grid_albums);
             gridUnrated = findViewById(R.id.grid_unrated);
+            gridMostPlayed = findViewById(R.id.grid_most_played);
             gridSongRecent = findViewById(R.id.grid_songs_recent);
 
             containerShuffles = findViewById(R.id.container_shuffles);
             buttonShuffle = findViewById(R.id.button_shuffle);
             buttonWshuffle = findViewById(R.id.button_wshuffle);
             buttonHelp = findViewById(R.id.button_help);
+
+            gridMostPlayed.gridSettings.showPlays = true;
 
             findViewById<GeneralTopBarView>(R.id.topbar).apply {
                 setTitlePress {
@@ -235,6 +237,13 @@ class HomeFragment: MainFragment() {
             gridUnrated.setButtonListener {
                 fragment.navigate<RatingsListFragment>();
             }
+            gridMostPlayed.onClick.subscribe {
+                it.openPlayable(fragment);
+            }
+            gridMostPlayed.setButtonListener {
+                val mostPlayed = StateDatabase.instance.getMostPlayed(20);
+                fragment.navigate<ContentsFragment>(Pair("Most Played", mostPlayed));
+            }
 
             gridArtists.onClick.subscribe {
                 it.openPlayable(fragment);
@@ -282,7 +291,7 @@ class HomeFragment: MainFragment() {
                 fragment.lifecycleScope.launch(Dispatchers.IO) {
                     val tracks = StateDatabase.instance.getTrackListShuffled(500);
                     withContext(Dispatchers.Main) {
-                        fragment.navigate<PlaybackFragment>(Vibe("Shuffle", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks));
+                        fragment.navigate<PlaybackFragment>(Vibe("Shuffle", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks, QueueType.Shuffle));
                     }
                 }
             }
@@ -295,7 +304,7 @@ class HomeFragment: MainFragment() {
 
                     val tracks = shuffle.getTracks(500);
                     withContext(Dispatchers.Main) {
-                        fragment.navigate<PlaybackFragment>(Vibe("Weighted", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks));
+                        fragment.navigate<PlaybackFragment>(Vibe("Smart Shuffle", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks, QueueType.SmartShuffle));
                     }
                 }
             }
@@ -340,6 +349,7 @@ class HomeFragment: MainFragment() {
                         fragment._dataPlaylists = null;
                         fragment._dataCacheTime = null;
                         fragment._dataUnrated = null;
+                        fragment._dataMostPlayed = null;
                     }
                 }
 
@@ -350,6 +360,7 @@ class HomeFragment: MainFragment() {
                 val songNew = fragment._dataSongNew ?: StateDatabase.instance.getTracksNew(20);
 
                 val unrated = fragment._dataUnrated ?: StateDatabase.instance.getTracksUnrated(20);
+                val mostPlayed = fragment._dataMostPlayed ?: StateDatabase.instance.getMostPlayed(20);
 
                 //val vibeWeighted = fragment._dataVibeWeighted ?: Vibe("Suggested", ImageVariable.fromResource(R.drawable.ic_playlist), listOf(), listOf(), StateDatabase.instance.getTrackListWeighted(100));
 
@@ -360,6 +371,7 @@ class HomeFragment: MainFragment() {
                 //fragment._dataVibeWeighted = vibeWeighted;
                 fragment._dataCacheTime = OffsetDateTime.now();
                 fragment._dataUnrated = unrated;
+                fragment._dataMostPlayed = mostPlayed;
 
                 //if(vibeWeighted != null && vibeWeighted.singles.size > 5)
                 //    playlists = listOf(vibeWeighted) + (playlists);
@@ -428,6 +440,17 @@ class HomeFragment: MainFragment() {
                         fragment._unratedStateSave?.let {
                             gridUnrated.recycler.post {
                                 gridUnrated.recycler.layoutManager?.onRestoreInstanceState(it);
+                            }
+                        }
+                    }
+                    if(mostPlayed.isNullOrEmpty())
+                        gridMostPlayed.visibility = View.GONE;
+                    else {
+                        gridMostPlayed.setData(mostPlayed);
+                        gridMostPlayed.visibility = View.VISIBLE;
+                        fragment._mostPlayedStateSave?.let {
+                            gridMostPlayed.recycler.post {
+                                gridMostPlayed.recycler.layoutManager?.onRestoreInstanceState(it);
                             }
                         }
                     }

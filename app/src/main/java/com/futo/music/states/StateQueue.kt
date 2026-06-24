@@ -1,30 +1,15 @@
 package com.futo.music.states
 
 import android.annotation.SuppressLint
-import android.content.ContentUris
 import android.content.Context
-import android.database.Cursor
-import android.net.Uri
-import android.provider.MediaStore
-import android.provider.MediaStore.Audio.Artists
-import android.webkit.MimeTypeMap
-import androidx.core.database.getStringOrNull
-import androidx.core.net.toUri
-import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import com.futo.music.constructs.Event1
-import com.futo.music.extensions.assume
-import com.futo.music.logging.Logger
 import com.futo.music.logic.PlayerManager
-import com.futo.music.models.ImageVariable
-import com.futo.music.models.playable.Album
-import com.futo.music.models.playable.Artist
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.models.playable.PlayableDescriptor
-import com.futo.music.models.playable.PlayableType
-import com.futo.music.models.playable.Track
+import com.futo.music.models.playable.QueueType
+import com.futo.music.models.playable.Vibe
 import com.futo.music.services.PlaybackService
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
@@ -32,31 +17,21 @@ import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.ManagedStore
-import com.futo.music.storage.file.StringArrayStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.Collections
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.map
-import kotlin.io.use
-import kotlin.let
-import kotlin.text.contains
-import kotlin.text.isNullOrBlank
-import kotlin.text.lowercase
-import kotlin.text.startsWith
 import kotlin.text.toLongOrNull
-import kotlin.text.trim
 
 
 class StateQueue {
 
     val _queue: MutableList<IPlayableTrack> = mutableListOf();
     val isQueueEmpty: Boolean get() = _queue.isEmpty();
+
+    var queueType: QueueType = QueueType.Unknown
+        private set;
 
     val onQueueChanged = Event1<List<IPlayableTrack>>();
 
@@ -159,6 +134,17 @@ class StateQueue {
                 _queue.addAll(items);
                 _lastSetQueuePlayable = playable;
                 newQueue = _queue.toList();
+            }
+
+            if(playable is Vibe)
+                queueType = playable.vibeType;
+            else
+                queueType = QueueType.Unknown;
+
+            if(queueType == QueueType.Shuffle || queueType == QueueType.SmartShuffle) {
+                withContext(Dispatchers.Main) {
+                    _player?.player?.shuffleModeEnabled = false;
+                }
             }
 
             val mediaItems = newQueue.map { it.getMediaItem() }

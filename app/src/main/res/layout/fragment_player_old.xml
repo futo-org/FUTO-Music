@@ -16,9 +16,9 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintDimensionRatio="1"
-        android:layout_marginTop="40dp"
-        android:layout_marginLeft="60dp"
-        android:layout_marginRight="60dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="70dp"
+        android:layout_marginRight="70dp"
         android:src="#111111"
         android:scaleType="centerCrop"
         app:shapeAppearanceOverlay="@style/roundedCorners_8dp"
@@ -88,11 +88,10 @@
         android:id="@+id/view_control"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
         app:show_timeout="-1"
-        android:layout_marginBottom="80dp"
         app:layout_constraintTop_toBottomOf="@id/image_art"
         app:controller_layout_id="@layout/video_player_ui" />
 
@@ -101,7 +100,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:layout_marginLeft="20dp"
+        android:layout_marginLeft="30dp"
         app:layout_constraintTop_toBottomOf="@id/view_control"
         app:layout_constraintLeft_toLeftOf="parent">
 
@@ -131,7 +130,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/buttons_rating"
-        android:visibility="invisible"
         android:textAlignment="center"
         android:textSize="10dp"
         android:textColor="#AAFFFFFF" />
@@ -141,8 +139,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:layout_marginRight="20dp"
-        app:layout_constraintTop_toTopOf="@id/container_trait_left"
+        android:layout_marginRight="30dp"
+        app:layout_constraintTop_toBottomOf="@id/view_control"
         app:layout_constraintRight_toRightOf="parent">
         <ImageButton
             android:id="@+id/button_loop"
@@ -158,18 +156,33 @@
 
     <LinearLayout
         android:id="@+id/container_title"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/buttons_rating"
-        app:layout_constraintLeft_toLeftOf="@id/view_control"
-        app:layout_constraintRight_toRightOf="@id/view_control"
-        android:layout_marginTop="15dp"
+        app:layout_constraintTop_toBottomOf="@id/container_trait_right"
+        app:layout_constraintBottom_toTopOf="@+id/container_buttons"
+        android:layout_marginTop="30dp"
         android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/text_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_regular"
+            android:gravity="center"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:textColor="#EEE"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text=""
+            android:textSize="16sp" />
         <TextView
             android:id="@+id/text_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/inter_medium"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
             android:maxLines="1"
             android:singleLine="true"
             android:ellipsize="marquee"
@@ -179,91 +192,23 @@
             android:scrollHorizontally="true"
             android:gravity="center"
             android:textColor="@color/white"
-            android:text="Track Name"
-            android:layout_gravity="start"
+            android:text=""
+            android:layout_gravity="center"
             android:textSize="23sp" />
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <TextView
+            android:id="@+id/text_album"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:id="@+id/image_artist"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:layout_constraintDimensionRatio="1"
-                app:layout_constraintTop_toTopOf="@id/text_artist"
-                app:layout_constraintBottom_toBottomOf="@id/text_artist"
-                app:layout_constraintLeft_toLeftOf="parent"
-                android:alpha="0.5"
-                android:src="@drawable/ic_artist" />
-            <TextView
-                android:id="@+id/text_artist"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_light"
-                android:gravity="start"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="10dp"
-                android:textColor="#FFFFFF"
-                android:alpha="0.5"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:ellipsize="end"
-                android:text="Artist"
-                app:layout_constraintLeft_toRightOf="@id/image_artist"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintRight_toLeftOf="@id/star_artist"
-                android:textSize="17sp" />
-            <com.futo.music.ui.views.StarButton
-                android:id="@+id/star_artist"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                app:layout_constraintTop_toTopOf="@id/text_artist"
-                app:layout_constraintBottom_toBottomOf="@id/text_artist"
-                app:layout_constraintRight_toRightOf="parent"
-                android:layout_marginTop="-2dp"
-                android:layout_marginBottom="-2dp" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:id="@+id/image_album"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:layout_constraintDimensionRatio="1"
-                app:layout_constraintTop_toTopOf="@id/text_album"
-                app:layout_constraintBottom_toBottomOf="@id/text_album"
-                app:layout_constraintLeft_toLeftOf="parent"
-                android:alpha="0.5"
-                android:src="@drawable/media3_icon_album" />
-            <TextView
-                android:id="@+id/text_album"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter_light"
-                android:gravity="start"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="10dp"
-                android:textColor="#FFFFFF"
-                android:alpha="0.5"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:ellipsize="end"
-                android:text="Album"
-                app:layout_constraintLeft_toRightOf="@id/image_album"
-                app:layout_constraintRight_toLeftOf="@id/star_album"
-                app:layout_constraintTop_toTopOf="parent"
-                android:textSize="17sp" />
-            <com.futo.music.ui.views.StarButton
-                android:id="@+id/star_album"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                app:layout_constraintTop_toTopOf="@id/text_album"
-                app:layout_constraintBottom_toBottomOf="@id/text_album"
-                android:layout_marginTop="-2dp"
-                android:layout_marginBottom="-2dp"
-                app:layout_constraintRight_toRightOf="parent"  />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_regular"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="8dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:text=""
+            android:textColor="#AAAAAAAA"
+            android:textSize="17sp" />
 
     </LinearLayout>
 
@@ -271,10 +216,10 @@
         android:id="@+id/container_buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/container_title"
         app:layout_constraintBottom_toTopOf="@id/container_bottom"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/container_title"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="0dp"
         android:gravity="center">
@@ -380,9 +325,18 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <com.futo.music.ui.views.playback.PlayingInfoOverlay
+        android:id="@+id/overlay_playing"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible" />
     <com.futo.music.ui.views.playback.QueueOverlay
         android:id="@+id/overlay_queue"
         android:visibility="invisible"
+        android:layout_height="0dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="-20dp"
+        android:layout_marginBottom="-20dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

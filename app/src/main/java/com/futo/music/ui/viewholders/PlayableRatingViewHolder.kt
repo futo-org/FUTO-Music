@@ -7,8 +7,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.futo.music.R
+import com.futo.music.UIDialogs
 import com.futo.music.constructs.Event2
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.openPlayable
 import com.futo.music.states.StateApp
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.toHumanTime
@@ -42,8 +44,13 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
         //_textCount = _view.findViewById(R.id.text_count);
         _button = _view.findViewById(R.id.button_more);
         _ratings = _view.findViewById(R.id.ratings);
-
-        _button.setOnClickListener {
+        _ratings.disableSwipe();
+        _textName.setOnClickListener {
+            _playable?.let {
+                onClick.emit(this, it);
+            }
+        };
+        _imageThumbnail.setOnClickListener {
             _playable?.let {
                 onClick.emit(this, it);
             }

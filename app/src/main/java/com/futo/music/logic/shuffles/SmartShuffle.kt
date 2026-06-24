@@ -10,8 +10,7 @@ abstract class SmartShuffle(val scoresRoot: ScoreContainer) {
 
     fun getTracks(count: Int): List<DBTrack> {
         val ids = getTrackIds(count);
-        val tracks = StateDatabase.instance.getTracks(ids);
-        return tracks.sortedBy { ids.indexOf(it.id) };
+        return StateDatabase.instance.getTracks(ids);
     }
 
 

@@ -15,6 +15,7 @@ import com.futo.music.ui.views.grid.ContentAlbumGridView
 import com.futo.music.ui.views.grid.ContentArtistGridView
 import com.futo.music.ui.views.grid.ContentPlaylistGridView
 import com.futo.music.ui.views.grid.ContentTrackGridView
+import com.futo.music.ui.views.grid.GridSettings
 import com.futo.music.ui.views.grid.IContentGridView
 
 class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?): RecyclerView.Adapter<ContentAdapter.ViewHolder>() {
@@ -93,8 +94,8 @@ class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?): 
         fun setSize(width: Int, height: Int) {
             view.setSize(width, height);
         }
-        fun setSettings(hideMetadata: Boolean = false) {
-            view.setSettings(hideMetadata);
+        fun setSettings(settings: GridSettings) {
+            view.setSettings(settings);
         }
     }
 }

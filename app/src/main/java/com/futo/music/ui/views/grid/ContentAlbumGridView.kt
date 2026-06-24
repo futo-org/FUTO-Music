@@ -128,7 +128,7 @@ class ContentAlbumGridView(viewGroup: ViewGroup) : IContentGridView {
         }
     }
 
-    override fun setSettings(hideMetadata: Boolean) {
-        this._hideMetadata = hideMetadata;
+    override fun setSettings(settings: GridSettings) {
+        this._hideMetadata = settings.hideMetadata;
     }
 }

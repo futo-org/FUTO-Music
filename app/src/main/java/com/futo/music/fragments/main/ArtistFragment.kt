@@ -96,7 +96,7 @@ class ArtistFragment: MainFragment() {
             header = PlayableHeader(context);
             emptyView = NoResultsView(context);
             gridAlbums = ContentGrid(context, false, 150.dp(resources), "")
-            gridAlbums.hideMetadata = true;
+            gridAlbums.gridSettings.hideMetadata = true;
             gridAlbums.onClick.subscribe {
                 it.openPlayable(fragment);
             }

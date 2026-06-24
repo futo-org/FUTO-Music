@@ -33,6 +33,10 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">40dp</item>
     </style>
+    <style name="roundedCorners_45dp" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">45dp</item>
+    </style>
     <style name="roundedCorners_50dp" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50dp</item>

@@ -2,6 +2,7 @@ package com.futo.music.states
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.widget.TabHost
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.futo.music.RootApplication
@@ -184,9 +185,17 @@ class StateDatabase(
     fun getAllTracks(): List<DBTrack> {
         return db.tracksDao().getAll();
     }
-    fun getTracks(ids: List<Long>): List<DBTrack> {
-        return db.tracksDao().getList(ids);
+    fun getTracks(ids: List<Long>, ordered: Boolean = true): List<DBTrack> {
+        if(ordered)
+            return db.tracksDao().getList(ids).sortedBy { ids.indexOf(it.id) };
+        else
+            return db.tracksDao().getList(ids);
     }
+
+    fun getMostPlayed(count: Int): List<DBTrack> {
+        return db.tracksDao().getMostPlayed(count);
+    }
+
 
     fun updatePlaylistMetadata(playlistId: Long) {
         //TODO: Optimize to query
@@ -222,6 +231,11 @@ class StateDatabase(
         return db.artistDao().setPlayed(DBArtistUpdatePlayed(artistId, OffsetDateTime.now()));
     }
     fun setPlayedTrack(trackId: Long, opened: Boolean = false) {
+        try {
+            db.tracksDao().incrementTrackPlayed(trackId);
+        } catch (ex: Throwable) {
+            Logger.e(TAG, "Failed to increment plays", ex);
+        }
         if(opened)
             return db.tracksDao().setOpened(DBTrackUpdateOpened(trackId, OffsetDateTime.now(), OffsetDateTime.now()));
         else

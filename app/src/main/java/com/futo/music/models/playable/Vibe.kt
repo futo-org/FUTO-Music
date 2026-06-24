@@ -17,16 +17,19 @@ class Vibe: IPlayable {
     val artist: List<DBArtist>;
     val singles: List<DBTrack>;
 
+    val vibeType: QueueType;
+
     override var score: Int = 0;
 
     override val datePlayed: OffsetDateTime? = null;
 
-    constructor(name: String, art: ImageVariable, albums: List<DBAlbum>, artists: List<DBArtist>, tracks: List<DBTrack>) {
+    constructor(name: String, art: ImageVariable, albums: List<DBAlbum>, artists: List<DBArtist>, tracks: List<DBTrack>, type: QueueType = QueueType.Unknown) {
         this.name = name;
         this.art = art;
         this.albums = albums;
         this.artist = artists;
         this.singles = tracks;
+        this.vibeType = type;
     }
 
 
@@ -40,4 +43,10 @@ class Vibe: IPlayable {
                 singles.map { it };
         return tracks;
     }
+}
+
+enum class QueueType {
+    Unknown,
+    SmartShuffle,
+    Shuffle
 }

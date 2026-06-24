@@ -17,6 +17,7 @@
         android:layout_marginRight="5dp"
         android:scaleType="centerCrop"
         app:shapeAppearanceOverlay="@style/roundedCorners_4dp"
+        app:strokeColor="@null"
         app:srcCompat="@drawable/unknown_music"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent" />
@@ -33,6 +34,20 @@
         android:textColor="@color/white"
         android:textSize="10dp"
         android:padding="3dp"
+        android:text="10"/>
+    <TextView
+        android:id="@+id/text_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background_round_35dp"
+        app:layout_constraintBottom_toBottomOf="@id/image_thumbnail"
+        app:layout_constraintRight_toRightOf="@id/image_thumbnail"
+        android:layout_marginRight="2dp"
+        android:layout_marginBottom="2dp"
+        android:textColor="@color/white"
+        android:textSize="10dp"
+        android:padding="3dp"
+        android:visibility="gone"
         android:text="10"/>
 
     <TextView

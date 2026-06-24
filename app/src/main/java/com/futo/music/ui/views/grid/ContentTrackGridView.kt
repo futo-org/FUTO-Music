@@ -30,6 +30,7 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
     val textName: TextView;
     val textMeta: TextView;
     val textCount: TextView;
+    val textTag: TextView;
 
     var playableItem: IPlayable? = null;
 
@@ -37,6 +38,7 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
     override val onLongClick = Event1<IPlayable>();
 
     private var _hideMetadata: Boolean = false;
+    private var _showPlays: Boolean = false;
 
     init {
         root = LayoutInflater.from(viewGroup.context).inflate(R.layout.grid_track, viewGroup, false) as ConstraintLayout;
@@ -44,6 +46,7 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
         textName = root.findViewById(R.id.text_name);
         textMeta = root.findViewById(R.id.text_metadata);
         textCount = root.findViewById(R.id.text_count);
+        textTag = root.findViewById(R.id.text_tag);
 
         root.setOnClickListener {
             playableItem?.let {
@@ -93,6 +96,18 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
 
         if(_hideMetadata)
             textMeta.isVisible = false;
+
+        if(_showPlays && playable is DBTrack) {
+            textTag.text = if(playable.plays == 1) "1 play" else "${playable.plays} plays";
+            textTag.isVisible = true;
+        }
+        else
+            textTag.isVisible = false;
+
+    }
+
+    fun showPlays(show: Boolean) {
+        _showPlays = show;
     }
 
     override fun setSize(width: Int, height: Int) {
@@ -108,7 +123,8 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
         }
     }
 
-    override fun setSettings(hideMetadata: Boolean) {
-        this._hideMetadata = hideMetadata;
+    override fun setSettings(settings: GridSettings) {
+        this._hideMetadata = settings.hideMetadata;
+        this._showPlays = settings.showPlays;
     }
 }

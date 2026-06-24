@@ -173,6 +173,14 @@
                     android:layout_marginTop="20dp"
                     app:ContentGrid_vertical="false" />
                 <com.futo.music.ui.views.containers.ContentGrid
+                    android:id="@+id/grid_most_played"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:ContentGrid_row_height="170dp"
+                    app:ContentGrid_text="Most Played"
+                    android:layout_marginTop="20dp"
+                    app:ContentGrid_vertical="false" />
+                <com.futo.music.ui.views.containers.ContentGrid
                     android:id="@+id/grid_songs_recent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -14,6 +14,7 @@ import com.futo.music.dp
 import com.futo.music.fragments.MainFragView
 import com.futo.music.fragments.top.NavigationTopBarFragment
 import com.futo.music.models.playable.IPlayable
+import com.futo.music.openPlayable
 import com.futo.music.states.StateDatabase
 import com.futo.music.ui.adapters.AnyAdapterView
 import com.futo.music.ui.adapters.AnyAdapterView.Companion.asAny
@@ -71,7 +72,9 @@ class RatingsListFragment: MainFragment() {
         init {
             recycler = findViewById(R.id.recycler);
             adapter = recycler.asAny(onCreate = {
-
+                it.onClick.subscribe { view, playable ->
+                    playable?.openPlayable(fragment, true);
+                }
             });
 
             val containerBefore = findViewById<LinearLayout>(R.id.container_before);

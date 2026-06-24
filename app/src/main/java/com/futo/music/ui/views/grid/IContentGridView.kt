@@ -13,5 +13,10 @@ interface IContentGridView {
     fun bind(playable: IPlayable);
 
     fun setSize(width: Int, height: Int);
-    fun setSettings(hideMetadata: Boolean = false);
+    fun setSettings(settings: GridSettings);
 }
+
+class GridSettings(
+    var hideMetadata: Boolean = false,
+    var showPlays: Boolean = false
+)

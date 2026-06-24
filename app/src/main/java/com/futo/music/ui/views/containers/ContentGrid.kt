@@ -16,6 +16,7 @@ import com.futo.music.dp
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.ui.adapters.ContentAdapter
 import com.futo.music.ui.buttons.RoundButton
+import com.futo.music.ui.views.grid.GridSettings
 import kotlin.math.floor
 
 class ContentGrid: ConstraintLayout {
@@ -34,7 +35,7 @@ class ContentGrid: ConstraintLayout {
     val onLongClick = Event1<IPlayable>();
     val onOutsideClick = Event0();
 
-    var hideMetadata: Boolean = false;
+    val gridSettings: GridSettings = GridSettings();
 
     constructor(context: Context, attrs: AttributeSet? = null): super(context, attrs) {
         val attrArr = context.obtainStyledAttributes(attrs, R.styleable.ContentGrid, 0, 0);
@@ -72,7 +73,7 @@ class ContentGrid: ConstraintLayout {
 
         adapter = ContentAdapter {
             it.setSize(rowHeight, rowHeight);
-            it.setSettings(hideMetadata);
+            it.setSettings(gridSettings);
             it.view.onClick.subscribe {
                 onClick.emit(it);
             }
@@ -116,7 +117,7 @@ class ContentGrid: ConstraintLayout {
 
         adapter = ContentAdapter {
             it.setSize(rowHeight, rowHeight);
-            it.setSettings(hideMetadata);
+            it.setSettings(gridSettings);
             it.view.onClick.subscribe {
                 onClick.emit(it);
             }

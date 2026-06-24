@@ -3,38 +3,32 @@ package com.futo.music.fragments.main
 import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.content.ComponentName
-import android.content.Context
+import android.app.Dialog
+import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
-import android.text.method.Touch
 import android.view.LayoutInflater
-import android.view.TouchDelegate
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
-import androidx.compose.ui.graphics.Color
-import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import androidx.media3.common.Timeline
-import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
 import androidx.media3.ui.PlayerControlView
 import androidx.media3.ui.TimeBar
-import com.bumptech.glide.Glide
-import com.bumptech.glide.TransitionOptions
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.futo.music.IPlayableWithPlaySettings
 import com.futo.music.R
 import com.futo.music.UIDialogs
-import com.futo.music.dp
 import com.futo.music.extensions.setAlbumArt
 import com.futo.music.extractBitmap
 import com.futo.music.fragments.MainFragView
@@ -42,7 +36,7 @@ import com.futo.music.gestures.OnSwipeTouchListener
 import com.futo.music.logic.PlayerManager
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
-import com.futo.music.models.playable.PlayableType
+import com.futo.music.models.playable.QueueType
 import com.futo.music.models.playable.Track
 import com.futo.music.services.PlaybackService
 import com.futo.music.states.DBPlayableType
@@ -53,11 +47,11 @@ import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
-import com.futo.music.ui.buttons.RatingButton
 import com.futo.music.ui.buttons.RatingsButton
+import com.futo.music.ui.views.StarButton
+import com.futo.music.ui.views.playback.PlayingInfoOverlay
 import com.futo.music.ui.views.playback.QueueOverlay
 import com.google.android.material.imageview.ShapeableImageView
-import com.google.common.util.concurrent.MoreExecutors
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -121,6 +115,9 @@ class PlaybackFragment: MainFragment() {
         private val _textArtist: TextView;
         private val _textAlbum: TextView;
 
+        private val _imageArtist: ImageView;
+        private val _imageAlbum: ImageView;
+
         private val _buttonBack: ImageButton;
         private val _buttonOptions: ImageButton;
 
@@ -131,10 +128,13 @@ class PlaybackFragment: MainFragment() {
         private val _buttonShuffle: ImageButton;
         private val _buttonRepeat: ImageButton;
 
-        private val _buttonStars: RatingButton;
+        private val _buttonInfo: ImageButton;
         private val _textRatingNote: TextView;
         private val _buttonQueue: ImageButton;
         private val _buttonPlaylistAdd: ImageButton;
+
+        private val _starAlbum: StarButton?;
+        private val _starArtist: StarButton?;
 
         private val _buttonsRating: RatingsButton;
 
@@ -182,6 +182,9 @@ class PlaybackFragment: MainFragment() {
             _textAlbum = findViewById(R.id.text_album);
             _textArtist = findViewById(R.id.text_artist);
 
+            _imageArtist = findViewById(R.id.image_artist);
+            _imageAlbum = findViewById(R.id.image_album);
+
             _buttonsRating = findViewById(R.id.buttons_rating);
             _textRatingNote = findViewById(R.id.text_rating_note);
 
@@ -197,7 +200,10 @@ class PlaybackFragment: MainFragment() {
             _buttonShuffle = findViewById(R.id.button_shuffle);
             _buttonRepeat = findViewById(R.id.button_loop);
 
-            _buttonStars = findViewById(R.id.button_stars);
+            _starArtist = findViewById(R.id.star_artist);
+            _starAlbum = findViewById(R.id.star_album);
+
+            _buttonInfo = findViewById(R.id.button_meta);
             _buttonQueue = findViewById(R.id.button_queue);
             _buttonPlaylistAdd = findViewById(R.id.button_add_playlist);
             _queueOverlay = findViewById(R.id.overlay_queue);
@@ -207,9 +213,18 @@ class PlaybackFragment: MainFragment() {
             }
 
             _buttonOptions.isVisible = false;
-            _buttonStars.isVisible = false;
 
             _buttonShuffle.setOnClickListener {
+
+                if(StateQueue.instance.queueType == QueueType.SmartShuffle) {
+                    UIDialogs.appToast("You are playing a smart shuffle, you cannot change this.")
+                    return@setOnClickListener;
+                }
+                if(StateQueue.instance.queueType == QueueType.Shuffle) {
+                    UIDialogs.appToast("You are playing a shuffle, you cannot change this.")
+                    return@setOnClickListener;
+                }
+
                 val player = frag?._player?.player ?: return@setOnClickListener;
                 player.shuffleModeEnabled = !player.shuffleModeEnabled;
                 setShuffleButtonState(player.shuffleModeEnabled);
@@ -263,9 +278,10 @@ class PlaybackFragment: MainFragment() {
                 }
             }
 
-            _buttonStars.onClick.subscribe {
+            _buttonInfo.setOnClickListener {
                 val trackNow = _trackCurrent;
                 if(trackNow != null) {
+                    /*
                     val queued = StateQueue.instance.getQueuePlayable();
 
                     fragment.lifecycleScope.launch(Dispatchers.IO) {
@@ -279,12 +295,13 @@ class PlaybackFragment: MainFragment() {
                                 fragment.lifecycleScope.launch(Dispatchers.IO) {
                                     val refetchTrack = StateDatabase.instance.getTrack(_trackCurrent?.id ?: return@launch) ?: return@launch;
                                     withContext(Dispatchers.Main) {
-                                        _buttonStars.setRating(refetchTrack.score)
+                                        //_buttonInfo.setRating(refetchTrack.score)
                                     }
                                 }
                             };
                         }
-                    }
+                    }*/
+                    showPlaying(trackNow);
                 }
             }
 
@@ -375,6 +392,10 @@ class PlaybackFragment: MainFragment() {
                 hideQueue();
                 return true;
             }
+            if(_isPlayingVisible) {
+                hidePlaying();
+                return true;
+            }
             return false;
         }
         private var _isQueueVisible = false;
@@ -410,6 +431,45 @@ class PlaybackFragment: MainFragment() {
 
             _isQueueVisible = false;
         }
+        private var _isPlayingVisible = false;
+        private var _lastPlayingDialog: Dialog? = null;
+        fun showPlaying(playable: IPlayable) {
+            if(playable !is DBTrack)
+                return;
+
+            UIDialogs.appToast("This UI is WIP");
+
+            val view = PlayingInfoOverlay(context);
+            view.onClose.subscribe {
+                hidePlaying();
+            }
+            view.setPlayable(playable);
+
+            val dialog = Dialog(context, android.R.style.Theme_Translucent_NoTitleBar);
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            dialog.setContentView(view);
+            dialog.window?.let {
+                it.setWindowAnimations(R.anim.fade_in);
+                it.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+                WindowCompat.setDecorFitsSystemWindows(it, true);
+                it.statusBarColor = Color.TRANSPARENT
+                it.navigationBarColor = Color.TRANSPARENT
+            }
+            dialog.setOnDismissListener {
+                _lastPlayingDialog = null;
+                _isPlayingVisible = false;
+            }
+            _lastPlayingDialog = dialog;
+            _isPlayingVisible = true;
+
+            dialog.show();
+        }
+        fun hidePlaying() {
+            _lastPlayingDialog?.hide();
+            _lastPlayingDialog = null;
+            _isPlayingVisible = false;
+        }
+
 
         fun setCurrentTrack(id: Long) {
             fragment.lifecycleScope.launch(Dispatchers.IO) {
@@ -417,14 +477,36 @@ class PlaybackFragment: MainFragment() {
                 _trackCurrent = track;
 
                 withContext(Dispatchers.Main) {
-                    _buttonStars.setRating(track?.score ?: 0);
+                    //_buttonInfo.setRating(track?.score ?: 0);
                     _buttonsRating.setRatingsFor(track) { newRating, ghost, type ->
-                        _buttonStars.setRating(newRating);
+                        //_buttonInfo.setRating(newRating);
                         setRatingFrom(type);
                     }
+
                     if(track != null)
                         setTrackMetadata(track);
                     _queueOverlay.setCurrentTrack(track);
+                }
+
+                val artist = track?.artistId?.let {
+                    StateDatabase.instance.getArtist(track.artistId);
+                }
+                val album = track?.mediaStoreAlbumId?.let {
+                    StateDatabase.instance.getAlbumByMSID(track.mediaStoreAlbumId);
+                }
+                withContext(Dispatchers.Main) {
+                    if(artist?.score != null) {
+                        _starArtist?.setRating(artist.score);
+                        _starArtist?.isVisible = true;
+                    }
+                    else
+                        _starArtist?.isVisible = false;
+                    if(album?.score != null) {
+                        _starAlbum?.setRating(album.score);
+                        _starAlbum?.isVisible = true;
+                    }
+                    else
+                        _starAlbum?.isVisible = false;
                 }
             }
         }
@@ -479,6 +561,9 @@ class PlaybackFragment: MainFragment() {
                     _textArtist.text = (track?.artistLine ?: mediaMetadata.artist);
                     _textAlbum.text = (track?.albumLine ?: mediaMetadata.albumTitle);
 
+                    _imageArtist.isVisible = !_textArtist.text.isEmpty();
+                    _imageAlbum.isVisible = !_textAlbum.text.isEmpty();
+
                 }
                 catch(ex: Throwable) {
 
@@ -489,6 +574,9 @@ class PlaybackFragment: MainFragment() {
             _textTitle.text = track.name;
             _textArtist.text = track.artistLine;
             _textAlbum.text = track.albumLine;
+
+            _imageArtist.isVisible = !_textArtist.text.isEmpty();
+            _imageAlbum.isVisible = !_textAlbum.text.isEmpty();
 
             setRatingFrom(DBPlayableType.ofValue(track.scoreLevel));
         }
@@ -511,12 +599,18 @@ class PlaybackFragment: MainFragment() {
                 _buttonRepeat.setImageResource(R.drawable.ic_repeat_one_active);
         }
         fun setShuffleButtonState(shuffling: Boolean) {
-            _buttonShuffle.setImageResource(
-                if(shuffling)
-                    R.drawable.ic_shuffle_active
-                else
-                    R.drawable.ic_shuffle
-            )
+            when(StateQueue.instance.queueType) {
+                QueueType.Shuffle -> _buttonShuffle.setImageResource(R.drawable.ic_shuffle_active);
+                QueueType.SmartShuffle -> _buttonShuffle.setImageResource(R.drawable.ic_imagine_active);
+                else -> {
+                    _buttonShuffle.setImageResource(
+                        if(shuffling)
+                            R.drawable.ic_shuffle_active
+                        else
+                            R.drawable.ic_shuffle
+                    )
+                }
+            }
         }
         fun setPlayButtonState(isPlaying: Boolean) {
             if(isPlaying)
@@ -578,6 +672,9 @@ class PlaybackFragment: MainFragment() {
 
                         }
                     }
+                    fragment.lifecycleScope.launch(Dispatchers.Main) {
+                        setShuffleButtonState(player?.shuffleModeEnabled ?: return@launch);
+                    }
                 });
                 if(parameter is Track) {
                     _buttonsRating.setRatingsFor(null);
@@ -599,6 +696,10 @@ class PlaybackFragment: MainFragment() {
                             UIDialogs.appToast("No tracks in this collection");
 
                         }
+                    }
+                    fragment.lifecycleScope.launch(Dispatchers.Main) {
+                        val player = fragment._player?.player;
+                        setShuffleButtonState(player?.shuffleModeEnabled ?: return@launch);
                     }
                 }, parameter.playSettings.index);
             }
