@@ -2,6 +2,9 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
+    android:background="@drawable/background_darken_round_4dp_22"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
@@ -25,10 +28,10 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@id/image_star"
-        app:layout_constraintDimensionRatio="1"
         android:alpha="0.6"
         android:textAlignment="center"
-        android:layout_marginRight="-5dp"
+        android:layout_marginRight="2dp"
+        android:paddingLeft="2dp"
         android:autoSizeTextType="uniform"
         android:textColor="@color/white"
         android:fontFamily="@font/inter_semibold" />

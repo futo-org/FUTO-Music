@@ -185,7 +185,8 @@
             android:textSize="23sp" />
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp">
             <ImageView
                 android:id="@+id/image_artist"
                 android:layout_width="0dp"
@@ -221,10 +222,11 @@
                 app:layout_constraintTop_toTopOf="@id/text_artist"
                 app:layout_constraintBottom_toBottomOf="@id/text_artist"
                 app:layout_constraintRight_toRightOf="parent"
-                android:layout_marginTop="-2dp"
-                android:layout_marginBottom="-2dp" />
+                android:layout_marginTop="0dp"
+                android:layout_marginBottom="0dp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_marginTop="2dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <ImageView
@@ -261,8 +263,6 @@
                 android:layout_height="0dp"
                 app:layout_constraintTop_toTopOf="@id/text_album"
                 app:layout_constraintBottom_toBottomOf="@id/text_album"
-                android:layout_marginTop="-2dp"
-                android:layout_marginBottom="-2dp"
                 app:layout_constraintRight_toRightOf="parent"  />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
