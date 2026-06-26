@@ -120,26 +120,54 @@
                 android:text="Extra" />
         </LinearLayout>
         <LinearLayout
-            android:id="@+id/button_action"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:background="@drawable/background_button_primary"
-            android:clickable="true">
-
-            <TextView
-                android:id="@+id/button_action_text"
+            android:gravity="center">
+            <LinearLayout
+                android:id="@+id/button_action"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Action"
-                android:textSize="14dp"
-                android:textColor="@color/white"
-                android:fontFamily="@font/inter_regular"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:paddingStart="28dp"
-                android:paddingEnd="28dp" />
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:background="@drawable/background_button_primary"
+                android:clickable="true">
+
+                <TextView
+                    android:id="@+id/button_action_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Action"
+                    android:textSize="14dp"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/inter_regular"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:paddingStart="28dp"
+                    android:paddingEnd="28dp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/button_action2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:background="@drawable/background_button_accent"
+                android:visibility="gone"
+                android:clickable="true">
+
+                <TextView
+                    android:id="@+id/button_action_text2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Action"
+                    android:textSize="14dp"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/inter_regular"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:paddingStart="28dp"
+                    android:paddingEnd="28dp" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 

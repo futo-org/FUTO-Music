@@ -411,7 +411,7 @@ class MainActivity : AppCompatActivity() {
 
         if(true) //TODO: !IS_PLAYSTORE
         {
-            _updater = Updater(Constants.URL_APK, Constants.URL_VERSION, File(this.filesDir, Constants.FILE_UPDATING));
+            _updater = Updater(Constants.URL_APK, Constants.URL_VERSION, Constants.URL_CHANGELOG, File(this.filesDir, Constants.FILE_UPDATING));
             checkForUpdate(false);
         }
 
@@ -506,6 +506,7 @@ class MainActivity : AppCompatActivity() {
                 val updateVersion = _updater?.hasUpdate(BuildConfig.VERSION_CODE);
                 if (updateVersion != null) {
                     if(!skipDownloadQuery) {
+                        val changelog = _updater?.getChangelog(updateVersion);
                         StateAnnouncement.instance.registerAnnouncement(
                             "update_download_" + UUID.randomUUID().toString(),
                             "New update available (v${updateVersion})",
@@ -515,7 +516,14 @@ class MainActivity : AppCompatActivity() {
                             action = {
                                 StateAnnouncement.instance.deleteAnnouncement(it.id);
                                 downloadUpdate(updateVersion);
-                            });
+                            },
+                            actionButton2 = if(changelog != null) "Changelog" else null,
+                            action2 = if(changelog != null)  {{
+                                UIDialogs.showDialog(this@MainActivity, R.mipmap.ic_launcher, "Changelog (v${updateVersion})",
+                                    "Below the changes added in v${updateVersion}.",
+                                    changelog,
+                                    0, UIDialogs.Action("Ok", {}, ActionStyle.PRIMARY))
+                            }} else null);
                     }
                     else
                         downloadUpdate(updateVersion);

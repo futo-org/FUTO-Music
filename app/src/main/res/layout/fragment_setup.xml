@@ -7,33 +7,38 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="40dp">
+        android:background="@drawable/background_glow"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/logo"
+            android:src="@mipmap/ic_launcher"
+            app:shapeAppearance="@style/roundedCorners_70dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="20dp"
             />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Welcome to FMusic"
+            android:text="Welcome to FUTO Music"
             android:fontFamily="@font/inter_medium"
             android:textColor="@color/white"
             android:gravity="center"
-            android:textSize="30sp"
+            android:textSize="25sp"
             />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
-            android:text="Please accept the required permissions.\nFMusic needs local access to your on-device music."
+            android:text="Please accept the required permissions.\nFUTO Music needs local access to your on-device music."
             android:gravity="center"
+            android:layout_margin="10dp"
+            android:fontFamily="@font/inter_light"
             android:autoSizeTextType="uniform"
             />
 
@@ -42,9 +47,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
-            android:layout_marginTop="10dp"
+            android:layout_margin="10dp"
             android:textColor="@color/pastel_red"
-            android:text="Permissions were denied.\nFMusic is requires access to your music for playback."
+            android:fontFamily="@font/inter_light"
+            android:text="Permissions were denied.\nFUTO Music is requires access to your music for playback."
             android:gravity="center"
             android:autoSizeTextType="uniform"
             />

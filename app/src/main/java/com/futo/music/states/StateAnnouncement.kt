@@ -76,11 +76,14 @@ class StateAnnouncement {
         Logger.i(TAG, "Finished loading announcements")
     }
 
-    fun registerAnnouncement(id: String?, title: String, msg: String, announceType: AnnouncementType = AnnouncementType.SESSION, time: OffsetDateTime? = null, category: String? = null, icon: ImageVariable? = null, actionButton: String, action: ((announcement: Announcement)->Unit)) {
+    fun registerAnnouncement(id: String?, title: String, msg: String, announceType: AnnouncementType = AnnouncementType.SESSION, time: OffsetDateTime? = null, category: String? = null, icon: ImageVariable? = null, actionButton: String, action: ((announcement: Announcement)->Unit), actionButton2: String? = null, action2: ((announcement: Announcement)->Unit)? = null) {
         synchronized(_lock) {
             val idActual = id ?: UUID.randomUUID().toString();
-            val announcement = SessionAnnouncement(idActual, title, msg, announceType, time, category,actionButton, idActual, icon = icon);
+            val idActual2 = if(actionButton2 != null && action2 != null) UUID.randomUUID().toString() else null;
+            val announcement = SessionAnnouncement(idActual, title, msg, announceType, time, category,actionButton, idActual, icon = icon, actionName2 = actionButton2, actionId2 = idActual2);
             _sessionActions[idActual] = action;
+            if(idActual2 != null && action2 != null)
+                _sessionActions[idActual2] = action2;
             registerAnnouncementSession(announcement);
         }
     }
@@ -265,6 +268,13 @@ class StateAnnouncement {
         if(item != null)
             actionAnnouncement(item, extra);
     }
+    fun actionIdAnnouncement(announcement: Announcement, id: String?) {
+        if(id == null)
+            return;
+        val item = _sessionActions[id] ?: return;
+        if(item != null)
+            item.invoke(announcement);
+    }
     fun actionAnnouncement(item: Announcement, extra: Boolean = false) {
         val actionId = if(!extra) item.actionId else if(item is SessionAnnouncement) item.extraActionId else null;
         val actionData = if(!extra) item.actionData else if(item is SessionAnnouncement) item.extraActionData else null;
@@ -347,7 +357,9 @@ class SessionAnnouncement(
     val cancelName: String? = null,
     val cancelActionId: String? = null,
     actionData: String? = null,
-    val icon: ImageVariable? = null
+    val icon: ImageVariable? = null,
+    val actionName2: String? = null,
+    val actionId2: String? = null
 ): Announcement(
     id= id,
     title = title,

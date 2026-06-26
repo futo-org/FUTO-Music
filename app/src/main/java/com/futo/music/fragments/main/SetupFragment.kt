@@ -67,12 +67,15 @@ class SetupFragment: MainFragment() {
             buttonNext.setOnClickListener {
                 fragment.activity?.let {
                     if(it is MainActivity) {
+
+                        fragment.navigate<HomeFragment>();
+                        /*
                         it.requestPermissionAudio {
                             if(it)
                                 fragment.navigate<HomeFragment>();
                             else
                                 updateState();
-                        };
+                        };*/
                     }
                 }
             }
@@ -86,7 +89,7 @@ class SetupFragment: MainFragment() {
                         if(it)
                             fragment.navigate<HomeFragment>();
                         else {
-                            UIDialogs.appToast("Permissions were denied. ");
+                            UIDialogs.appToast("Permissions were denied.\nPlease allow them in app-permissions.");
                             buttonNext.isVisible = true;
                             textDenied.isVisible = true;
                             buttonNext.text = "Continue without Permissions";

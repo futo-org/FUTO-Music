@@ -101,7 +101,9 @@ class NotificationOverlayView: ConstraintLayout {
         protected val _buttonIgnore: ImageView
         protected val _buttonNever: LinearLayout
         protected val _buttonAction: LinearLayout
+        protected val _buttonAction2: LinearLayout
         protected val _buttonActionText: TextView
+        protected val _buttonActionText2: TextView
         protected val _buttonExtra: LinearLayout
         protected val _buttonExtraText: TextView
         protected val _loader: LoaderView;
@@ -113,7 +115,9 @@ class NotificationOverlayView: ConstraintLayout {
             _buttonIgnore = _view.findViewById(R.id.button_ignore);
             _buttonNever = _view.findViewById(R.id.button_never);
             _buttonAction = _view.findViewById(R.id.button_action);
+            _buttonAction2 = _view.findViewById(R.id.button_action2);
             _buttonActionText = _view.findViewById(R.id.button_action_text);
+            _buttonActionText2 = _view.findViewById(R.id.button_action_text2);
             _buttonExtra = _view.findViewById(R.id.button_extra);
             _buttonExtraText = _view.findViewById(R.id.button_extra_text);
             _icon = _view.findViewById(R.id.icon);
@@ -138,6 +142,12 @@ class NotificationOverlayView: ConstraintLayout {
             _buttonAction.setOnClickListener {
                 _announcement.let {
                     StateAnnouncement.instance.actionAnnouncement(it?.id);
+                }
+            }
+            _buttonAction2.setOnClickListener {
+                _announcement?.let {
+                    if(it is SessionAnnouncement && it.actionId2 != null)
+                        StateAnnouncement.instance.actionIdAnnouncement(it, it.actionId2);
                 }
             }
         }
@@ -224,8 +234,16 @@ class NotificationOverlayView: ConstraintLayout {
                     VISIBLE;
                 else GONE;
 
+            _buttonAction2.visibility =
+                if(value is SessionAnnouncement && value.actionId2 != null && value.actionName2 != null)
+                    VISIBLE;
+                else GONE;
+
             if(value.actionId != null && value.actionName != null) {
                 _buttonActionText.text = value.actionName;
+            }
+            if(value is SessionAnnouncement && value.actionId2 != null && value.actionName2 != null) {
+                _buttonActionText2.text = value.actionName2;
             }
         }
 

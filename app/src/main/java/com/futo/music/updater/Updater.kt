@@ -33,15 +33,18 @@ class Updater {
     val apkUrl: String;
     val versionUrl: String;
 
+    val changelogUrl: String?;
+
     private val _file: File;
     private var _hasDownload = false;
     private var _downloadVersion = -1;
 
     private val _client = ManagedHttpClient();
 
-    constructor(apkUrl: String, versionUrl: String, updateFile: File) {
+    constructor(apkUrl: String, versionUrl: String, changelogUrl: String?, updateFile: File) {
         this.apkUrl = apkUrl;
         this.versionUrl = versionUrl;
+        this.changelogUrl = changelogUrl;
         _file = updateFile;
     }
 
@@ -57,6 +60,14 @@ class Updater {
         val respStr = result.body?.string()?.trim();
         val version = respStr?.toIntOrNull();
         return version;
+    }
+
+    fun getChangelog(version: Int): String? {
+        if(changelogUrl.isNullOrEmpty())
+            return null;
+        val result = _client.get(changelogUrl.replace("_VERSION_", version.toString()), mutableMapOf());
+        val respStr = result.body?.string()?.trim();
+        return respStr;
     }
 
     fun download(onProgress: (Long, Long, Double)->Unit) {
