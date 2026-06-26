@@ -17,6 +17,7 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
@@ -110,6 +111,8 @@ class PlaybackFragment: MainFragment() {
 
     class FragView(frag: PlaybackFragment, inflater: LayoutInflater): MainFragView<PlaybackFragment>(frag, inflater, R.layout.fragment_player) {
 
+        private val _root: ConstraintLayout?;
+
         private val _imageArt: ShapeableImageView;
         private val _textTitle: TextView;
         private val _textArtist: TextView;
@@ -176,6 +179,8 @@ class PlaybackFragment: MainFragment() {
         }
 
         init {
+            _root = findViewById(R.id.root);
+
             _imageArt = findViewById(R.id.image_art);
 
             _textTitle = findViewById(R.id.text_title);
@@ -445,29 +450,34 @@ class PlaybackFragment: MainFragment() {
             }
             view.setPlayable(playable);
 
-            val dialog = Dialog(context, android.R.style.Theme_Translucent_NoTitleBar);
-            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            val dialog = Dialog(context);
+            //dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
             dialog.setContentView(view);
             dialog.window?.let {
                 it.setWindowAnimations(R.anim.fade_in);
                 it.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
-                WindowCompat.setDecorFitsSystemWindows(it, true);
+                it.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                it.setBackgroundDrawableResource(android.R.color.transparent);
+                //WindowCompat.setDecorFitsSystemWindows(it, true);
                 it.statusBarColor = Color.TRANSPARENT
                 it.navigationBarColor = Color.TRANSPARENT
             }
             dialog.setOnDismissListener {
                 _lastPlayingDialog = null;
                 _isPlayingVisible = false;
+                _root?.alpha = 1f;
             }
             _lastPlayingDialog = dialog;
             _isPlayingVisible = true;
 
+            _root?.alpha = 0f;
             dialog.show();
         }
         fun hidePlaying() {
             _lastPlayingDialog?.hide();
             _lastPlayingDialog = null;
             _isPlayingVisible = false;
+            _root?.alpha = 1f;
         }
 
 
