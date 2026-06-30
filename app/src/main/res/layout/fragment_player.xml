@@ -123,6 +123,7 @@
         android:layout_height="50dp"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
+        app:RatingsButton_swipe="true"
         app:layout_constraintLeft_toRightOf="@id/container_trait_left"
         app:layout_constraintRight_toLeftOf="@id/container_trait_right"
         app:layout_constraintTop_toTopOf="@id/container_trait_left"

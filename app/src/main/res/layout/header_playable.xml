@@ -80,6 +80,7 @@
         app:layout_constraintTop_toBottomOf="@id/text_metadata"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:RatingsButton_swipe="true"
         android:layout_marginBottom="5dp"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="80dp"

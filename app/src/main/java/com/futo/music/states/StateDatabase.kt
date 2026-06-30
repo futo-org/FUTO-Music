@@ -171,12 +171,12 @@ class StateDatabase(
         return db.tracksDao().getTracksNew(count);
     }
 
-    fun getTracksUnrated(count: Int): List<DBTrack> {
-        val ids = db.tracksDao().getTracksUnratedIds(count);
+    fun getTracksUnrated(count: Int, markedRated: Boolean = false): List<DBTrack> {
+        val ids = db.tracksDao().getTracksUnratedIds(count, markedRated);
         return getTracks(ids);
     }
-    fun getTracksNewUnrated(count: Int): List<DBTrack> {
-        return db.tracksDao().getTracksNewUnrated(count);
+    fun getTracksNewUnrated(count: Int, markedRated: Boolean = false): List<DBTrack> {
+        return db.tracksDao().getTracksNewUnrated(count, markedRated);
     }
 
     fun getTrackCount(): Int {

@@ -37,15 +37,16 @@ class Settings : FragmentedStorageFileJson() {
     @Serializable
     class GeneralSettings {
 
-        @Setting("Queue Entire Collections", "When tapping specific track in collection, queue entire collection instead of just one track", order = 1)
+        //@Setting("Queue Entire Collections", "When tapping specific track in collection, queue entire collection instead of just one track", order = 1)
         public var queueEntireCollection = true;
 
-        @Setting("Options When Queue Exists", "When you already have a queue or are playing media, when tapping a song it will show options instead of playing that song directly to avoid clearing your queue.", order = 2)
+        //@Setting("Options When Queue Exists", "When you already have a queue or are playing media, when tapping a song it will show options instead of playing that song directly to avoid clearing your queue.", order = 2)
         public var overlayWhenPlaying = true;
 
     }
-    @SettingsGroup("General")
+    //@SettingsGroup("General")
     var general = GeneralSettings();
+
 
 
 

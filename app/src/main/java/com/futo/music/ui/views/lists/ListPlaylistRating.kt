@@ -38,7 +38,6 @@ class ListPlaylistRating: ConstraintLayout {
         _button = findViewById(R.id.button);
         _rating = findViewById(R.id.ratings);
         _rating.hideGhost();
-        _rating.disableSwipe();
 
         _button.setOnClickListener {
             _playlist?.let {

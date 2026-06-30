@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.collection.emptyLongSet
@@ -26,15 +28,19 @@ import com.futo.music.setHeaderScrollFade
 import com.futo.music.showAnimated
 import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.DBAlbum
+import com.futo.music.storage.db.DBSetShuffleCombined
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.AnyInsertedAdapterView
 import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
 import com.futo.music.ui.adapters.TrackAnyViewHolder
+import com.futo.music.ui.buttons.ListButton
 import com.futo.music.ui.buttons.RatingButton
 import com.futo.music.ui.buttons.StandardButton
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.PlayableHeader
+import com.futo.music.ui.views.containers.SettingsToggleView
 import com.futo.music.withSettings
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -83,6 +89,7 @@ class AlbumFragment: MainFragment() {
 
         var containerTop: ConstraintLayout;
         val buttonBack: ImageButton;
+        val buttonOptions: ImageButton;
 
         private val _containerButtons: LinearLayout;
         //private val _buttonPlayAll: StandardButton;
@@ -100,6 +107,7 @@ class AlbumFragment: MainFragment() {
 
             containerTop = findViewById(R.id.container_top);
             buttonBack = findViewById(R.id.button_back);
+            buttonOptions = findViewById(R.id.button_options);
             _containerButtons = findViewById(R.id.container_buttons);
             //_buttonPlayAll = findViewById(R.id.button_play_all);
             //_buttonShuffleAll = findViewById(R.id.button_shuffle_all)
@@ -154,6 +162,36 @@ class AlbumFragment: MainFragment() {
             }
             buttonBack.setOnClickListener {
                 fragment.closeSegment();
+            }
+
+            buttonOptions.setOnClickListener {
+                fragment.lifecycleScope.launch(Dispatchers.IO) {
+                    val currentAlbum = StateDatabase.instance.getAlbum(albumCurrent?.id ?: return@launch)
+
+                    withContext(Dispatchers.Main) {
+                        var dialog: BottomSheetDialog? = null;
+                        dialog = UIDialogs.showSheet(context, LinearLayout(context).apply {
+                            this.orientation = LinearLayout.VERTICAL;
+                            this.addView(SettingsToggleView(context).apply {
+                                this.setLabel("Shuffle Combined", "Play all songs in sequence if smart shuffle selects this track.");
+                                this.setValue(currentAlbum?.shuffleCombined ?: false);
+                                this.onValueChanged.subscribe { value ->
+                                    currentAlbum?.let {
+                                        fragment.lifecycleScope.launch(Dispatchers.IO) {
+                                            StateDatabase.instance.db.albumDao().setShuffleCombined(DBSetShuffleCombined(it.id, value as Boolean));
+                                        }
+                                    }
+                                }
+                                this.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                                    val dp5 = 5.dp(resources);
+                                    this.setMargins(dp5, dp5, dp5, dp5);
+                                }
+                            })
+                        }, {
+
+                        }, true)
+                    }
+                }
             }
         }
 

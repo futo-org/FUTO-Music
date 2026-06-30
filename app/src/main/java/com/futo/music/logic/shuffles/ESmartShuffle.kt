@@ -3,6 +3,7 @@ package com.futo.music.logic.shuffles
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.states.DBPlayableType
 import com.futo.music.states.StateDatabase
+import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.ScoredItem
 
@@ -23,6 +24,7 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
         val artistCache = HashMap<Long, MutableList<Long>>();
         val playlistCache = HashMap<Long, MutableList<Long>>();
         val playlistDetailsCache = HashMap<Long, DBPlaylist?>();
+        val albumDetailsCache = HashMap<Long, DBAlbum?>();
 
         while(tracks.size < count && !scores.scores.all { it.value.isEmpty() }){
             val hasStar1 = scores.scores[starToScore(1)]?.any() ?: false;
@@ -59,12 +61,22 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
                         albumCache[option.id] = list;
                         list;
                     }
-                    val selectTrackIndex = random.nextInt(tracks.size);
-                    val trackId = tracks[selectTrackIndex];
-                    tracks.remove(trackId);
-                    if(tracks.size == 0)
-                        options.remove(option); //Remove the album from the possible options if no tracks remain
-                    listOf(trackId);
+                    val album = albumDetailsCache.getOrDefault(option.id, null) ?: StateDatabase.instance.getAlbum(option.id).let {
+                        albumDetailsCache[option.id] = it;
+                        it;
+                    }
+                    if(album?.shuffleCombined ?: false) {
+                        options.remove(option);
+                        tracks;
+                    }
+                    else {
+                        val selectTrackIndex = random.nextInt(tracks.size);
+                        val trackId = tracks[selectTrackIndex];
+                        tracks.remove(trackId);
+                        if (tracks.size == 0)
+                            options.remove(option); //Remove the album from the possible options if no tracks remain
+                        listOf(trackId);
+                    }
                 }
                 DBPlayableType.Artist -> {
                     val tracks = artistCache.getOrDefault(option.id, null) ?: StateDatabase.instance.getArtistTrackIds(option.id).let {

@@ -40,7 +40,10 @@ class DBAlbum(
     val mediaStoreArtistId: Long = -1,
 
     @ColumnInfo(defaultValue = "FALSE")
-    val hidden: Boolean = false
+    val hidden: Boolean = false,
+
+    @ColumnInfo(defaultValue = "FALSE")
+    var shuffleCombined: Boolean = false
 ): IPlayable {
     override val type: PlayableType get() = PlayableType.Album;
 
@@ -147,6 +150,9 @@ interface DBAlbumDao {
 
     @Update(entity = DBAlbum::class)
     fun setTrackMetadata(update: DBAlbumUpdateTrackMetadata)
+
+    @Update(entity = DBAlbum::class)
+    fun setShuffleCombined(track: DBSetShuffleCombined);
 }
 
 @Entity

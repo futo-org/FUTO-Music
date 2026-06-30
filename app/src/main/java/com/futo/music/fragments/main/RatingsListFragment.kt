@@ -85,13 +85,8 @@ class RatingsListFragment: MainFragment() {
             buttonsContainer.orientation = LinearLayout.HORIZONTAL;
             buttonsContainer.gravity = Gravity.CENTER;
 
-            pillRandom = PillButton(context, null)
-                .withText("Random")
-                .withIcon(R.drawable.ic_shuffle_white);
-            pillRandom.onClick.subscribe {
-                loadRandom();
-            }
-            buttonsContainer.addView(pillRandom);
+
+            val dp10 = 10.dp(resources);
 
             pillRecent = PillButton(context, null)
                 .withText("Recent")
@@ -99,21 +94,28 @@ class RatingsListFragment: MainFragment() {
             pillRecent.onClick.subscribe {
                 loadRecent();
             }
-            val dp10 = 10.dp(resources);
-            pillRecent.layoutParams = LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+            buttonsContainer.addView(pillRecent);
+
+            pillRandom = PillButton(context, null)
+                .withText("Random")
+                .withIcon(R.drawable.ic_shuffle_white);
+            pillRandom.onClick.subscribe {
+                loadRandom();
+            }
+            pillRandom.layoutParams = LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
                 this.setMargins(dp10, 0, 0, 0);
             }
-            buttonsContainer.addView(pillRecent);
+            buttonsContainer.addView(pillRandom);
 
             containerBefore.addView(buttonsContainer);
 
-            allPills.add(pillRandom);
             allPills.add(pillRecent);
+            allPills.add(pillRandom);
         }
 
 
         fun onShown(parameter: Any? = null) {
-            loadRandom();
+            loadRecent();
         }
 
         fun loadRandom() {

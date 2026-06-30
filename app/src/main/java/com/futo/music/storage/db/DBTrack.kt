@@ -70,7 +70,10 @@ class DBTrack(
     val mediaStoreAlbumId: Long = -1,
 
     @ColumnInfo(defaultValue = "FALSE")
-    var hidden: Boolean = false
+    var hidden: Boolean = false,
+
+    @ColumnInfo(defaultValue = "FALSE")
+    var markedRated: Boolean = false
 ): IPlayable, IPlayableTrack {
     override val type: PlayableType get() = PlayableType.Track;
 
@@ -193,10 +196,10 @@ interface DBTrackDao {
 
     @Query("SELECT * FROM tracks WHERE hidden != 1 ORDER BY dateAdded DESC LIMIT :count")
     fun getTracksNew(count: Int): List<DBTrack>
-    @Query("SELECT * FROM tracks WHERE hidden != 1 AND score <= 0 ORDER BY dateAdded DESC LIMIT :count")
-    fun getTracksNewUnrated(count: Int): List<DBTrack>
-    @Query("SELECT id FROM tracks WHERE hidden != 1 AND score <= 0 ORDER BY RANDOM() DESC LIMIT :count")
-    fun getTracksUnratedIds(count: Int): List<Long>
+    @Query("SELECT * FROM tracks WHERE hidden != 1 AND score <= 0 AND markedRated = :markedRated ORDER BY dateAdded DESC LIMIT :count")
+    fun getTracksNewUnrated(count: Int, markedRated: Boolean = false): List<DBTrack>
+    @Query("SELECT id FROM tracks WHERE hidden != 1 AND score <= 0 AND markedRated = :markedRated ORDER BY RANDOM() DESC LIMIT :count")
+    fun getTracksUnratedIds(count: Int, markedRated: Boolean = false): List<Long>
 
     @Query("SELECT * FROM tracks WHERE hidden != 1 AND plays > 0 ORDER BY plays DESC LIMIT :count")
     fun getMostPlayed(count: Int): List<DBTrack>
@@ -236,12 +239,20 @@ interface DBTrackDao {
 
     @Update(entity = DBTrack::class)
     fun setRatingCalculated(update: DBTrackUpdateRatingCalculated): Int
+
+    @Update(entity = DBTrack::class)
+    fun setMarkedRated(update: DBSetMarkRated): Int
 }
 
 @Entity
 class DBTrackUpdatePlayed(
     val id: Long,
     val datePlayed: OffsetDateTime
+)
+@Entity
+class DBSetMarkRated(
+    val id: Long,
+    val markedRated: Boolean
 )
 @Entity
 class DBTrackUpdateOpened(

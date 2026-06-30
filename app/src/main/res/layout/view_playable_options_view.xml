@@ -65,6 +65,7 @@
         android:id="@+id/ratings"
         android:layout_width="match_parent"
         android:layout_height="50dp"
+        app:RatingsButton_swipe="true"
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"

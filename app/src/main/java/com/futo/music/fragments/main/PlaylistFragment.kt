@@ -25,7 +25,7 @@ import com.futo.music.openPlayable
 import com.futo.music.setHeaderScrollFade
 import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.DBPlaylist
-import com.futo.music.storage.db.DBPlaylistUpdateShuffleCombined
+import com.futo.music.storage.db.DBSetShuffleCombined
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.AnyInsertedAdapterView
 import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
@@ -193,7 +193,7 @@ class PlaylistFragment: MainFragment() {
                         this.onValueChanged.subscribe { value ->
                             playlistCurrent?.let {
                                 fragment.lifecycleScope.launch(Dispatchers.IO) {
-                                    StateDatabase.instance.db.playlistDao().setShuffleCombined(DBPlaylistUpdateShuffleCombined(it.id, value as Boolean));
+                                    StateDatabase.instance.db.playlistDao().setShuffleCombined(DBSetShuffleCombined(it.id, value as Boolean));
                                 }
                             }
                         }

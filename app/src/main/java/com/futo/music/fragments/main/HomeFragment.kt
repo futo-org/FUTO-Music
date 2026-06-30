@@ -241,8 +241,12 @@ class HomeFragment: MainFragment() {
                 it.openPlayable(fragment);
             }
             gridMostPlayed.setButtonListener {
-                val mostPlayed = StateDatabase.instance.getMostPlayed(20);
-                fragment.navigate<ContentsFragment>(Pair("Most Played", mostPlayed));
+                fragment.lifecycleScope.launch(Dispatchers.IO) {
+                    val mostPlayed = StateDatabase.instance.getMostPlayed(20);
+                    withContext(Dispatchers.Main) {
+                        fragment.navigate<ContentsFragment>(Pair("Most Played", mostPlayed));
+                    }
+                }
             }
 
             gridArtists.onClick.subscribe {

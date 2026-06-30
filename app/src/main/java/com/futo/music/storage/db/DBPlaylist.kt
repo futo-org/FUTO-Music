@@ -143,7 +143,7 @@ interface DBPlaylistDao {
     fun setPlaylistOrder(track: DBPlaylistTrack);
 
     @Update(entity = DBPlaylist::class)
-    fun setShuffleCombined(track: DBPlaylistUpdateShuffleCombined);
+    fun setShuffleCombined(track: DBSetShuffleCombined);
 }
 @Entity
 class DBPlaylistUpdatePlayed(
@@ -156,7 +156,7 @@ class DBPlaylistUpdateRating(
     val score: Int
 )
 @Entity
-class DBPlaylistUpdateShuffleCombined(
+class DBSetShuffleCombined(
     val id: Long,
     val shuffleCombined: Boolean
 )

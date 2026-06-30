@@ -40,15 +40,12 @@ class RatingsButton: ConstraintLayout {
         private set(v: Int) { field = v }
 
     private var _disableSwipe: Boolean = false;
-    private var _hideGhost: Boolean = false;
+    private var _hideGhost: Boolean = true;
     fun hideGhost() {
         _hideGhost = true;
     }
-
-
-    fun disableSwipe() {
-        _disableSwipe = true;
-        _container.setOnTouchListener { a,b -> return@setOnTouchListener false }
+    fun showGhost() {
+        _hideGhost = false;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -64,42 +61,64 @@ class RatingsButton: ConstraintLayout {
             findViewById<ImageButton>(R.id.button_star_5),
         )
 
+        val sattr = context?.obtainStyledAttributes(attrs, R.styleable.RatingsButton);
+        val attrSwipe = sattr?.getBoolean(R.styleable.RatingsButton_RatingsButton_swipe, false)
+        _disableSwipe = !(attrSwipe ?: false);
+
+
         var ratingBeforeDown = rating;
-        _container.setOnTouchListener { view, event ->
-            when(event.action) {
-                MotionEvent.ACTION_DOWN -> {
+        if(_disableSwipe)
+            buttonStars.forEachIndexed { index, button ->
+                button.setOnClickListener {
                     requestDisallowInterceptTouchEvent(true);
-                    ratingBeforeDown = rating;
-                    val index = getRatingAtPosition(event.x);
-                    if(index != null) {
-                        if(rating != index + 1) {
-                            setStars(index + 1);
-                        }
+                    if(ratingBeforeDown == index + 1) {
+                        setStars(ratingBeforeDown - 1);
+                        onRatingChanged?.emit(index + 1);
+                        ratingBeforeDown = index + 1;
                     }
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    requestDisallowInterceptTouchEvent(true);
-                    val index = getRatingAtPosition(event.x);
-                    if(index != null) {
-                        if(rating != index + 1) {
-                            setStars(index + 1);
-                        }
+                    else if(ratingBeforeDown != index + 1) {
+                        setStars(index + 1);
+                        onRatingChanged?.emit(index + 1);
+                        ratingBeforeDown = index + 1;
                     }
-                }
-                MotionEvent.ACTION_UP -> {
-                    requestDisallowInterceptTouchEvent(true);
-                    val index = getRatingAtPosition(event.x);
-                    if(index != null) {
-                        if(ratingBeforeDown == index + 1) {
-                            setStars(ratingBeforeDown - 1);
-                        }
-                    }
-                    if(ratingBeforeDown != rating)
-                        onRatingChanged?.emit(rating);
                 }
             }
-            true
-        };
+        else
+            _container.setOnTouchListener { view, event ->
+                when(event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        requestDisallowInterceptTouchEvent(true);
+                        ratingBeforeDown = rating;
+                        val index = getRatingAtPosition(event.x);
+                        if(index != null) {
+                            if(rating != index + 1) {
+                                setStars(index + 1);
+                            }
+                        }
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        requestDisallowInterceptTouchEvent(true);
+                        val index = getRatingAtPosition(event.x);
+                        if(index != null) {
+                            if(rating != index + 1) {
+                                setStars(index + 1);
+                            }
+                        }
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        requestDisallowInterceptTouchEvent(true);
+                        val index = getRatingAtPosition(event.x);
+                        if(index != null) {
+                            if(ratingBeforeDown == index + 1) {
+                                setStars(ratingBeforeDown - 1);
+                            }
+                        }
+                        if(ratingBeforeDown != rating)
+                            onRatingChanged?.emit(rating);
+                    }
+                }
+                true
+            };
     }
 
     fun getRatingAtPosition(touchX: Float): Int? {
