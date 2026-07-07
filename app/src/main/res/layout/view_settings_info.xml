@@ -22,7 +22,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/icon"
-        app:layout_constraintRight_toLeftOf="@id/arrow"
+        app:layout_constraintRight_toLeftOf="@id/value"
         android:gravity="center_vertical"
         android:padding="20dp"
         android:orientation="vertical">
