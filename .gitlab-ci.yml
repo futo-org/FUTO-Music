@@ -13,7 +13,7 @@ buildAndDeployApkStable:
       - app/build/outputs/apk/stable/release/*.apk
 
 
-buildAndDeployABBPlaystore
+buildAndDeployABBPlaystore:
   stage: build
   script:
     - sh deploy-stable-ps.sh
