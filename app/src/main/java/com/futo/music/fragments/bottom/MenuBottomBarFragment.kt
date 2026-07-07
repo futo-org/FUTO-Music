@@ -12,6 +12,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.UIDialogs
+import com.futo.music.fragments.main.FilesFragment
 import com.futo.music.fragments.main.HomeFragment
 import com.futo.music.fragments.main.MainFragment
 import com.futo.music.fragments.main.PlaybackFragment
@@ -126,8 +127,9 @@ class MenuBottomBarFragment : BotFragment() {
                     fragment.navigate<SearchFragment>();
                 }
                 _buttonFiles.onClick.subscribe {
-                    //_buttonsMenu.forEach { it.setActive(false) };
-                    UIDialogs.toast("Files implementation pending");
+                    _buttonsMenu.forEach { it.setActive(false) };
+                    //UIDialogs.toast("Files implementation pending");
+                    fragment.navigate<FilesFragment>();
                 }
                 _buttonSettings?.onClick?.subscribe {
                     _buttonsMenu.forEach { it.setActive(false) };
@@ -160,7 +162,7 @@ class MenuBottomBarFragment : BotFragment() {
                     _buttonsMenu.forEach { it.setActive(false) };
                     _buttonHome.setActive(true);
                 }
-                else if(false) {
+                else if(currentFragment is FilesFragment) {
                     _buttonsMenu.forEach { it.setActive(false) };
                     _buttonFiles.setActive(true);
                 }

@@ -72,9 +72,9 @@ class RatingsButton: ConstraintLayout {
                 button.setOnClickListener {
                     requestDisallowInterceptTouchEvent(true);
                     if(ratingBeforeDown == index + 1) {
-                        setStars(ratingBeforeDown - 1);
-                        onRatingChanged?.emit(index + 1);
-                        ratingBeforeDown = index + 1;
+                        setStars(0);
+                        onRatingChanged?.emit(0);
+                        ratingBeforeDown = 0;
                     }
                     else if(ratingBeforeDown != index + 1) {
                         setStars(index + 1);

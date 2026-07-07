@@ -85,9 +85,25 @@ class SettingsFragment: MainFragment() {
 
             val groups = _settings.getGroups();
 
-            adapter = TabAdapter(fragment.childFragmentManager, fragment.lifecycle, groups.map { TabDescriptor(it.second.name){
+            adapter = TabAdapter(fragment.childFragmentManager, fragment.lifecycle, groups.filter { _settings.developer.isDeveloper || it.second.name != "Developer" }.map { TabDescriptor(it.second.name){
                 AFragment({ inflater, container ->
-                    val sets = SettingsView(context);
+                    val sets = SettingsView(context) { view, setting ->
+                        if(setting.name == "Version") {
+                            if(view is View) {
+                                view.setOnLongClickListener {
+                                    UIDialogs.showConfirmDialog(fragment.requireContext(), R.drawable.ic_gear, "Enable Developer Mode?", "Do you want to enable developer settings?", {
+                                        _settings.developer.isDeveloper = true;
+                                        UIDialogs.appToast("Developer mode enabled");
+                                        fragment.closeSegment();
+                                    }, {
+                                        _settings.developer.isDeveloper = false;
+                                        UIDialogs.appToast("Developer mode disabled");
+                                    });
+                                    return@setOnLongClickListener true;
+                                }
+                            }
+                        }
+                    }
                     sets.setSettingsObject(it.first);
                     val scrollView = ScrollView(context);
                     scrollView.addView(sets);

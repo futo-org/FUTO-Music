@@ -16,6 +16,7 @@ import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.WindowCompat
@@ -133,7 +134,8 @@ class PlaybackFragment: MainFragment() {
 
         private val _buttonInfo: ImageButton;
         private val _textRatingNote: TextView;
-        private val _buttonQueue: ImageButton;
+        private val _containerQueue: LinearLayout;
+        private val _textQueue: TextView;
         private val _buttonPlaylistAdd: ImageButton;
 
         private val _starAlbum: StarButton?;
@@ -209,7 +211,8 @@ class PlaybackFragment: MainFragment() {
             _starAlbum = findViewById(R.id.star_album);
 
             _buttonInfo = findViewById(R.id.button_meta);
-            _buttonQueue = findViewById(R.id.button_queue);
+            _containerQueue = findViewById(R.id.container_queue);
+            _textQueue = findViewById(R.id.text_queue);
             _buttonPlaylistAdd = findViewById(R.id.button_add_playlist);
             _queueOverlay = findViewById(R.id.overlay_queue);
 
@@ -310,7 +313,7 @@ class PlaybackFragment: MainFragment() {
                 }
             }
 
-            _buttonQueue.setOnClickListener {
+            _containerQueue.setOnClickListener {
                 val currentPlayable = StateQueue.instance.getQueuePlayable() ?: return@setOnClickListener;
                 val currentTracks = StateQueue.instance.getQueue();
 
@@ -535,6 +538,7 @@ class PlaybackFragment: MainFragment() {
                 try {
 
                     setPlaySkipButtonStates(player.hasPreviousMediaItem(), player.hasNextMediaItem());
+                    updateQueueState();
                     /*_imageArt.setAlbumArt(mediaMetadata, colorIntercept = {
                         if((it?.dominant ?: it?.darkVibrant) != null)
                         StateApp.instance.activity()?.setBackgroundBottomGradient((it!!.dominant ?: it.darkVibrant!!), 0.5f, 0.6f);
@@ -639,6 +643,17 @@ class PlaybackFragment: MainFragment() {
                 _buttonRight.alpha = 0.3f;
         }
 
+        fun updateQueueState() {
+            val queue = StateQueue.instance.getQueuePlayable();
+            val queueList = StateQueue.instance.getQueue();
+            if(queueList.size > 1) {
+                val name = if(queue != null) queue.name else "Queue";
+                _textQueue.text = name;
+                _containerQueue.alpha = 1f;
+            }
+            else
+                _containerQueue.alpha = 0f;
+        }
 
         fun onPlayerAvailable(player: PlayerManager) {
             _viewControls.player = player.player;

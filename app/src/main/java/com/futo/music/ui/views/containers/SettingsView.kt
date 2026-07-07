@@ -27,13 +27,17 @@ import kotlin.reflect.jvm.javaGetter
 
 class SettingsView: LinearLayout {
 
-    constructor(context: Context): super(context) {
+    private val _onSettingsViewCreate: ((ISettingsSubView, Setting)->Unit)?
+
+    constructor(context: Context, onSettingsViewCreate: ((ISettingsSubView, Setting)->Unit)? = null): super(context) {
         orientation = VERTICAL;
+        _onSettingsViewCreate = onSettingsViewCreate;
     }
 
     fun setSettingsObject(obj: Any) {
         removeAllViews();
-        val props = obj::class.declaredMemberProperties.filterIsInstance<KMutableProperty<*>>();
+        val props = obj::class.declaredMemberProperties.filterIsInstance<KMutableProperty<*>>()
+        val propsReadOnly = obj::class.declaredMemberProperties.filter { it !is KMutableProperty<*> };
         val views = mutableListOf<Pair<View, Int>>();
 
         val marginTop = 20.dp(resources);
@@ -75,6 +79,7 @@ class SettingsView: LinearLayout {
 
             val view = when(type) {
                 SettingType.TOGGLE -> SettingsToggleView(context);
+                SettingType.INFO -> SettingsInfoView(context);
                 else -> throw NotImplementedError("Unknown setting type ${type}");
             }
 
@@ -84,8 +89,32 @@ class SettingsView: LinearLayout {
                 item.first.setter.call(obj, it)
             }
 
+            _onSettingsViewCreate?.invoke(view, item.second!!);
             views.add(Pair(view, item.second!!.order));
         }
+        for(item in propsReadOnly.map { Pair(it, it.findAnnotation<Setting>()) }
+            .filter { it.second != null }
+            .sortedBy { it.second!!.order }) {
+            if(item.second == null)
+                continue;
+
+            val type = if(item.second!!.type == SettingType.UNKNOWN)
+                settingTypeFromType(item.first.returnType);
+            else item.second!!.type;
+
+            val view = when(type) {
+                SettingType.TOGGLE -> SettingsToggleView(context);
+                SettingType.INFO -> SettingsInfoView(context);
+                else -> throw NotImplementedError("Unknown setting type ${type}");
+            }
+
+            view.setLabel(item.second!!.name, item.second!!.description);
+            view.setValue(item.first.javaGetter!!.invoke(obj));
+
+            _onSettingsViewCreate?.invoke(view, item.second!!);
+            views.add(Pair(view, item.second!!.order));
+        }
+
         var first = true;
         for(view in views.sortedBy { it.second }) {
             view.first.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
@@ -122,7 +151,8 @@ annotation class Setting(val name: String, val description: String, val type: Se
 
 enum class SettingType {
     UNKNOWN,
-    TOGGLE
+    TOGGLE,
+    INFO
 }
 
 interface ISettingsSubView {
@@ -183,5 +213,40 @@ class SettingsButtonView: ConstraintLayout {
     fun setIcon(icon: Int) {
         this.icon.setImageResource(icon);
         this.icon.visibility = VISIBLE;
+    }
+}
+class SettingsInfoView : ConstraintLayout, ISettingsSubView {
+    val text: TextView;
+    val description: TextView;
+    val icon: ImageView;
+    val value: TextView;
+
+    val onClick = Event0();
+
+    override val onValueChanged = Event1<Any>();
+
+    constructor(context: Context): super(context) {
+        inflate(context, R.layout.view_settings_info, this);
+
+        text = findViewById(R.id.text);
+        description = findViewById(R.id.description);
+        icon = findViewById(R.id.icon);
+        value = findViewById(R.id.value);
+
+        setOnClickListener {
+            onClick.emit();
+        }
+    }
+
+    override fun setLabel(str: String, desc: String?) {
+        text.text = str;
+        description.text = desc;
+    }
+    fun setIcon(icon: Int) {
+        this.icon.setImageResource(icon);
+        this.icon.visibility = VISIBLE;
+    }
+    override fun setValue(obj: Any) {
+        value.text = obj.toString();
     }
 }

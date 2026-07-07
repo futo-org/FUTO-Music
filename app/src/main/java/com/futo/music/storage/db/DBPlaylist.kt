@@ -81,6 +81,8 @@ class DBPlaylistTrack(
 interface DBPlaylistDao {
     @Query("SELECT * FROM playlists WHERE hidden != 1")
     fun getAll(): List<DBPlaylist>;
+    @Query("SELECT id FROM playlists WHERE hidden != 1")
+    fun getAllIds(): List<Long>;
     @Query("SELECT * FROM playlists WHERE hidden == 1")
     fun getAllHidden(): List<DBPlaylist>;
     @Query("SELECT * FROM playlists WHERE hidden != 1 ORDER BY datePlayed DESC")

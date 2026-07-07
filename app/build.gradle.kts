@@ -30,11 +30,36 @@ android {
         version = release(36)
     }
 
+
+    flavorDimensions("buildType")
+    productFlavors {
+        create("stable") {
+            dimension = "buildType"
+
+            applicationId = "com.futo.music"
+
+            buildConfigField("Boolean", "IS_PLAYSTORE_BUILD", "false")
+
+            resValue("string", "app_name", "Music")
+            isDefault = true
+        }
+
+        create("playstore") {
+            dimension = "buildType"
+
+            applicationId = "com.futo.music.playstore"
+
+            buildConfigField("Boolean", "IS_PLAYSTORE_BUILD", "true")
+
+            resValue("string", "app_name", "Music")
+        }
+    }
+
     defaultConfig {
         applicationId = "com.futo.music"
         minSdk = 29
         targetSdk = 36
-        versionCode = 29
+        versionCode = 30
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -75,6 +100,7 @@ android {
         buildConfig = true
         compose = true
     }
+
 }
 
 dependencies {

@@ -102,6 +102,7 @@ import com.bumptech.glide.RequestBuilder
 import com.futo.music.BuildConfig
 import com.futo.music.Constants
 import com.futo.music.fragments.main.AlbumFragment
+import com.futo.music.fragments.main.FilesFragment
 import com.futo.music.fragments.main.PlaylistFragment
 import com.futo.music.fragments.main.RatingsListFragment
 import com.futo.music.fragments.main.SettingsFragment
@@ -155,6 +156,7 @@ class MainActivity : AppCompatActivity() {
     private val _fragPlaylist = PlaylistFragment();
     private val _fragSettings = SettingsFragment();
     private val _fragRatingsList = RatingsListFragment();
+    private val _fragFiles = FilesFragment();
 
     //Main
 
@@ -186,7 +188,8 @@ class MainActivity : AppCompatActivity() {
         Pair(AlbumFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragAlbum })),
         Pair(PlaylistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragPlaylist })),
         Pair(SettingsFragment::class, FragmentDefinition(null, null, { _fragSettings })),
-        Pair(RatingsListFragment::class, FragmentDefinition(_fragTopNavigation, _fragBotMenu, { _fragRatingsList }))
+        Pair(RatingsListFragment::class, FragmentDefinition(_fragTopNavigation, _fragBotMenu, { _fragRatingsList })),
+        Pair(FilesFragment::class, FragmentDefinition(_fragTopNavigation, _fragBotMenu, { _fragFiles }))
     );
 
     init {
@@ -446,6 +449,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun checkForUpdate(skipDownloadQuery: Boolean) {
+        if(BuildConfig.IS_PLAYSTORE_BUILD)
+            return;
+
         fun downloadUpdate(version: Int) {
             val announcement = SessionAnnouncement(
                 "update_downloading_" + UUID.randomUUID().toString(),

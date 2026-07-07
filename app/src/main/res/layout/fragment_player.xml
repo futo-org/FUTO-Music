@@ -346,11 +346,18 @@
                     />
             </LinearLayout>
             <LinearLayout
+                android:id="@+id/container_queue"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="1.5"
                 android:layout_marginBottom="5dp"
+                android:orientation="vertical"
+                android:background="@drawable/background_glass_dark_round_8dp"
+                android:paddingBottom="10dp"
+                android:paddingTop="10dp"
+                android:alpha="0"
                 android:gravity="center">
+                <!--
                 <ImageButton
                     android:id="@+id/button_queue"
                     android:layout_width="50dp"
@@ -360,6 +367,30 @@
                     android:scaleType="fitCenter"
                     android:padding="10dp"
                     />
+                -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:textSize="12dp"
+                    android:textColor="#999"
+                    android:fontFamily="@font/inter_regular"
+                    android:text="Queue" />
+                <TextView
+                    android:id="@+id/text_queue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:textSize="16dp"
+                    android:text="Ministery of Sound"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/inter_regular"
+                    android:layout_marginTop="-3dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="5dp"
+                    android:ellipsize="end"
+                    android:textAlignment="center" />
+
             </LinearLayout>
             <LinearLayout
                 android:layout_width="0dp"

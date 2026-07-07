@@ -61,7 +61,6 @@
             android:layout_width="0dp"
             android:layout_height="60dp"
             app:BottomMenuButton_image="@drawable/ic_files"
-            android:alpha="0.4"
             app:BottomMenuButton_imageActive="@drawable/ic_files_active"
             app:BottomMenuButton_text="Files"
             android:layout_weight="1" />

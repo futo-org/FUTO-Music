@@ -75,6 +75,9 @@ class RatingsListFragment: MainFragment() {
                 it.onClick.subscribe { view, playable ->
                     playable?.openPlayable(fragment, true);
                 }
+                it.onRatingChanged.subscribe { view, playable, rating ->
+
+                }
             });
 
             val containerBefore = findViewById<LinearLayout>(R.id.container_before);

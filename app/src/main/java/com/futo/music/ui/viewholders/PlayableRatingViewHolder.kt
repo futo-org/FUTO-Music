@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.constructs.Event2
+import com.futo.music.constructs.Event3
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.openPlayable
 import com.futo.music.states.StateApp
@@ -38,6 +39,7 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
     private val _ratings: RatingsButton;
 
     val onClick = Event2<PlayableRatingViewHolder, IPlayable>();
+    val onRatingChanged = Event3<PlayableRatingViewHolder, IPlayable, Int>();
     var _playable: IPlayable? = null;
     private var _markedRated = false;
 
@@ -49,6 +51,15 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
         _button = _view.findViewById(R.id.button_more);
         _buttonDone = _view.findViewById(R.id.button_done);
         _ratings = _view.findViewById(R.id.ratings);
+        _ratings.onRatingChanged.subscribe { rating ->
+            onRatingChanged.emit(this@PlayableRatingViewHolder, _playable ?: return@subscribe, rating);
+
+            _playable?.let {
+                if(it is DBTrack) {
+                    setDone(rating > 0)
+                }
+            }
+        }
         _textName.setOnClickListener {
             _playable?.let {
                 onClick.emit(this, it);
@@ -61,15 +72,9 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
         };
         _buttonDone.setOnClickListener {
             val newValue = !_markedRated;
-            _markedRated = newValue;
             _playable?.let {
                 if(it is DBTrack) {
-                    _buttonDone.setImageResource(if (_markedRated) R.drawable.ic_label_off_active else R.drawable.ic_label_off);
-                    if(_markedRated) {
-                        _textMetadata.text = "Will disappear on reload";
-                    }
-                    else
-                        _textMetadata.text = "";
+                    setDone(newValue);
                     StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
                         StateDatabase.instance.db.tracksDao().setMarkedRated(DBSetMarkRated(it.id, _markedRated));
                     }
@@ -92,8 +97,7 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
         }
         else {
             _buttonDone.isVisible = true;
-            _markedRated = value.markedRated;
-            _buttonDone.setImageResource(if(_markedRated) R.drawable.ic_label_off_active else R.drawable.ic_label_off);
+            setDone(value.markedRated);
         }
 
         _textName.text = value.name;
@@ -128,8 +132,18 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
         _ratings.setRatingsFor(value);
 
         _playable = value;
-
-
+    }
+    fun setDone(isDone: Boolean, byRating: Boolean = false) {
+        _markedRated = isDone;
+        _buttonDone.setImageResource(if(_markedRated) R.drawable.ic_check_active else R.drawable.ic_check);
+        if(_markedRated) {
+            _textMetadata.text = "Will disappear on reload";
+            _view.alpha = 0.5f;
+        }
+        else {
+            _textMetadata.text = "";
+            _view.alpha = 1f;
+        }
     }
 
 }

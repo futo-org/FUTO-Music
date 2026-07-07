@@ -5,14 +5,15 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [DBTrack::class, DBArtist::class, DBAlbum::class, DBArtistTrack::class, DBAlbumArtist::class, DBAlbumTrack::class, DBPlaylist::class, DBPlaylistTrack::class],
-    version = 6,
+@Database(entities = [DBTrack::class, DBArtist::class, DBAlbum::class, DBArtistTrack::class, DBAlbumArtist::class, DBAlbumTrack::class, DBPlaylist::class, DBPlaylistTrack::class, DBDirectory::class],
+    version = 7,
     autoMigrations = [
         AutoMigration(1, 2),
         AutoMigration(2, 3),
         AutoMigration(3, 4),
         AutoMigration(4, 5),
-        AutoMigration(5, 6)
+        AutoMigration(5, 6),
+        AutoMigration(6, 7)
     ]
 )
 @TypeConverters(Converters::class)
@@ -21,4 +22,5 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun artistDao(): DBArtistDao
     abstract fun albumDao(): DBAlbumDao
     abstract fun playlistDao(): DBPlaylistDao
+    abstract fun directoryDao(): DBDirectoryDao
 }

@@ -1,5 +1,6 @@
 package com.futo.music.settings
 
+import com.futo.music.BuildConfig
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.fragments.main.ContentsFragment
@@ -7,9 +8,14 @@ import com.futo.music.fragments.main.SearchFragment
 import com.futo.music.logging.Logger
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
+import com.futo.music.storage.db.DBAlbumUpdateRating
+import com.futo.music.storage.db.DBArtistUpdateRating
+import com.futo.music.storage.db.DBPlaylistUpdateRating
+import com.futo.music.storage.db.DBTrackUpdateRating
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.FragmentedStorageFileJson
 import com.futo.music.ui.views.containers.Setting
+import com.futo.music.ui.views.containers.SettingType
 import com.futo.music.ui.views.containers.SettingsGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -86,9 +92,67 @@ class Settings : FragmentedStorageFileJson() {
         public var loadTrackArt = true;
 
     }
-    @SettingsGroup("Media")
+    @SettingsGroup("Media", 2)
     var media = MediaSettings();
 
+
+    @Serializable
+    class AboutSettings {
+
+        @Setting("Version", "The build version", order = 1, type = SettingType.INFO)
+        public val version: Int get() = BuildConfig.VERSION_CODE;
+        @Setting("Version Type", "The build type", order = 2, type = SettingType.INFO)
+        public val versionType: String get() = BuildConfig.FLAVOR;
+
+
+        /*
+        @Setting("Test Throw", "")
+        fun TestException(){
+            throw NotImplementedError("Test");
+        }*/
+    }
+    @SettingsGroup("About", 999)
+    var about = AboutSettings();
+
+    @Serializable
+    class DeveloperSettings {
+
+        @Setting("Developer", "Are you a developer?", order = 1, type = SettingType.TOGGLE)
+        public var isDeveloper: Boolean = false;
+
+
+        @Setting("Reset Ratings", "Resets all ratings to defaults")
+        fun ResetRatings(){
+            UIDialogs.showConfirmDialog(StateApp.instance.activity() ?: return, R.drawable.ic_gear, "Reset Ratings?", "This cannot be undone, are you sure?", {
+                StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
+                    UIDialogs.appToast("Fetching Ids (0/5)..");
+                    val idTracks = StateDatabase.instance.db.tracksDao().getAllIds();
+                    val idAlbums = StateDatabase.instance.db.albumDao().getAllIds();
+                    val idArtists = StateDatabase.instance.db.artistDao().getAllIds();
+                    val idPlaylists = StateDatabase.instance.db.playlistDao().getAllIds();
+
+                    UIDialogs.appToast("Starting clearing (1/5)..");
+
+                    for(id in idTracks)
+                        StateDatabase.instance.db.tracksDao().setRating(DBTrackUpdateRating(id, 0));
+                    UIDialogs.appToast("Reset track ratings (2/5)..");
+                    for(id in idAlbums)
+                        StateDatabase.instance.db.albumDao().setRating(DBAlbumUpdateRating(id, 0));
+                    UIDialogs.appToast("Reset album ratings (3/5)..");
+                    for(id in idArtists)
+                        StateDatabase.instance.db.artistDao().setRating(DBArtistUpdateRating(id, 0));
+                    UIDialogs.appToast("Reset artist ratings (4/5)..");
+                    for(id in idPlaylists)
+                        StateDatabase.instance.db.playlistDao().setRating(DBPlaylistUpdateRating(id, 0));
+                    UIDialogs.appToast("Reset playlist ratings (5/5)..");
+
+                    UIDialogs.appToast("All ratings reset, may need to reload views.");
+                }
+            });
+        }
+    }
+    @SettingsGroup("Developer", 9999)
+    var developer = DeveloperSettings();
 
     //region BOILERPLATE
     override fun encode(): String {
@@ -99,6 +163,7 @@ class Settings : FragmentedStorageFileJson() {
         return this::class.declaredMemberProperties
             .filter { it.findAnnotation<SettingsGroup>() != null && it.javaField != null }
             .map { Pair(it.javaGetter!!.invoke(this)!!, it.findAnnotation<SettingsGroup>()!!) }
+            .sortedBy { it.second.order }
             .toList();
     }
 
