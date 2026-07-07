@@ -38,8 +38,10 @@ echo "Building content..."
 
 VERSION="$(git describe --tags)"
 
+ls ./app/build/outputs/apk/release
+
 echo "Deploying music artifacts to Cloudflare R2..."
-upload_apk_latest_and_versioned "./app/build/outputs/apk/stableRelease/app-stable-release.apk" "app-release.apk"
+upload_apk_latest_and_versioned "./app/build/outputs/apk/release/app-stable-release.apk" "app-release.apk"
 # upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-stable-x86_64-release.apk" "app-x86_64-release.apk"
 # upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-stable-arm64-v8a-release.apk" "app-arm64-v8a-release.apk"
 # upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-stable-armeabi-v7a-release.apk" "app-armeabi-v7a-release.apk"
