@@ -31,6 +31,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.extensions.assume
 import com.futo.music.logging.Logger
@@ -41,6 +42,7 @@ import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
+import com.futo.music.storage.db.DBSetShuffleCombined
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
 import com.futo.music.ui.buttons.PillButton
@@ -50,6 +52,7 @@ import com.futo.music.ui.viewholders.ListPlaylistToggleViewHolder
 import com.futo.music.ui.viewholders.ListPlaylistViewHolder
 import com.futo.music.ui.views.SheetBar
 import com.futo.music.ui.views.containers.PlaylistsToggleView
+import com.futo.music.ui.views.containers.SettingsToggleView
 import com.futo.music.ui.views.containers.TextInputForm
 import com.futo.music.ui.views.playback.PlayableOptionsView
 import com.futo.music.ui.views.toasts.ToastView
@@ -708,6 +711,15 @@ class UIDialogs {
             }, true)
         }
 
+        fun showSheetVertical(context: Context, onClose: (() -> Unit)?, vararg views: View): BottomSheetDialog? {
+            return showSheet(context, LinearLayout(context).apply {
+                this.orientation = LinearLayout.VERTICAL;
+
+                for(view in views)
+                    this.addView(view);
+            }, onClose ?: {}, true)
+        }
+
         fun showSheet(context: Context, view: View, onClose: (()->Unit)? = null, addTopHandle: Boolean = false): BottomSheetDialog? {
             return StateApp.instance.activity()?.let {
                 val dialog = BottomSheetDialog(context);
@@ -1110,7 +1122,7 @@ class UIDialogs {
         }
         fun showConfirmSheet(context: Context, icon: Int, title: String, description: String, onConfirm: ()->Unit, onDeny: (()->Unit)? = null): Dialog{
             var sheet: BottomSheetDialog? = null;
-            sheet = showSheet(context, getDialogView(context, 0, false, title, description, null, null, null, {
+            sheet = showSheet(context, getDialogView(context, icon, false, title, description, null, null, null, {
                 sheet!!.hide();
             }, true, true,
                 UIDialogs.Action("Cancel", onDeny ?: {}, ActionStyle.ACCENT, true),

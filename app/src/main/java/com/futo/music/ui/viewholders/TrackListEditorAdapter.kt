@@ -1,4 +1,4 @@
-package com.futo.music.ui.adapters
+package com.futo.music.ui.viewholders
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

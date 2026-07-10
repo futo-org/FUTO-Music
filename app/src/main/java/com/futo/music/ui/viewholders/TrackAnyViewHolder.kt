@@ -1,4 +1,4 @@
-package com.futo.music.ui.adapters
+package com.futo.music.ui.viewholders
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -7,10 +7,9 @@ import android.widget.TextView
 import com.futo.music.R
 import com.futo.music.constructs.Event1
 import com.futo.music.formatDuration
-import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.storage.db.DBTrack
-import com.futo.music.toHumanTimeIndicator
+import com.futo.music.ui.adapters.AnyAdapter
 
 class TrackAnyViewHolder(private val _viewGroup: ViewGroup) : AnyAdapter.AnyViewHolder<IPlayableTrack>(
     LayoutInflater.from(_viewGroup.context).inflate(R.layout.list_track, _viewGroup, false)

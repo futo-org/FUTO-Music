@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.futo.music.constructs.Event1
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.ui.adapters.ItemMoveCallback
-import com.futo.music.ui.adapters.TrackListEditorAdapter
+import com.futo.music.ui.viewholders.TrackListEditorAdapter
 import java.util.*
 import kotlin.collections.toList
 import kotlin.ranges.downTo

@@ -12,6 +12,7 @@ import androidx.media3.common.MimeTypes
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
@@ -34,7 +35,10 @@ import java.io.InputStream
 import java.net.URI
 import java.time.OffsetDateTime
 
-@Entity(tableName = "tracks")
+@Entity(tableName = "tracks",
+    indices = [
+        Index(value = ["fileName", "artistId"])
+    ])
 class DBTrack(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
 

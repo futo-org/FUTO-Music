@@ -13,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.fragments.main.MainFragment
+import com.futo.music.states.StateApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -103,6 +104,8 @@ class NavigationTopBarFragment : TopFragment() {
 
 
         _buttonBack?.setOnClickListener {
+            if(StateApp.instance.activity()?.fragCurrent?.onBackPressed() ?: false)
+                return@setOnClickListener;
             closeSegment();
         }
 

@@ -1,4 +1,4 @@
-package com.futo.music.ui.adapters
+package com.futo.music.ui.viewholders
 
 import android.annotation.SuppressLint
 import android.view.MotionEvent
@@ -6,7 +6,6 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.compose.ui.graphics.Color
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
