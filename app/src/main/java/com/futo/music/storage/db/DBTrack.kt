@@ -177,6 +177,8 @@ interface DBTrackDao {
     fun getByMSID(id: Long): DBTrack?;
     @Query("SELECT * FROM tracks WHERE fileName = :fileName")
     fun getByFileName(fileName: String): DBTrack?;
+    @Query("SELECT id FROM tracks WHERE fileName = :fileName")
+    fun getIdByFileName(fileName: String): Long?;
 
     @Query("SELECT * FROM tracks WHERE hidden != 1 AND INSTR(lower(name), lower(:str))")
     fun search(str: String): List<DBTrack>;

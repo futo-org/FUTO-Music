@@ -1,5 +1,6 @@
 package com.futo.music.ui.viewholders
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageButton
@@ -10,6 +11,7 @@ import androidx.core.view.isVisible
 import com.futo.music.R
 import com.futo.music.constructs.Event2
 import com.futo.music.files.DocumentDirectoryItem
+import com.futo.music.states.StateFiles
 import com.futo.music.storage.db.DBDirectory
 import com.futo.music.ui.adapters.IFileItem
 import com.futo.music.ui.adapters.IFilesView
@@ -51,6 +53,12 @@ class FilesDirectoryViewHolder(val viewGroup: ViewGroup) : IFilesView {
             return;
         _textName.text = value.name;
         _textMetadata.text = value.path;
+
+        val img = StateFiles.instance.getDirectoryImage(value.path);
+        if(img != null)
+            _imageThumbnail.setImageURI(Uri.parse(img));
+        else
+            _imageThumbnail.setImageResource(R.drawable.ic_files);
 
         item = value;
     }

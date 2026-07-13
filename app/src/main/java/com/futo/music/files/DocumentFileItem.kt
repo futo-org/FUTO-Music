@@ -8,6 +8,9 @@ class DocumentFileItem: IFileItem {
     override val type = FilesItemType.File
     override val name: String;
     override val path: String;
+
+    val mimeType: String;
+
     private var docFile: FastDocumentFile? = null;
 
     var track: DBTrack? = null;
@@ -20,6 +23,7 @@ class DocumentFileItem: IFileItem {
         this.docFile = docFile;
         name = docFile.name ?: "NONAME";
         path = docFile.uri;
+        mimeType = docFile.mimeType;
     }
 
     fun setDetailItem(track: DBTrack) {

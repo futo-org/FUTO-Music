@@ -16,6 +16,7 @@ import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.models.playable.Track
 import com.futo.music.states.StateDatabase
+import com.futo.music.states.StateFiles
 import java.time.OffsetDateTime
 
 @Entity(tableName = "albums")
@@ -48,6 +49,8 @@ class DBAlbum(
     override val type: PlayableType get() = PlayableType.Album;
 
     override fun getImage(): ImageVariable? {
+        if(artUri == null)
+            return ImageVariable.fromUrl(StateFiles.instance.getAlbumImage(id));
         return ImageVariable.fromUrl(artUri);
     }
 

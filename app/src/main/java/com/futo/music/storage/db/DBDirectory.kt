@@ -23,6 +23,7 @@ import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.models.playable.Track
 import com.futo.music.states.StateDatabase
+import com.futo.music.toFileName
 import com.futo.music.ui.adapters.FilesItemType
 import com.futo.music.ui.adapters.IFileItem
 import java.time.OffsetDateTime
@@ -43,17 +44,25 @@ class DBDirectory(
     @Ignore
     override var type = FilesItemType.Root;
 
-
-
-
-    fun getFiles(context: Context): List<IFileItem> {
-        val docFile = FastDocumentFile.fromUri(Uri.parse(path));
-        val allFiles = docFile?.getFiles() ?: return listOf();
+    fun getDirectoryChildren(context: Context): DirectoryChildren {
+        val docFile = FastDocumentFile.fromUri(context, Uri.parse(path));
+        val allFiles = docFile?.getFiles() ?: return DirectoryChildren(path, listOf(), listOf());
         val dirs = allFiles.filter { it.isDirectory }.map { DocumentDirectoryItem(it) };
         val files = allFiles.filter { !it.isDirectory }.map { DocumentFileItem(it) };
-        return dirs + files;
+        return DirectoryChildren(path, dirs, files);
     }
+    fun getFiles(context: Context): List<IFileItem> {
+        val data = getDirectoryChildren(context);
+        return data.directories + data.files;
+    }
+
 }
+
+data class DirectoryChildren(
+    val path: String,
+    val directories: List<DocumentDirectoryItem>,
+    val files: List<DocumentFileItem>
+)
 
 @Dao
 interface DBDirectoryDao {

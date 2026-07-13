@@ -30,6 +30,8 @@ class NavigationTopBarFragment : TopFragment() {
 
     private var _buttonGeneral: ConstraintLayout? = null;
     private var _buttonGeneralIcon: ImageView? = null;
+    private var _buttonGeneral2: ConstraintLayout? = null;
+    private var _buttonGeneralIcon2: ImageView? = null;
 
     private var _title: String = "";
 
@@ -60,10 +62,14 @@ class NavigationTopBarFragment : TopFragment() {
     override fun onShown(parameter: Any?) {
         _buttonGeneral?.isVisible = false;
         _buttonGeneral?.setOnClickListener {  };
+        _buttonGeneral2?.isVisible = false;
+        _buttonGeneral2?.setOnClickListener {  };
     }
     override fun onHide() {
         _buttonGeneral?.isVisible = false;
         _buttonGeneral?.setOnClickListener {  };
+        _buttonGeneral2?.isVisible = false;
+        _buttonGeneral2?.setOnClickListener {  };
     }
 
     override fun onShowFragment(frag: MainFragment) {
@@ -88,6 +94,13 @@ class NavigationTopBarFragment : TopFragment() {
         }
         _buttonGeneral?.isVisible = true;
     }
+    fun setGeneralButton2(icon: Int, handler: ()->Unit) {
+        _buttonGeneralIcon2?.setImageResource(icon);
+        _buttonGeneral2?.setOnClickListener {
+            handler();
+        }
+        _buttonGeneral2?.isVisible = true;
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_navigation_top_bar, container, false);
@@ -101,6 +114,8 @@ class NavigationTopBarFragment : TopFragment() {
         _buttonSettingsIcon = view.findViewById(R.id.button_settings_icon);
         _buttonGeneral = view.findViewById(R.id.button_general);
         _buttonGeneralIcon = view.findViewById(R.id.button_general_icon);
+        _buttonGeneral2 = view.findViewById(R.id.button_general2);
+        _buttonGeneralIcon2 = view.findViewById(R.id.button_general_icon2);
 
 
         _buttonBack?.setOnClickListener {

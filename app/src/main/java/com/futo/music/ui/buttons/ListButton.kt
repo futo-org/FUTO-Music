@@ -2,8 +2,10 @@ package com.futo.music.ui.buttons
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.collection.emptyLongSet
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -54,6 +56,20 @@ class ListButton: ConstraintLayout {
             this.image.visibility = GONE;
         this.text.text = text;
         onClick.subscribe(handler);
+        return this;
+    }
+
+    fun withMarginBottom(dp: Int): ListButton {
+        if(layoutParams != null)
+            layoutParams?.let {
+                if(it is MarginLayoutParams)
+                    it.setMargins(0, 0, 0, dp.dp(resources));
+            }
+        else {
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                this.setMargins(0, 0, 0, dp.dp(resources));
+            }
+        }
         return this;
     }
 }

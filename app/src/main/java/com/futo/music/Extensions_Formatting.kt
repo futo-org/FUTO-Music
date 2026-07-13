@@ -1,32 +1,15 @@
 package com.futo.music
 
+import android.net.Uri
 import android.text.Html
 import android.text.Spanned
 import androidx.core.text.HtmlCompat
-import java.lang.IllegalStateException
 import java.text.DecimalFormat
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
-import kotlin.collections.drop
-import kotlin.collections.filterNotNull
-import kotlin.collections.indices
-import kotlin.collections.joinToString
-import kotlin.collections.plus
-import kotlin.collections.sliceArray
 import kotlin.math.abs
 import kotlin.math.roundToLong
-import kotlin.sequences.toList
-import kotlin.text.endsWith
-import kotlin.text.format
-import kotlin.text.lowercase
-import kotlin.text.map
-import kotlin.text.padStart
-import kotlin.text.replace
-import kotlin.text.split
-import kotlin.text.startsWith
-import kotlin.text.substring
-import kotlin.text.trim
-import kotlin.text.trimStart
+
 
 fun Int.toStarRating(): Int {
     return Math.max(0, Math.min(5, this / 20));
@@ -295,6 +278,30 @@ fun ByteArray.toHexString(size: Int): String {
 private val safeCharacters = kotlin.collections.HashSet(('a'..'z') + ('A'..'Z') + ('0'..'9') + listOf('-', '_'));
 fun String.toSafeFileName(): String {
     return this.map { if (it in safeCharacters) it else '_' }.joinToString(separator = "")
+}
+
+fun String.toFileName(): String {
+    val uri = Uri.parse(this);
+    val lastSeg = uri.lastPathSegment!!;
+    if(lastSeg.contains("/"))
+        return lastSeg.substring(lastSeg.lastIndexOf('/') + 1);
+    return lastSeg;
+}
+fun String.toFileNameWithoutExtension(): String {
+    val name = this.toFileName();
+    if(name.contains('.'))
+        return name.substring(0, name.lastIndexOf('.'));
+    return name;
+}
+fun String.parentPath(): String {
+    val uri = Uri.parse(this);
+    val segments = uri.getPathSegments();
+    val builder = uri.buildUpon().path(null);
+    for (i in 0..<segments.size - 1)
+        builder.appendPath(segments.get(i));
+    if(segments[segments.size - 1].contains("/"))
+        builder.appendPath(segments[segments.size - 1].substring(0, segments[segments.size - 1].lastIndexOf('/')));
+    return builder.build().toString();
 }
 
 private val slds = hashSetOf(

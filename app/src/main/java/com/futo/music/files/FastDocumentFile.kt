@@ -1,5 +1,6 @@
 package com.futo.music.files
 
+import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.provider.DocumentsContract
@@ -40,6 +41,7 @@ class FastDocumentFile {
         return result;
     }
 
+
     companion object {
         val FAST_DOC_COLUMNS = arrayOf(
             DocumentsContract.Document.COLUMN_DOCUMENT_ID,
@@ -61,10 +63,10 @@ class FastDocumentFile {
         }
 
 
-        fun fromUri(uri: Uri): FastDocumentFile? {
+        fun fromUri(context: Context, uri: Uri): FastDocumentFile? {
             val documentUri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri));
 
-            val cursor = StateApp.instance.activity()?.contentResolver?.query(documentUri, FAST_DOC_COLUMNS, null, null, null) ?: return null;
+            val cursor = context.contentResolver?.query(documentUri, FAST_DOC_COLUMNS, null, null, null) ?: return null;
 
             if(!cursor.moveToFirst()) {
                 cursor.close();

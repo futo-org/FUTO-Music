@@ -421,6 +421,11 @@ class StateDatabase(
             .tracksDao()
             .getByFileName(fileName);
     }
+    fun getTrackIdByFileName(fileName: String): Long? {
+        return db
+            .tracksDao()
+            .getIdByFileName(fileName);
+    }
     fun getTrackByMSID(id: Long): DBTrack? {
         return db
             .tracksDao()
