@@ -25,6 +25,7 @@ import com.futo.music.logging.Logger
 import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.Vibe
 import com.futo.music.openPlayable
+import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.DBDirectory
 import com.futo.music.ui.adapters.FilesAdapter
@@ -50,49 +51,6 @@ class FilesFragment: MainFragment() {
 
     private var _view: FragView? = null;
 
-
-    private val folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-            if (uri != null) {
-                val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-
-                requireContext().contentResolver
-                    .takePersistableUriPermission(uri, flags)
-
-                UIDialogs.toast("Access: " + uri.toString());
-
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val mainThread1 = Looper.myLooper() == Looper.getMainLooper();
-                    try {
-                        val doc = DocumentFile.fromTreeUri(requireContext(), uri);
-                        val mainThread2 = Looper.myLooper() == Looper.getMainLooper();
-
-                        if (doc?.name == null)
-                            UIDialogs.toast("No document found?");
-
-                        val mainThread3 = Looper.myLooper() == Looper.getMainLooper();
-
-                        val item = DBDirectory(
-                            0,
-                            doc!!.name!!,
-                            OffsetDateTime.MIN,
-                            OffsetDateTime.MIN,
-                            uri.toString(), false
-                        );
-                        StateDatabase.instance.db.directoryDao().insert(item);
-                        withContext(Dispatchers.Main) {
-                            _view?.updateContent();
-                        }
-                    }
-                    catch(ex: Throwable) {
-                        withContext(Dispatchers.Main) {
-                            UIDialogs.appToast("Failed to get document:\n" + ex.message);
-                            Logger.e("FilesFragment", "Failed to get document", ex);
-                        }
-                    }
-                }
-            }
-        }
 
 
     override fun onShownWithView(parameter: Any?, isBack: Boolean) {
@@ -295,7 +253,40 @@ class FilesFragment: MainFragment() {
             fragment.topBar?.let {
                 if(it is NavigationTopBarFragment) {
                     it.setGeneralButton(R.drawable.ic_add) {
-                        fragment.folderPicker.launch(null);
+                        StateApp.instance.activity()?.pickFolder { uri ->
+                            if(uri == null)
+                                return@pickFolder;
+                            fragment.lifecycleScope.launch(Dispatchers.IO) {
+                                try {
+                                    val doc = DocumentFile.fromTreeUri(context, uri!!);
+                                    val mainThread2 = Looper.myLooper() == Looper.getMainLooper();
+
+                                    if (doc?.name == null)
+                                        UIDialogs.toast("No document found?");
+
+                                    val mainThread3 = Looper.myLooper() == Looper.getMainLooper();
+
+                                    val item = DBDirectory(
+                                        0,
+                                        doc!!.name!!,
+                                        OffsetDateTime.MIN,
+                                        OffsetDateTime.MIN,
+                                        uri.toString(), false
+                                    );
+                                    StateDatabase.instance.db.directoryDao().insert(item);
+                                    withContext(Dispatchers.Main) {
+                                        updateContent();
+                                    }
+                                }
+                                catch(ex: Throwable) {
+                                    withContext(Dispatchers.Main) {
+                                        UIDialogs.appToast("Failed to get document:\n" + ex.message);
+                                        Logger.e("FilesFragment", "Failed to get document", ex);
+                                    }
+                                }
+                            }
+                        }
+
                     };
                 }
             }

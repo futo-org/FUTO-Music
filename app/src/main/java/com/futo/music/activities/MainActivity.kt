@@ -16,6 +16,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.provider.OpenableColumns
 import android.view.View
 import android.view.ViewGroup
@@ -98,6 +99,7 @@ import kotlin.reflect.KClassifier
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.updateLayoutParams
+import androidx.documentfile.provider.DocumentFile
 import com.bumptech.glide.RequestBuilder
 import com.futo.music.BuildConfig
 import com.futo.music.Constants
@@ -112,6 +114,7 @@ import com.futo.music.models.playable.Artist
 import com.futo.music.models.playable.Track
 import com.futo.music.states.Announcement
 import com.futo.music.states.SessionAnnouncement
+import com.futo.music.storage.db.DBDirectory
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.ManagedStore
 import com.futo.music.storage.file.StringStorage
@@ -120,6 +123,7 @@ import com.futo.music.toHumanBytesSize
 import com.futo.music.updater.Updater
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import java.io.File
+import java.time.OffsetDateTime
 
 class MainActivity : AppCompatActivity() {
 
@@ -1172,6 +1176,24 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.Main) {
             navigate<PlaybackFragment>(track);
         }
+    }
+
+
+    private var folderCallback: ((uri: Uri?)->Unit)? = null;
+    private val folderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) {
+            val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+
+            contentResolver.takePersistableUriPermission(uri, flags)
+
+            UIDialogs.toast("Access: " + uri.toString());
+            folderCallback?.invoke(uri);
+        }
+    }
+    fun pickFolder(callback: ((uri: Uri?)->Unit)) {
+        folderCallback = callback;
+        folderPicker.launch(null);
     }
 
     companion object {
