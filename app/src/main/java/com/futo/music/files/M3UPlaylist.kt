@@ -1,18 +1,21 @@
 package com.futo.music.files
 
+import com.futo.music.toFileNameWithoutExtension
+
 //Simple M3U Playlist parser, only supports small subset that we actually use for the app.
 //Supported Attributes: #EXTINF, #PLAYLIST
 class M3UPlaylist {
     var name: String? = null;
+    var path: String? = null;
     val items = mutableListOf<Item>();
-
 
     companion object {
 
-        fun parse(str: String): M3UPlaylist? {
+        fun parse(str: String, path: String? = null): M3UPlaylist? {
             if(!str.startsWith("#EXTM3U"))
                 return null;
             val playlist = M3UPlaylist();
+            playlist.path = path;
 
             val lines = str.split("\n");
             var i = 0;
@@ -31,7 +34,8 @@ class M3UPlaylist {
                 }
                 i++;
             }
-
+            if(playlist.name == null && path != null)
+                playlist.name = path.toFileNameWithoutExtension();
             if(playlist.items.isNotEmpty())
                 return playlist;
             return null;

@@ -6,6 +6,9 @@ import android.net.Uri
 import com.futo.music.UIDialogs
 import com.futo.music.constructs.Event1
 import com.futo.music.files.DocumentFileItem
+import com.futo.music.files.FastDocumentFile
+import com.futo.music.files.M3UPlaylist
+import com.futo.music.logging.Logger
 import com.futo.music.parentPath
 import com.futo.music.storage.db.DBDirectory
 import com.futo.music.storage.db.DBDirectoryThumbnail
@@ -60,6 +63,16 @@ class StateFiles {
 
         }
 
+        for(playlist in result.playlists) {
+            try {
+                val m3u = M3UPlaylist.parse(playlist.file.readAsText(context) ?: continue, playlist.file.uri);
+                if(m3u != null)
+                    Logger.i(TAG, "Playlist found: ${m3u.name}, ${m3u.path} with ${m3u.items.size} items");
+            }
+            catch(ex: Throwable) {
+                Logger.e(TAG, "Playlist parse error: " + ex.message, ex);
+            }
+        }
     }
 
     fun scanDirectory(context: Context, dir: DBDirectory): DirectoryScanResult {
@@ -104,8 +117,8 @@ class StateFiles {
         for(file in files){
             if(file.mimeType.startsWith("image/"))
                 images.add(Pair(file.path.toFileNameWithoutExtension(), file));
-            else if(file.name.endsWith(".playlist.txt"))
-                dir.playlists.add(DirectoryScanPlaylist(file.path));
+            else if(file.name.endsWith(".m3u"))
+                dir.playlists.add(DirectoryScanPlaylist(file.docFile));
             else if(file.mimeType.startsWith("audio/")) {
                 hasMusic = true;
 
@@ -192,7 +205,7 @@ class DirectoryScanResult {
 }
 
 data class DirectoryScanPlaylist(
-    val path: String,
+    val file: FastDocumentFile,
 )
 data class DirectoryScanThumbnail(
     val path: String

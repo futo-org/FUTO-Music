@@ -11,7 +11,8 @@ class DocumentFileItem: IFileItem {
 
     val mimeType: String;
 
-    private var docFile: FastDocumentFile? = null;
+    var docFile: FastDocumentFile
+        private set;
 
     var track: DBTrack? = null;
 

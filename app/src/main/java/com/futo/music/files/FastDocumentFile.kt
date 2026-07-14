@@ -41,6 +41,12 @@ class FastDocumentFile {
         return result;
     }
 
+    fun readAsText(context: Context): String? {
+        return context.contentResolver.openInputStream(Uri.parse(uri))?.bufferedReader()?.use {
+            it?.readText();
+        };
+    }
+
 
     companion object {
         val FAST_DOC_COLUMNS = arrayOf(

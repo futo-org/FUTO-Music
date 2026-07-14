@@ -60,7 +60,10 @@ class FilesFileViewHolder(val viewGroup: ViewGroup) : IFilesView {
 
         _textName.text = value.name;
         _textMetadata.text = value.path;
-        _imageThumbnail.setImageResource(R.drawable.ic_unknown_file);
+        if(value.path.endsWith(".m3u"))
+            _imageThumbnail.setImageResource(R.drawable.ic_link);
+        else
+            _imageThumbnail.setImageResource(R.drawable.ic_unknown_file);
         item = value;
 
         value.track.let {
