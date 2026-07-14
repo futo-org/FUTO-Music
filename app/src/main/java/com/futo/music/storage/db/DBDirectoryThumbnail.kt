@@ -9,6 +9,7 @@ import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Ignore
+import androidx.room.Index
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
@@ -28,7 +29,12 @@ import com.futo.music.ui.adapters.FilesItemType
 import com.futo.music.ui.adapters.IFileItem
 import java.time.OffsetDateTime
 
-@Entity(tableName = "files_thumb")
+@Entity(tableName = "files_thumb",
+    indices = arrayOf(
+        Index(value = ["path"], unique = true),
+        Index(value = ["directory"], unique = true),
+        Index(value = ["albumId"], unique = true)
+    ))
 class DBDirectoryThumbnail(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
 
