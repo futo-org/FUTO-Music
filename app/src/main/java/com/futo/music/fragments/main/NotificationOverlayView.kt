@@ -59,15 +59,7 @@ class NotificationOverlayView: ConstraintLayout {
     }
 
     fun onShown(parameter: Any?) {
-        scope = findViewTreeLifecycleOwner()?.lifecycleScope;
-        val announcements = StateAnnouncement.instance.getVisibleAnnouncements();
-        adapterNotifications.adapter.setData(announcements);
-
-        if(announcements.any())
-            emptyView.isVisible = false;
-        else
-            emptyView.isVisible = true;
-
+        Logger.i("NotificationOverlay", "onShown");
     }
 
     fun onResume() {
@@ -83,6 +75,16 @@ class NotificationOverlayView: ConstraintLayout {
                     emptyView.isVisible = true;
             }
         }
+        scope = findViewTreeLifecycleOwner()?.lifecycleScope;
+        val announcements = StateAnnouncement.instance.getVisibleAnnouncements();
+        adapterNotifications.adapter.setData(announcements);
+
+        if(announcements.any())
+            emptyView.isVisible = false;
+        else
+            emptyView.isVisible = true;
+
+        Logger.i("NotificationOverlay", "onResume");
     }
 
     fun onPause() {

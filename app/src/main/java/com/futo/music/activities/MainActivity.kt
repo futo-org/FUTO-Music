@@ -468,8 +468,9 @@ class MainActivity : AppCompatActivity() {
             );
             announcement.progressText = "Downloading..";
             announcement.progress = 0.0;
-            StateAnnouncement.instance.registerAnnouncementSession(announcement)
-            lifecycleScope.launch(Dispatchers.IO) {
+            StateAnnouncement.instance.registerAnnouncementSession(announcement);
+            //GlobalScope used to continue outside of the lifecycle for now.
+            GlobalScope.launch(Dispatchers.IO) {
                 try {
                     _updater?.download { total, progress, percentage ->
                         lifecycleScope.launch(Dispatchers.Main) {

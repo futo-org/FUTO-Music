@@ -320,19 +320,8 @@ class FilesFragment: MainFragment() {
                         UIDialogs.showGuideDialog(context, fragment.lifecycleScope, listOf(
                             UIDialogs.Companion.GuideItem("File Directories", "Access your media from the filesystem directly, as well as providing the app with additional folder metadata.", R.drawable.ic_files),
                             UIDialogs.Companion.GuideItem("Album Thumbnails", "Adding directories that contain your media files allows for scanning for thumbnail images (eg. folder.jpg) to display in the app.", R.drawable.ic_album),
-                            UIDialogs.Companion.GuideItem("Playlist Files", "Playlist files are automatically found and synced on startup.\nExpected format:\n\nSomePlaylist.playlist.txt", R.drawable.ic_playlist_add,
-                                listOf(
-                                    TextView(context).apply {
-                                        setBackgroundResource(R.drawable.background_darken_round_4dp_22)
-                                        setTypeface(Typeface.MONOSPACE)
-                                        setText("//NAME: Some Playlist\nfile1.mp3\nfile2.mp3\n...");
-                                        val dp5 = 5.dp(resources);
-                                        layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                                            this.setMargins(10.dp(resources), dp5 * -1, 10.dp(resources), 0);
-                                        }
-                                        setPadding(dp5, dp5, dp5, dp5);
-                                    }
-                                ))
+                            UIDialogs.Companion.GuideItem("Playlist Files", "Playlist files (.m3u) are automatically found and synced on startup after selecting them.", R.drawable.ic_playlist_add,
+                                listOf())
                         ))
                     }
                     it.setGeneralButton(R.drawable.ic_add) {

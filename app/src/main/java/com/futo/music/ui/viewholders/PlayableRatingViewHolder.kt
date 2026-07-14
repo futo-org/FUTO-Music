@@ -111,7 +111,7 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
             _textMetadata.text = "";
 
         _playable = value;
-        
+
         StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
             value.getImage().let {
                 withContext(Dispatchers.Main) {
