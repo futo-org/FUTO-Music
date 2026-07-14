@@ -37,6 +37,7 @@ import com.futo.music.ui.adapters.FilesAdapter
 import com.futo.music.ui.adapters.IFileItem
 import com.futo.music.ui.buttons.ListButton
 import com.futo.music.ui.buttons.StandardButton
+import com.futo.music.ui.decorator.VerticalSpacingDecoration
 import com.futo.music.ui.viewholders.FilesFileViewHolder
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.withSettings
@@ -113,8 +114,9 @@ class FilesFragment: MainFragment() {
         init {
             val recycler = findViewById<RecyclerView>(R.id.recycler);
 
-            recycler.setPadding(0, 5.dp(resources), 0, 100.dp(resources));
-            recycler.clipToPadding = false;
+            recycler.addItemDecoration(VerticalSpacingDecoration(5.dp(resources), 100.dp(resources)));
+            //recycler.setPadding(0, 5.dp(resources), 0, 100.dp(resources));
+            //recycler.clipToPadding = false;
 
             buttons = LinearLayout(context).apply {
                 this.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 100.dp(resources));
@@ -255,8 +257,8 @@ class FilesFragment: MainFragment() {
                     stack.add(Pair(null, items));
                     withContext(Dispatchers.Main) {
                         filesAdapter.setData(items);
+                        emptyView.isVisible = items.size == 0
                     }
-                    emptyView.isVisible = items.size == 0
                 }
             else if(current.first is DocumentDirectoryItem) {
                 val childs = (current.first as DocumentDirectoryItem).getFiles();

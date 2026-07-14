@@ -19,6 +19,7 @@ import com.futo.music.states.StateDatabase
 import com.futo.music.ui.adapters.AnyAdapterView
 import com.futo.music.ui.adapters.AnyAdapterView.Companion.asAny
 import com.futo.music.ui.buttons.PillButton
+import com.futo.music.ui.decorator.VerticalSpacingDecoration
 import com.futo.music.ui.viewholders.PlayableRatingViewHolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -71,6 +72,7 @@ class RatingsListFragment: MainFragment() {
 
         init {
             recycler = findViewById(R.id.recycler);
+            recycler.addItemDecoration(VerticalSpacingDecoration(0, 70.dp(resources)))
             adapter = recycler.asAny(onCreate = {
                 it.onClick.subscribe { view, playable ->
                     playable?.openPlayable(fragment, true);

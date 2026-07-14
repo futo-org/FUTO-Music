@@ -111,7 +111,7 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
             _buttonDone.isVisible = true;
             setDone(value.markedRated || value.score > 0);
         }
-        
+
         _playable = value;
 
         StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
