@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Looper
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,6 +38,7 @@ import com.futo.music.ui.adapters.IFileItem
 import com.futo.music.ui.buttons.ListButton
 import com.futo.music.ui.buttons.StandardButton
 import com.futo.music.ui.viewholders.FilesFileViewHolder
+import com.futo.music.ui.views.NoResultsView
 import com.futo.music.withSettings
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +50,7 @@ import kotlin.system.measureTimeMillis
 
 class FilesFragment: MainFragment() {
     override val isMainView : Boolean = true;
-    override val isTab: Boolean = true;
+    override val isTab: Boolean = false;
     override val hasBottomBar: Boolean get() = true;
 
     override val fragmentTitle: String? get() = "Files"
@@ -89,7 +91,7 @@ class FilesFragment: MainFragment() {
     override fun onBackPressed(): Boolean {
         val view = _view ?: return super.onBackPressed();
 
-        if(view.stack.isEmpty())
+        if(view.stack.isEmpty() || view.stack.size == 1)
             return super.onBackPressed();
 
         view.back();
@@ -105,6 +107,8 @@ class FilesFragment: MainFragment() {
         val stack = mutableListOf<Pair<IFileItem?, List<IFileItem>>>();
         val buttons: LinearLayout;
         val progressBar: ProgressBar;
+
+        val emptyView: NoResultsView;
 
         init {
             val recycler = findViewById<RecyclerView>(R.id.recycler);
@@ -163,6 +167,21 @@ class FilesFragment: MainFragment() {
             progressBar.isVisible = false;
             findViewById<LinearLayout>(R.id.container_after).addView(progressBar);
 
+            emptyView = NoResultsView(context, "No Directories Yet", "Add directories using the + icon.\nOnly the root directory of your music has to be added (or multiple).\n\nAdding directories also adds support for:",
+                R.drawable.ic_files,
+                listOf(
+                    LinearLayout(context).apply {
+                        this.gravity = Gravity.CENTER;
+                        this.orientation = LinearLayout.VERTICAL;
+                        addView(UIDialogs.Companion.GuideItemOption(context, "Album Thumbnails (eg. folder.jpg)"));
+                        addView(UIDialogs.Companion.GuideItemOption(context, "Playlists (eg. myPlaylist.m3u)"));
+                    }
+                ))
+            emptyView.isVisible = false;
+            emptyView.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                this.setMargins(0, 50.dp(resources), 0, 0);
+            }
+            findViewById<LinearLayout>(R.id.container_before).addView(emptyView);
 
             val fadeOffset = 10.dp(resources);
             recycler.setFadingEdgeLength(fadeOffset);
@@ -225,6 +244,7 @@ class FilesFragment: MainFragment() {
                 stack.add(item);
                 filesAdapter.setData(item.second);
                 updateOtherUI();
+                emptyView.isVisible = item.second.size == 0
                 return;
             }
 
@@ -236,16 +256,19 @@ class FilesFragment: MainFragment() {
                     withContext(Dispatchers.Main) {
                         filesAdapter.setData(items);
                     }
+                    emptyView.isVisible = items.size == 0
                 }
             else if(current.first is DocumentDirectoryItem) {
                 val childs = (current.first as DocumentDirectoryItem).getFiles();
                 stack.add(Pair(current.first, childs));
                 filesAdapter.setData(childs);
+                emptyView.isVisible = childs.size == 0
             }
             else if(current.first is DBDirectory) {
                 val childs = (current.first as DBDirectory).getFiles(context);
                 stack.add(Pair(current.first, childs));
                 filesAdapter.setData(childs);
+                emptyView.isVisible = childs.size == 0
             }
             updateOtherUI();
         }

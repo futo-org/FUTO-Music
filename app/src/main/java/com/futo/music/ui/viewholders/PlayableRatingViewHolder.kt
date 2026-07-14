@@ -97,11 +97,21 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
         }
         else {
             _buttonDone.isVisible = true;
-            setDone(value.markedRated);
+            setDone(value.markedRated || value.score > 0);
         }
 
+
+        _ratings.setRatingsFor(value);
         _textName.text = value.name;
 
+
+        if(value is DBTrack)
+            _textMetadata.text = value.artistLine
+        else
+            _textMetadata.text = "";
+
+        _playable = value;
+        
         StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
             value.getImage().let {
                 withContext(Dispatchers.Main) {
@@ -113,25 +123,6 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
                 }
             }
         }
-
-        if(value is DBTrack) {
-            _textMetadata.text = value.artistLine//if(value.playlist.trackDurations > 0) value.playlist.trackDurations.toHumanTimeIndicator() else "";
-            /*
-            if(value.duration >= 0) {
-                _textCount.text = value.duration.toLong().toHumanTime(true);
-                _textCount.isVisible = true;
-            }
-            else
-                _textCount.isVisible = false;*/
-        }
-        else {
-            _textMetadata.text = "";
-            //_textCount.isVisible = false;
-        }
-
-        _ratings.setRatingsFor(value);
-
-        _playable = value;
     }
     fun setDone(isDone: Boolean, byRating: Boolean = false) {
         _markedRated = isDone;

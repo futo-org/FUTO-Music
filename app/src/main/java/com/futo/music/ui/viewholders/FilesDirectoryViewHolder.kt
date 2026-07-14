@@ -52,7 +52,17 @@ class FilesDirectoryViewHolder(val viewGroup: ViewGroup) : IFilesView {
         if(value !is DocumentDirectoryItem)
             return;
         _textName.text = value.name;
-        _textMetadata.text = value.path;
+
+        try {
+            val parsed = Uri.parse(value.path);
+            if(parsed.lastPathSegment != null && parsed.lastPathSegment?.contains("/") ?: false)
+                _textMetadata.text = parsed.lastPathSegment;
+            else
+                _textMetadata.text = value.path;
+        }
+        catch (ex: Throwable) {
+            _textMetadata.text = value.path;
+        }
 
         val img = StateFiles.instance.getDirectoryImage(value.path);
         if(img != null)
