@@ -22,6 +22,7 @@ class StateApp {
     var homeRefreshTime: OffsetDateTime = OffsetDateTime.now()
         private set;
 
+
     fun refreshHome() {
         homeRefreshTime = OffsetDateTime.now();
     }
@@ -70,7 +71,6 @@ class StateApp {
             StateTelemetry.instance.initialize();
             StateTelemetry.instance.upload();
         }
-
     }
 
     fun shareFile(title: String, type: String, file: File) {

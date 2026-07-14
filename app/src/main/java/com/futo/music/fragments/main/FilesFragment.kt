@@ -326,8 +326,8 @@ class FilesFragment: MainFragment() {
                                     val item = DBDirectory(
                                         0,
                                         doc!!.name!!,
-                                        OffsetDateTime.MIN,
-                                        OffsetDateTime.MIN,
+                                        OffsetDateTime.now(),
+                                        OffsetDateTime.now(),
                                         uri.toString(), false
                                     );
                                     StateDatabase.instance.db.directoryDao().insert(item);

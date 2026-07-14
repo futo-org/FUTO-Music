@@ -114,6 +114,7 @@ import com.futo.music.models.playable.Artist
 import com.futo.music.models.playable.Track
 import com.futo.music.states.Announcement
 import com.futo.music.states.SessionAnnouncement
+import com.futo.music.states.StateFiles
 import com.futo.music.storage.db.DBDirectory
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.ManagedStore
@@ -249,6 +250,9 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             StateQueue.instance.restoreQueue(this@MainActivity);
+
+            val allThumbs = StateDatabase.instance.db.directoryThumbDao().getAll();
+            StateFiles.instance.prefill(allThumbs);
         }
 
         setContentView(R.layout.activity_main);

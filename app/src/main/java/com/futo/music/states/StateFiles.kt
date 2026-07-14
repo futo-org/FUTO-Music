@@ -8,9 +8,11 @@ import com.futo.music.constructs.Event1
 import com.futo.music.files.DocumentFileItem
 import com.futo.music.parentPath
 import com.futo.music.storage.db.DBDirectory
+import com.futo.music.storage.db.DBDirectoryThumbnail
 import com.futo.music.storage.db.DirectoryChildren
 import com.futo.music.toFileName
 import com.futo.music.toFileNameWithoutExtension
+import java.time.OffsetDateTime
 
 class StateFiles {
     val onScanning = Event1<String>();
@@ -26,6 +28,14 @@ class StateFiles {
         return fileThumbnails.getOrDefault(path, null);
     }
 
+    fun prefill(thumbs: List<DBDirectoryThumbnail>) {
+        for(thumb in thumbs) {
+            if(thumb.albumId > 0)
+                albumThumbnail.put(thumb.albumId, thumb.path);
+            fileThumbnails.put(thumb.directory, thumb.path);
+        }
+    }
+
     fun scanAndProcessDirectory(context: Context, dir: DBDirectory) {
         UIDialogs.appToast("Scanning [${dir.name}]");
         val result = scanDirectory(context, dir);
@@ -37,7 +47,19 @@ class StateFiles {
                 albumThumbnail.put(album, img.path);
             }
             fileThumbnails.put(img.path.parentPath(), img.path);
+
+            StateDatabase.instance.db.directoryThumbDao().insert(
+                DBDirectoryThumbnail(
+                    path = img.path,
+                    directory = path,
+                    albumId = album,
+                    dateUpdated = OffsetDateTime.now(),
+                    hidden = false
+                )
+            );
+
         }
+
     }
 
     fun scanDirectory(context: Context, dir: DBDirectory): DirectoryScanResult {
