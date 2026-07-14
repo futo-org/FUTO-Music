@@ -10,6 +10,7 @@ import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.constructs.Event2
 import com.futo.music.constructs.Event3
+import com.futo.music.logging.Logger
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.openPlayable
 import com.futo.music.states.StateApp
@@ -92,15 +93,7 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
             _imageThumbnail.setImageResource(R.drawable.unknown_music);
         */
 
-        if(value !is DBTrack) {
-            _buttonDone.isVisible = false;
-        }
-        else {
-            _buttonDone.isVisible = true;
-            setDone(value.markedRated || value.score > 0);
-        }
-
-
+        Logger.i("PlayableRatingViewHolder", "Setting Rating for " + value.name + ": " + value.score.toString());
         _ratings.setRatingsFor(value);
         _textName.text = value.name;
 
@@ -110,6 +103,15 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
         else
             _textMetadata.text = "";
 
+
+        if(value !is DBTrack) {
+            _buttonDone.isVisible = false;
+        }
+        else {
+            _buttonDone.isVisible = true;
+            setDone(value.markedRated || value.score > 0);
+        }
+        
         _playable = value;
 
         StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {

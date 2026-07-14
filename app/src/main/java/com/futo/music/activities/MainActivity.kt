@@ -123,6 +123,7 @@ import com.futo.music.toGradientDrawable
 import com.futo.music.toHumanBytesSize
 import com.futo.music.updater.Updater
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.DelicateCoroutinesApi
 import java.io.File
 import java.time.OffsetDateTime
 
@@ -456,6 +457,7 @@ class MainActivity : AppCompatActivity() {
         UIDialogs.showAlphaDialog(this, lifecycleScope);
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun checkForUpdate(skipDownloadQuery: Boolean) {
         if(BuildConfig.IS_PLAYSTORE_BUILD)
             return;

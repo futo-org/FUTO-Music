@@ -12,6 +12,7 @@ import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.UIDialogs.Companion.appToast
 import com.futo.music.constructs.Event1
+import com.futo.music.logging.Logger
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.PlayableType
 import com.futo.music.states.DBPlayableType
@@ -154,13 +155,15 @@ class RatingsButton: ConstraintLayout {
         //return if(item is DBTrack && item.scoreLevel != DBPlayableType.Track.value && item.scoreCalculated > 0) item.scoreCalculated / 20 else 0;
     }
     fun setRatingsFor(itemInput: IPlayable?, ratingChanged: ((Int, Int, DBPlayableType?)->Unit)? = null) {
-        onRatingChanged.remove(this);
+        val tag = this;
+        onRatingChanged.remove(tag);
         if(itemInput != null) {
             isVisible = true;
             var item: IPlayable = itemInput;
             val ghost = getGhostRating(item);
+            Logger.i("RatingsButton", "Setting score: " + item.score.toString());
             setStars(item.score / 20, ghost);
-            onRatingChanged.subscribe {
+            onRatingChanged.subscribe(tag) {
                 val rating = it * 20;
                 val currentItem = item;
                 currentItem.score = rating;
