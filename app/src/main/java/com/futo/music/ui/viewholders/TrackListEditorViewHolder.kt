@@ -12,7 +12,11 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.futo.music.R
 import com.futo.music.constructs.Event1
 import com.futo.music.models.playable.IPlayableTrack
+import com.futo.music.states.StateApp
 import com.futo.music.storage.db.DBTrack
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TrackListEditorViewHolder : ViewHolder {
     private val _root: ConstraintLayout;
@@ -82,8 +86,6 @@ class TrackListEditorViewHolder : ViewHolder {
 
     fun bind(t: IPlayableTrack, canEdit: Boolean, thumbnailVisible: Boolean = false) {
         if(t is DBTrack) {
-            t.getImage()
-                ?.setImageView(_imageThumbnail, R.drawable.unknown_music);
 
             _textName.text = t.name;
             _textMetadata.text = t.author;
@@ -97,7 +99,18 @@ class TrackListEditorViewHolder : ViewHolder {
             }
 
             if(thumbnailVisible) {
-                _imageThumbnail.visibility = View.VISIBLE;
+                StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
+                    t.getImage().let {
+                        withContext(Dispatchers.Main) {
+                            if(trackCurrent != t) return@withContext
+                            if (it?.isEmpty == false)
+                                it.setImageView(_imageThumbnail, R.drawable.unknown_music);
+                            else
+                                _imageThumbnail.setImageResource(R.drawable.unknown_music);
+                            _imageThumbnail.visibility = View.VISIBLE;
+                        }
+                    }
+                }
             }
             else {
                 _imageThumbnail.visibility = View.GONE;

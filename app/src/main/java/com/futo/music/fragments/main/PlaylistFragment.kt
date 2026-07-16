@@ -224,7 +224,7 @@ class PlaylistFragment: MainFragment() {
             }
 
             fragment.lifecycleScope.launch(Dispatchers.IO) {
-                val songs = StateDatabase.instance.getPlaylistTracks(playlist.id)
+                val songs = StateDatabase.instance.getPlaylistTracks(playlist.id);
 
                 withContext(Dispatchers.Main) {
                     //_adapter.setData(songs)
