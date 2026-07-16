@@ -6,10 +6,12 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
+import androidx.core.view.setPadding
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.constructs.Event2
 import com.futo.music.constructs.Event3
+import com.futo.music.dp
 import com.futo.music.logging.Logger
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.openPlayable
@@ -57,7 +59,7 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
 
             _playable?.let {
                 if(it is DBTrack) {
-                    setDone(rating > 0)
+                    setDone(rating > 0, rating = rating)
                 }
             }
         }
@@ -75,7 +77,7 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
             val newValue = !_markedRated;
             _playable?.let {
                 if(it is DBTrack) {
-                    setDone(newValue);
+                    setDone(newValue, rating = it.score);
                     StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
                         StateDatabase.instance.db.tracksDao().setMarkedRated(DBSetMarkRated(it.id, _markedRated));
                     }
@@ -109,7 +111,7 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
         }
         else {
             _buttonDone.isVisible = true;
-            setDone(value.markedRated || value.score > 0);
+            setDone(value.markedRated || value.score > 0, rating = value.score);
         }
 
         _playable = value;
@@ -126,16 +128,24 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
             }
         }
     }
-    fun setDone(isDone: Boolean, byRating: Boolean = false) {
+    fun setDone(isDone: Boolean, byRating: Boolean = false, rating: Int = -999) {
         _markedRated = isDone;
         _buttonDone.setImageResource(if(_markedRated) R.drawable.ic_check_active else R.drawable.ic_check);
         if(_markedRated) {
             _textMetadata.text = "Will disappear on reload";
-            _view.alpha = 0.5f;
+            _buttonDone.setBackgroundResource(R.drawable.background_bar_round_4dp_22);
+            _buttonDone.setPadding(10.dp(_view.context.resources),10.dp(_view.context.resources),10.dp(_view.context.resources),10.dp(_view.context.resources))
+            if(rating != -999 && rating <= 0)
+                _ratings.alpha = 0.5f;
+            else
+                _ratings.alpha = 1.0f;
         }
         else {
             _textMetadata.text = "";
-            _view.alpha = 1f;
+            _ratings.alpha = 1f;
+            _buttonDone.setBackgroundResource(R.drawable.background_bar_round_4dp);
+            _buttonDone.setPadding(10.dp(_view.context.resources),10.dp(_view.context.resources),10.dp(_view.context.resources),10.dp(_view.context.resources))
+            _buttonDone.scaleType = ImageView.ScaleType.FIT_CENTER
         }
     }
 

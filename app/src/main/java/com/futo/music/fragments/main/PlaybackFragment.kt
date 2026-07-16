@@ -61,8 +61,8 @@ import kotlinx.coroutines.withContext
 
 class PlaybackFragment: MainFragment() {
     override val isMainView : Boolean = true;
-    override val isTab: Boolean = true;
-    override val isHistory: Boolean = false;
+    override val isTab: Boolean = false;
+    override val isHistory: Boolean = true;
 
     private var _player: PlayerManager? = null;
 
