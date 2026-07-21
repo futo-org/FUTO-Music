@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.app.Dialog
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
@@ -89,6 +90,19 @@ class PlaybackFragment: MainFragment() {
     override fun onShownWithView(parameter: Any?, isBack: Boolean) {
         super.onShownWithView(parameter, isBack);
         _view?.onShown(parameter);
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig);
+
+        StateApp.instance.activity()?.let { act -> //Forces rerendering with different layout without recreating the entire MainActivity.
+            if(act.fragCurrent == this) {
+                parentFragmentManager.beginTransaction()
+                    .detach(this).commitNow();
+                parentFragmentManager.beginTransaction()
+                    .attach(this).commitNow();
+            }
+        }
     }
 
     override fun onHide() {
