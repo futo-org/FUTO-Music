@@ -93,6 +93,11 @@ class StateDatabase(
 
         return (searchAlbums + searchArtists + searchTracks).sortedBy { it.name.levenshtein(str) };
     }
+    fun searchTracks(str: String): List<DBTrack> {
+        val searchTracks = db.tracksDao().search(str);
+
+        return (searchTracks).sortedBy { it.name.levenshtein(str) };
+    }
 
     fun getAlbum(id: Long): DBAlbum? = db.albumDao().get(id);
     fun getTrack(id: Long): DBTrack? = db.tracksDao().get(id);

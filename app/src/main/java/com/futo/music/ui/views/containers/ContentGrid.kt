@@ -16,6 +16,7 @@ import com.futo.music.dp
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.ui.adapters.ContentAdapter
 import com.futo.music.ui.buttons.RoundButton
+import com.futo.music.ui.decorator.HorizontalCenterDecoration
 import com.futo.music.ui.views.grid.GridSettings
 import kotlin.math.floor
 
@@ -54,7 +55,11 @@ class ContentGrid: ConstraintLayout {
             onOutsideClick.emit()
         };
         if(vertical) {
-            recycler.layoutManager = GridLayoutManager(context, 3);
+            val rowCountFit = if(context.resources.configuration.screenWidthDp > 700)
+                context.resources.configuration.screenWidthDp / 150;
+            else 3;
+            recycler.layoutManager = GridLayoutManager(context, rowCountFit);
+            recycler.addItemDecoration(HorizontalCenterDecoration(context.resources.configuration.screenWidthDp.dp(resources) / rowCountFit))
             buttonList = null;
         }
         else {

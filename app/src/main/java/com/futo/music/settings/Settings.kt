@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.declaredMemberProperties
@@ -150,6 +151,12 @@ class Settings : FragmentedStorageFileJson() {
                 }
             });
         }
+
+
+        //@Setting("ShowCase Mode", "HIDES ITEMS WITHOUT THUMBNAIL ON HOME DO NOT TURN ON", order = 2, type = SettingType.TOGGLE)
+        @Transient
+        public val isShowcaseMode: Boolean = false;
+
     }
     @SettingsGroup("Developer", 9999)
     var developer = DeveloperSettings();

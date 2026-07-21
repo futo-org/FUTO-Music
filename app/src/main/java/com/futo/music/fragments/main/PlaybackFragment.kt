@@ -31,6 +31,7 @@ import androidx.media3.ui.TimeBar
 import com.futo.music.IPlayableWithPlaySettings
 import com.futo.music.R
 import com.futo.music.UIDialogs
+import com.futo.music.dp
 import com.futo.music.extensions.setAlbumArt
 import com.futo.music.extractBitmap
 import com.futo.music.fragments.MainFragView
@@ -191,6 +192,7 @@ class PlaybackFragment: MainFragment() {
 
             _imageArtist = findViewById(R.id.image_artist);
             _imageAlbum = findViewById(R.id.image_album);
+
 
             _buttonsRating = findViewById(R.id.buttons_rating);
             _textRatingNote = findViewById(R.id.text_rating_note);

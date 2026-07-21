@@ -20,6 +20,7 @@ import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.Vibe
 import com.futo.music.models.playable.QueueType
 import com.futo.music.openPlayable
+import com.futo.music.settings.Settings
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateLibrary
@@ -357,9 +358,9 @@ class HomeFragment: MainFragment() {
                     }
                 }
 
-                val recent = fragment._dataRecent ?: StateDatabase.instance.getRecentPlays();
-                val artists = fragment._dataArtists ?: StateDatabase.instance.getArtistsByRecent();
-                val albums = fragment._dataAlbums ?:  StateDatabase.instance.getAlbumsByRecent();
+                var recent = fragment._dataRecent ?: StateDatabase.instance.getRecentPlays();
+                var artists = fragment._dataArtists ?: StateDatabase.instance.getArtistsByRecent();
+                var albums = fragment._dataAlbums ?:  StateDatabase.instance.getAlbumsByRecent();
                 var playlists = (fragment._dataPlaylists ?: StateDatabase.instance.getPlaylistsByRecent()).map { it as IPlayable };
                 val songNew = fragment._dataSongNew ?: StateDatabase.instance.getTracksNew(20);
 
@@ -367,6 +368,37 @@ class HomeFragment: MainFragment() {
                 val mostPlayed = fragment._dataMostPlayed ?: StateDatabase.instance.getMostPlayed(20);
 
                 //val vibeWeighted = fragment._dataVibeWeighted ?: Vibe("Suggested", ImageVariable.fromResource(R.drawable.ic_playlist), listOf(), listOf(), StateDatabase.instance.getTrackListWeighted(100));
+
+                //TODO: Move this out somwehere else?
+                if(Settings.instance.developer.isShowcaseMode) {
+                    UIDialogs.appToast("SHOWCASE MODE ENABLED, FILTERED RESULTS");
+                    if(playlists.size == 0) {
+                        val id1 = StateDatabase.instance.db.playlistDao().insert(DBPlaylist(name = "Movie Music")).first()
+                        val id2 = StateDatabase.instance.db.playlistDao().insert(DBPlaylist(name = "Favorites")).first();
+                        StateDatabase.instance.addTrackToPlaylist(id1, StateDatabase.instance.searchTracks("Border Reiver").first().id);
+                        StateDatabase.instance.addTrackToPlaylist(id1, StateDatabase.instance.searchTracks("Goa").first().id);
+                        StateDatabase.instance.addTrackToPlaylist(id1, StateDatabase.instance.searchTracks("Howard Shore / Concerning Hobbits").first().id);
+                        StateDatabase.instance.addTrackToPlaylist(id1, StateDatabase.instance.searchTracks("In The House - In A Heartbeat").first().id);
+                        StateDatabase.instance.addTrackToPlaylist(id1, StateDatabase.instance.searchTracks("Howard Shore / The Shadow Of").first().id);
+                        StateDatabase.instance.addTrackToPlaylist(id1, StateDatabase.instance.searchTracks("Howard Shore / The Black Rider").first().id);
+                        StateDatabase.instance.addTrackToPlaylist(id2, StateDatabase.instance.searchTracks("Chandelier").first().id);
+                        StateDatabase.instance.addTrackToPlaylist(id2, StateDatabase.instance.searchTracks("Wild Child").first().id);
+                        StateDatabase.instance.addTrackToPlaylist(id2, StateDatabase.instance.searchTracks("Heat Of The Moment").first().id);
+                        StateDatabase.instance.addTrackToPlaylist(id2, StateDatabase.instance.searchTracks("Californication").first().id);
+                        StateDatabase.instance.updatePlaylistMetadata(id1);
+                        StateDatabase.instance.updatePlaylistMetadata(id2);
+                        playlists = (fragment._dataPlaylists ?: StateDatabase.instance.getPlaylistsByRecent()).map { it as IPlayable };
+                    }
+
+                    val showcaseRecent = listOf("Asia", "Queen II", "The Dark Side Of The Moon", "Revolver")
+                        .mapNotNull { albums.find { album -> album.name.trim() == it} };
+                    recent = if(showcaseRecent.isEmpty())
+                        recent.filter { val n = it.getImage(); return@filter !(n?.isEmpty ?: true) }
+                    else showcaseRecent;
+                    artists = artists.filter { val n = it.getImage(); return@filter !(n?.isEmpty ?: true) }
+                    albums = albums.filter { val n = it.getImage(); return@filter !(n?.isEmpty ?: true) }
+                }
+
 
                 //fragment._dataRecent = recent;
                 fragment._dataArtists = artists;

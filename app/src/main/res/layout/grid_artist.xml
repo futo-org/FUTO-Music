@@ -13,13 +13,12 @@
         android:layout_height="90dp"
         android:layout_width="90dp"
         android:layout_marginTop="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
         android:scaleType="centerCrop"
         app:shapeAppearanceOverlay="@style/roundedCorners_60dp"
         app:srcCompat="@drawable/ic_artist_thumbnail"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
 
     <TextView
         android:id="@+id/text_count"

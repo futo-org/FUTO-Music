@@ -4,7 +4,6 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
 
-
         <item name="windowSplashScreenBackground">#000000</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo_music</item>
         <item name="postSplashScreenTheme">@string/app_name</item>

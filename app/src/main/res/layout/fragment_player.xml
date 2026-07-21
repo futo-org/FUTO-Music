@@ -20,6 +20,7 @@
         android:layout_marginTop="40dp"
         android:layout_marginLeft="60dp"
         android:layout_marginRight="60dp"
+        android:adjustViewBounds="true"
         android:src="#111111"
         android:scaleType="centerCrop"
         app:shapeAppearanceOverlay="@style/roundedCorners_8dp"

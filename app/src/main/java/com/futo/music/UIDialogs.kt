@@ -158,7 +158,8 @@ class UIDialogs {
                     listOf(
                         GuideItemOption(context, "Better Metadata Auto-Tagging"),
                         GuideItemOption(context, "Improved Smart Shuffles"),
-                        GuideItemOption(context, "Improved UI"),
+                        GuideItemOption(context, "Better Car Support"),
+                        GuideItemOption(context, "Additional Features"),
                     ))
             ), true)
         }
