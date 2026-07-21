@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
@@ -239,6 +240,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen();
         super.onCreate(savedInstanceState);
+
+        if(resources.configuration.smallestScreenWidthDp < 600)
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
         enableEdgeToEdge(
             navigationBarStyle = SystemBarStyle.light(
