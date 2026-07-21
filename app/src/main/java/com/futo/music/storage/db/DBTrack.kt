@@ -241,6 +241,8 @@ interface DBTrackDao {
 
     @Update(entity = DBTrack::class)
     fun setRating(update: DBTrackUpdateRating): Int
+    @Update(entity = DBTrack::class)
+    fun setRating(update: DBTrackUpdateRatingDone): Int
 
     @Update(entity = DBTrack::class)
     fun setHidden(update: DBSetHidden): Int
@@ -273,6 +275,12 @@ class DBTrackUpdateOpened(
 class DBTrackUpdateRating(
     val id: Long,
     val score: Int
+)
+@Entity
+class DBTrackUpdateRatingDone(
+    val id: Long,
+    val score: Int,
+    val markedRated: Boolean
 )
 
 

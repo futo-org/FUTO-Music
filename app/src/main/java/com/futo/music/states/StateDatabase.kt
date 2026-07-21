@@ -31,6 +31,7 @@ import com.futo.music.storage.db.DBTrackUpdateOpened
 import com.futo.music.storage.db.DBTrackUpdatePlayed
 import com.futo.music.storage.db.DBTrackUpdateRating
 import com.futo.music.storage.db.DBTrackUpdateRatingCalculated
+import com.futo.music.storage.db.DBTrackUpdateRatingDone
 import java.time.OffsetDateTime
 
 enum class DBPlayableType(val value: Int) {
@@ -298,7 +299,10 @@ class StateDatabase(
         return result;
     }
     fun setRatingTrack(trackId: Long, rating: Int): Pair<DBPlayableType?, Int>? {
-        val result = db.tracksDao().setRating(DBTrackUpdateRating(trackId, rating)) > 0;
+        val result = if(rating == 0)
+            db.tracksDao().setRating(DBTrackUpdateRatingDone(trackId, rating, true)) > 0;
+        else
+            db.tracksDao().setRating(DBTrackUpdateRating(trackId, rating)) > 0;
 
         val track = db.tracksDao().get(trackId);
         if(track != null) {
