@@ -105,6 +105,7 @@ import com.bumptech.glide.RequestBuilder
 import com.futo.music.BuildConfig
 import com.futo.music.Constants
 import com.futo.music.fragments.main.AlbumFragment
+import com.futo.music.fragments.main.BuyFragment
 import com.futo.music.fragments.main.FilesFragment
 import com.futo.music.fragments.main.PlaylistFragment
 import com.futo.music.fragments.main.RatingsListFragment
@@ -164,6 +165,7 @@ class MainActivity : AppCompatActivity() {
     private val _fragSettings = SettingsFragment();
     private val _fragRatingsList = RatingsListFragment();
     private val _fragFiles = FilesFragment();
+    private val _fragBuy = BuyFragment();
 
     //Main
 
@@ -196,7 +198,8 @@ class MainActivity : AppCompatActivity() {
         Pair(PlaylistFragment::class, FragmentDefinition(null, _fragBotMenu, { _fragPlaylist })),
         Pair(SettingsFragment::class, FragmentDefinition(null, null, { _fragSettings })),
         Pair(RatingsListFragment::class, FragmentDefinition(_fragTopNavigation, _fragBotMenu, { _fragRatingsList })),
-        Pair(FilesFragment::class, FragmentDefinition(_fragTopNavigation, _fragBotMenu, { _fragFiles }))
+        Pair(FilesFragment::class, FragmentDefinition(_fragTopNavigation, _fragBotMenu, { _fragFiles })),
+        Pair(BuyFragment::class, FragmentDefinition(_fragTopNavigation, _fragBotMenu, { _fragBuy }))
     );
 
     init {

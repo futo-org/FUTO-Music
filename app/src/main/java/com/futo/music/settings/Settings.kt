@@ -3,6 +3,7 @@ package com.futo.music.settings
 import com.futo.music.BuildConfig
 import com.futo.music.R
 import com.futo.music.UIDialogs
+import com.futo.music.fragments.main.BuyFragment
 import com.futo.music.fragments.main.ContentsFragment
 import com.futo.music.fragments.main.SearchFragment
 import com.futo.music.logging.Logger
@@ -14,6 +15,7 @@ import com.futo.music.storage.db.DBPlaylistUpdateRating
 import com.futo.music.storage.db.DBTrackUpdateRating
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.FragmentedStorageFileJson
+import com.futo.music.storage.file.StringStorage
 import com.futo.music.ui.views.containers.Setting
 import com.futo.music.ui.views.containers.SettingType
 import com.futo.music.ui.views.containers.SettingsGroup
@@ -43,6 +45,11 @@ class Settings : FragmentedStorageFileJson() {
 
     @Serializable
     class GeneralSettings {
+        @Setting("Buy FUTO Music", "Support the development of this app.", icon = "ic_money", order = 0, filterPlaystore = true)
+        fun buyNav() {
+            val act = StateApp.instance.activity() ?: return;
+            act.navigate<BuyFragment>();
+        }
 
         //@Setting("Queue Entire Collections", "When tapping specific track in collection, queue entire collection instead of just one track", order = 1)
         public var queueEntireCollection = true;
@@ -51,7 +58,7 @@ class Settings : FragmentedStorageFileJson() {
         public var overlayWhenPlaying = true;
 
     }
-    //@SettingsGroup("General")
+    @SettingsGroup("General", 0)
     var general = GeneralSettings();
 
 
@@ -152,6 +159,11 @@ class Settings : FragmentedStorageFileJson() {
             });
         }
 
+        @Setting("Clear First Startup", "Reset initial startup, does not clear database")
+        fun clearStartup() {
+            FragmentedStorage.get<StringStorage>("showedAlpha").setAndSave("");
+            UIDialogs.toast("Cleared startup boolean");
+        }
 
         //@Setting("ShowCase Mode", "HIDES ITEMS WITHOUT THUMBNAIL ON HOME DO NOT TURN ON", order = 2, type = SettingType.TOGGLE)
         @Transient

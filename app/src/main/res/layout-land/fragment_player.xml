@@ -288,6 +288,31 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
+            <ImageView
+                android:id="@+id/image_reason"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintDimensionRatio="1"
+                app:layout_constraintTop_toTopOf="@id/text_reason"
+                app:layout_constraintLeft_toLeftOf="@id/container_title"
+                app:layout_constraintBottom_toBottomOf="@id/text_reason"
+                android:layout_marginLeft="5dp"
+                android:alpha="0.3"
+                android:src="@drawable/ic_imagine" />
+            <TextView
+                android:id="@+id/text_reason"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="textStart"
+                android:textSize="12dp"
+                android:textColor="#666"
+                android:fontFamily="@font/inter_regular"
+                app:layout_constraintTop_toBottomOf="@id/container_title"
+                android:layout_marginLeft="50dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"
+                android:text="" />
 
             <LinearLayout
                 android:id="@+id/container_buttons"

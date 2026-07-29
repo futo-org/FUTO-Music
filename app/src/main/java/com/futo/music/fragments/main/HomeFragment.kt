@@ -307,9 +307,9 @@ class HomeFragment: MainFragment() {
                     val scores = StateDatabase.instance.getScoresContainer();
                     val shuffle = ESmartShuffle(scores);
 
-                    val tracks = shuffle.getTracks(500);
+                    val tracks = shuffle.getTracksWithReason(500);
                     withContext(Dispatchers.Main) {
-                        fragment.navigate<PlaybackFragment>(Vibe("Smart Shuffle", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks, QueueType.SmartShuffle));
+                        fragment.navigate<PlaybackFragment>(Vibe("Smart Shuffle", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks.first, QueueType.SmartShuffle, reasons = tracks.second));
                     }
                 }
             }

@@ -153,6 +153,9 @@ class PlaybackFragment: MainFragment() {
         private val _textQueue: TextView;
         private val _buttonPlaylistAdd: ImageButton;
 
+        private val _imageReason: ImageView;
+        private val _textReason: TextView;
+
         private val _starAlbum: StarButton?;
         private val _starArtist: StarButton?;
 
@@ -231,6 +234,10 @@ class PlaybackFragment: MainFragment() {
             _textQueue = findViewById(R.id.text_queue);
             _buttonPlaylistAdd = findViewById(R.id.button_add_playlist);
             _queueOverlay = findViewById(R.id.overlay_queue);
+
+            _imageReason = findViewById(R.id.image_reason);
+            _textReason = findViewById(R.id.text_reason);
+            _imageReason.isVisible = false;
 
             _buttonBack.setOnClickListener {
                 fragment.closeSegment();
@@ -461,8 +468,6 @@ class PlaybackFragment: MainFragment() {
             if(playable !is DBTrack)
                 return;
 
-            UIDialogs.appToast("This UI is WIP");
-
             val view = PlayingInfoOverlay(context);
             view.onClose.subscribe {
                 hidePlaying();
@@ -523,7 +528,12 @@ class PlaybackFragment: MainFragment() {
                 val album = track?.mediaStoreAlbumId?.let {
                     StateDatabase.instance.getAlbumByMSID(track.mediaStoreAlbumId);
                 }
+
+
                 withContext(Dispatchers.Main) {
+                    val index = fragment._player?.player?.currentMediaItemIndex;
+                    val reason = if(index != null) StateQueue.instance.getRecommendationReason(index) else null;
+
                     if(artist?.score != null) {
                         _starArtist?.setRating(artist.score);
                         _starArtist?.isVisible = true;
@@ -536,6 +546,16 @@ class PlaybackFragment: MainFragment() {
                     }
                     else
                         _starAlbum?.isVisible = false;
+
+                    if(reason == null || reason.isEmpty()) {
+                        _textReason.isVisible = false;
+                        _imageReason.isVisible = false;
+                    }
+                    else {
+                        _textReason.text = "Reason: " + reason;
+                        _textReason.isVisible = true;
+                        _imageReason.isVisible = true;
+                    }
                 }
             }
         }

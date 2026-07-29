@@ -40,10 +40,16 @@ class StateQueue {
     private var _lastSetQueuePlayable: IPlayable? = null;
     private var _lastSetMediaItems: List<MediaItem>? = null;
 
+    private var _reasons: List<String?>? = null;
+
     private val _lastSetQueuePlayableDescriptor: ManagedStore<PlayableDescriptor?> = FragmentedStorage.storeJson<PlayableDescriptor?>("lastPlayable").load();
 
     fun setPlayer(manager: PlayerManager) {
         _player = manager;
+    }
+
+    fun getRecommendationReason(queueIndex: Int): String? {
+        return _reasons?.elementAtOrNull(queueIndex);
     }
 
     fun restoreQueue(context: Context) {
@@ -123,6 +129,9 @@ class StateQueue {
             else if(playable is DBPlaylist)
                 StateDatabase.instance.setPlayedPlaylist(playable.id);
 
+            val reasons = if(playable is Vibe)
+                playable.recomReasons
+            else null;
 
             val items = playable.getTracks(context);
 
@@ -132,6 +141,7 @@ class StateQueue {
             synchronized(_queue) {
                 _queue.clear();
                 _queue.addAll(items);
+                _reasons = reasons;
                 _lastSetQueuePlayable = playable;
                 newQueue = _queue.toList();
             }
@@ -165,6 +175,7 @@ class StateQueue {
     fun clearQueue() {
         synchronized(_queue) {
             _queue.clear();
+            _reasons = null;
             _lastSetQueuePlayable = null;
             setLastMediaItems(listOf());
             clearPersistentQueue();
@@ -232,6 +243,7 @@ class StateQueue {
         synchronized(_queue) {
             _queue.clear();
             _queue.addAll(items);
+            _reasons = null;
             _lastSetQueuePlayable = currentPlayable;
             newQueue = _queue.toList();
         }

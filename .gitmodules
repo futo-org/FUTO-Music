@@ -1,0 +1,3 @@
+[submodule "deps/futopay"]
+	path = deps/futopay
+	url = git@gitlab.futo.org:videostreaming/futopayclientlibraries.git

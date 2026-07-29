@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/background_glow"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ic_launcher"
+            app:shapeAppearance="@style/roundedCorners_70dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="20dp"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FUTO Music"
+            android:fontFamily="@font/inter_medium"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:textSize="25sp"
+            />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:text="Purchasing our apps supports development of software like this and more.\n\nLicenses are valid for 3 years worth of updates."
+            android:gravity="center"
+            android:layout_margin="10dp"
+            android:fontFamily="@font/inter_light"
+            android:autoSizeTextType="uniform"
+            />
+
+        <TextView
+            android:id="@+id/text_price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:layout_margin="10dp"
+            android:fontFamily="@font/inter_light"
+            android:text="$15.00"
+            android:gravity="center"
+            android:autoSizeTextType="uniform"
+            />
+
+    </LinearLayout>
+
+
+    <Button
+        android:id="@+id/button_next"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background_button_primary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:textAllCaps="false"
+        android:text="Buy"
+        android:layout_margin="10dp" />
+
+
+    <FrameLayout
+        android:id="@+id/overlay_paying"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="999dp"
+        android:visibility="gone" />
+    <FrameLayout
+        android:id="@+id/overlay_paid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="999dp"
+        android:visibility="gone" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -85,7 +85,9 @@ class SettingsFragment: MainFragment() {
 
             val groups = _settings.getGroups();
 
-            adapter = TabAdapter(fragment.childFragmentManager, fragment.lifecycle, groups.filter { _settings.developer.isDeveloper || it.second.name != "Developer" }.map { TabDescriptor(it.second.name){
+            adapter = TabAdapter(fragment.childFragmentManager, fragment.lifecycle, groups
+                    .filter { _settings.developer.isDeveloper || it.second.name != "Developer" }
+                    .map { TabDescriptor(it.second.name){
                 AFragment({ inflater, container ->
                     val sets = SettingsView(context) { view, setting ->
                         if(setting.name == "Version") {

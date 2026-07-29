@@ -1,11 +1,9 @@
 package com.futo.music.logic.shuffles
 
-import com.futo.music.models.playable.PlayableType
 import com.futo.music.states.DBPlayableType
 import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBPlaylist
-import com.futo.music.storage.db.ScoredItem
 
 class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
     val chanceStar1 = 4;
@@ -16,8 +14,8 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
 
 
 
-    override fun getTrackIds(count: Int): List<Long> {
-        val tracks = ArrayList<Long>();
+    override fun getTrackIds(count: Int): List<RecommendationTrack> {
+        val tracks = ArrayList<RecommendationTrack>();
         val scores = scoresRoot.copy();
 
         val albumCache = HashMap<Long, MutableList<Long>>();
@@ -43,16 +41,14 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
                 break;
             val targetScore = selectScore(chance1, chance2, chance3, chance4, chance5); //Selects a given star assignment with the chances described above.
             val options = scores.scores[targetScore]; //All tracks/albums/artists/playlists with a given score/star rating.
-            if(options == null) {
-                val asd = "";
-            }
+
             val optionIndex = random.nextInt(options!!.size); //Randomly selected playable option (track/album/artist/playlist)
 
             val option = options[optionIndex];
 
-            val selectedTrackIds = when(option.type) {
+            val selectedTrackRecoms = when(option.type) {
                 DBPlayableType.Track -> {
-                    listOf(option.id);
+                    listOf(RecommendationTrackSelection(option.id, $"Track rated ${scoreToStar(targetScore)} stars"));
                 }
                 DBPlayableType.Album -> {
                     //Either fetch the existing track list, or if first time selected, fetch a new fresh list from database.
@@ -67,7 +63,7 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
                     }
                     if(album?.shuffleCombined ?: false) {
                         options.remove(option);
-                        tracks;
+                        tracks.map { RecommendationTrackSelection(it, $"Album rated ${scoreToStar(targetScore)} stars (Combined)", true) };
                     }
                     else {
                         val selectTrackIndex = random.nextInt(tracks.size);
@@ -75,7 +71,7 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
                         tracks.remove(trackId);
                         if (tracks.size == 0)
                             options.remove(option); //Remove the album from the possible options if no tracks remain
-                        listOf(trackId);
+                        listOf(RecommendationTrackSelection(trackId, $"Album rated ${scoreToStar(targetScore)} stars"));
                     }
                 }
                 DBPlayableType.Artist -> {
@@ -89,7 +85,7 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
                     tracks.remove(trackId);
                     if(tracks.size == 0)
                         options.remove(option);
-                    listOf(trackId);
+                    listOf(RecommendationTrackSelection(trackId, $"Artist rated ${scoreToStar(targetScore)} stars"));
                 }
                 DBPlayableType.Playlist -> {
                     val tracks = playlistCache.getOrDefault(option.id, null) ?: StateDatabase.instance.getPlaylistTrackIds(option.id).let {
@@ -103,7 +99,7 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
                     }
                     if(playlist?.shuffleCombined ?: false) {
                         options.remove(option);
-                        tracks; //Return all tracks of a shuffleCombined playlist in their original order.
+                        tracks.map { RecommendationTrackSelection(it, $"Playlist rated ${scoreToStar(targetScore)} stars (Combined)", true) }; //Return all tracks of a shuffleCombined playlist in their original order.
                     }
                     else {
                         val selectTrackIndex = random.nextInt(tracks.size);
@@ -111,17 +107,20 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
                         tracks.remove(trackId);
                         if (tracks.size == 0)
                             options.remove(option);
-                        listOf(trackId);
+                        listOf(RecommendationTrackSelection(trackId, $"Playlist rated ${scoreToStar(targetScore)} stars"));
                     }
                 }
                 else -> listOf()
             }
 
-            for(selectedTrackId in selectedTrackIds) {
-                val trackScore = scores.getTrackById(selectedTrackId);
+            for(selectedTrackRecom in selectedTrackRecoms) {
+                val trackScore = scores.getTrackById(selectedTrackRecom.id);
                 if (trackScore != null) {
-                    scores.removeTrack(selectedTrackId);
-                    tracks.add(trackScore.id);
+                    scores.removeTrack(selectedTrackRecom.id);
+                    tracks.add(RecommendationTrack(trackScore.id, selectedTrackRecom.reason));
+                }
+                else if(selectedTrackRecom.forceAdd) {
+                    tracks.add(RecommendationTrack(selectedTrackRecom.id, selectedTrackRecom.reason));
                 }
             }
         }
@@ -129,5 +128,5 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
         return tracks;
     }
 
-
+    class RecommendationTrackSelection(id: Long, reason: String, val forceAdd: Boolean = false) : RecommendationTrack(id, reason);
 }

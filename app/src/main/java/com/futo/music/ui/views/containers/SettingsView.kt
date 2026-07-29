@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.updateLayoutParams
+import com.futo.music.BuildConfig
 import com.futo.music.R
 import com.futo.music.constructs.Event0
 import com.futo.music.constructs.Event1
@@ -48,6 +49,9 @@ class SettingsView: LinearLayout {
         for(met in mets) {
             val ann = met.findAnnotation<Setting>();
 
+            if((BuildConfig.IS_PLAYSTORE_BUILD && ann?.filterPlaystore == true))
+                continue;
+
             val view = SettingsButtonView(context);
             view.setLabel(ann!!.name, ann.description);
             if(ann.icon.isNotBlank())
@@ -71,6 +75,8 @@ class SettingsView: LinearLayout {
                 .filter { it.second != null }
                 .sortedBy { it.second!!.order }) {
             if(item.second == null)
+                continue;
+            if((BuildConfig.IS_PLAYSTORE_BUILD && item.second?.filterPlaystore == true))
                 continue;
 
             val type = if(item.second!!.type == SettingType.UNKNOWN)
@@ -96,6 +102,8 @@ class SettingsView: LinearLayout {
             .filter { it.second != null }
             .sortedBy { it.second!!.order }) {
             if(item.second == null)
+                continue;
+            if((BuildConfig.IS_PLAYSTORE_BUILD && item.second?.filterPlaystore == true))
                 continue;
 
             val type = if(item.second!!.type == SettingType.UNKNOWN)
@@ -147,7 +155,7 @@ annotation class SettingsGroup(val name: String, val order: Int = 999);
 
 @Target(AnnotationTarget.FIELD, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class Setting(val name: String, val description: String, val type: SettingType = SettingType.UNKNOWN, val order: Int = 999, val icon: String = "");
+annotation class Setting(val name: String, val description: String, val type: SettingType = SettingType.UNKNOWN, val order: Int = 999, val icon: String = "", val filterPlaystore: Boolean = false);
 
 enum class SettingType {
     UNKNOWN,

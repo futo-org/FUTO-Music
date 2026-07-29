@@ -19,17 +19,21 @@ class Vibe: IPlayable {
 
     val vibeType: QueueType;
 
+    var recomReasons: List<String?>?;
+
+
     override var score: Int = 0;
 
     override val datePlayed: OffsetDateTime? = null;
 
-    constructor(name: String, art: ImageVariable, albums: List<DBAlbum>, artists: List<DBArtist>, tracks: List<DBTrack>, type: QueueType = QueueType.Unknown) {
+    constructor(name: String, art: ImageVariable, albums: List<DBAlbum>, artists: List<DBArtist>, tracks: List<DBTrack>, type: QueueType = QueueType.Unknown, reasons: List<String?>? = null) {
         this.name = name;
         this.art = art;
         this.albums = albums;
         this.artist = artists;
         this.singles = tracks;
         this.vibeType = type;
+        this.recomReasons = reasons;
     }
 
 

@@ -19,6 +19,13 @@ dependencyResolutionManagement {
     }
 }
 
+includeBuild("deps/futopay/android") {
+    dependencySubstitution {
+        substitute(module("com.futo.futopay:app"))
+            .using(project(":app"))
+    }
+}
+
 rootProject.name = "FUTO Music"
 include(":app")
  
