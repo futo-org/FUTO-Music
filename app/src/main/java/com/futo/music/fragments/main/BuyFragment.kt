@@ -76,7 +76,7 @@ class BuyFragment: MainFragment() {
             }
 
             buttonNext.setOnClickListener {
-                _paymentManager.startPayment(StatePayment.instance, fragment.lifecycleScope, "futo-music");
+                _paymentManager.startPayment(StatePayment.instance, fragment.lifecycleScope, "futo-music", "futo-music", "futo-music");
             }
         }
 
