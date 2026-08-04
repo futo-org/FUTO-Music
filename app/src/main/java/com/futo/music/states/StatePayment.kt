@@ -13,7 +13,7 @@ class StatePayment: PaymentState(if(isTestingPayment) VERIFICATION_PUBLIC_KEY_TE
     override val polarOrgSlug: String get() = "futo-music";
     override val polarProductSlug: String get() = "futo-music";
     override val polarProductId: String get() = "futo-music";
-
+    override val appActivatePrefix: String get() = "futo-music";
 
     override fun savePaymentKey(licenseKey: String, licenseActivation: String) {
         FragmentedStorage.get<StringStorage>("paymentLicenseKey").setAndSave(licenseKey);

@@ -2,6 +2,7 @@ package com.futo.music.activities
 
 import android.animation.Animator
 import android.annotation.SuppressLint
+import android.app.ComponentCaller
 import android.content.ComponentName
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -117,6 +118,7 @@ import com.futo.music.models.playable.Track
 import com.futo.music.states.Announcement
 import com.futo.music.states.SessionAnnouncement
 import com.futo.music.states.StateFiles
+import com.futo.music.states.StatePayment
 import com.futo.music.storage.db.DBDirectory
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.ManagedStore
@@ -1127,6 +1129,18 @@ class MainActivity : AppCompatActivity() {
     fun handleUrl(url: String) {
         if(url.startsWith("content://")) {
             handleContent(url);
+        }
+        else if(url.startsWith("futo-music://license/")) {
+            try {
+                val result = StatePayment.instance.setPaymentLicenseUrl(url)
+                if(result)
+                    UIDialogs.appToast("Your app has been activated!");
+                else
+                    UIDialogs.appToast("Invalid license key");
+            }
+            catch(ex: Throwable) {
+                UIDialogs.appToast("Invalid license key:\n" + ex.message);
+            }
         }
     }
 

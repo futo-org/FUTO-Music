@@ -24,6 +24,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.LinearLayout.LayoutParams
+import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -50,6 +51,7 @@ import com.futo.music.ui.buttons.StandardButton
 import com.futo.music.ui.dialogs.ProgressDialog
 import com.futo.music.ui.viewholders.ListPlaylistToggleViewHolder
 import com.futo.music.ui.viewholders.ListPlaylistViewHolder
+import com.futo.music.ui.views.LoaderView
 import com.futo.music.ui.views.SheetBar
 import com.futo.music.ui.views.containers.PlaylistsToggleView
 import com.futo.music.ui.views.containers.SettingsToggleView
@@ -710,6 +712,46 @@ class UIDialogs {
                 hideKeyboard(context, textInputForm!!.input);
                 onResult(null)
             }, true)
+        }
+
+        fun showInputDialog(context: Context, scope: CoroutineScope, title: String, description: String, hint: String, button: String, onResult: (String?)->Unit) {
+            var sheet: BottomSheetDialog? = null;
+            var textInputForm: TextInputForm? = null;
+            textInputForm = TextInputForm(context).apply {
+                this.setData(
+                    title,
+                    description,
+                    hint,
+                    button,
+                    {
+                        hideKeyboard(context, textInputForm!!.input);
+                        sheet?.hide();
+                        onResult(it);
+                    },
+                    {
+                        hideKeyboard(context, textInputForm!!.input);
+                        sheet?.hide();
+                        onResult(null);
+                    })
+            };
+            sheet = showSheet(context, textInputForm, {
+                hideKeyboard(context, textInputForm!!.input);
+                onResult(null)
+            }, true)
+        }
+
+        fun showLoader(context: Context, title: String, description: String): BottomSheetDialog {
+            var sheet: BottomSheetDialog? = null;
+            val loader = ImageView(context).apply {
+                this.setImageResource(com.futo.futopay.R.drawable.ic_loader_animated);
+                this.layoutParams = FrameLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, (context.resources.displayMetrics.density * 50 + 0.5).toInt())
+                val animateable = this.drawable as Animatable;
+                animateable.start();
+            }
+            sheet = showSheet(context, loader, {
+
+            }, true)
+            return sheet!!;
         }
 
         fun showSheetVertical(context: Context, onClose: (() -> Unit)?, vararg views: View): BottomSheetDialog? {
