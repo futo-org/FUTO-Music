@@ -84,7 +84,11 @@ class Settings : FragmentedStorageFileJson() {
             };
         }
         @Setting("Activation Status", "If this app is activated", order = 2, type = SettingType.INFO)
-        public val activated: String get() = if(StatePayment.instance.hasPaid) "Activated" else if(BuildConfig.IS_PLAYSTORE_BUILD) "Playstore" else "Not Activated";
+        public val activated: String get() =
+            if(!StatePayment.instance.isTesting)
+                (if(StatePayment.instance.hasPaid) "Activated" else if(BuildConfig.IS_PLAYSTORE_BUILD) "Playstore" else "Not Activated")
+            else
+                (if(StatePayment.instance.hasPaid) "Activated (Test)" else if(BuildConfig.IS_PLAYSTORE_BUILD) "Playstore (Test)" else "Not Activated (Test)")
 
         //@Setting("Queue Entire Collections", "When tapping specific track in collection, queue entire collection instead of just one track", order = 1)
         public var queueEntireCollection = true;

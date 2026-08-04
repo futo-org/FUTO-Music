@@ -8,7 +8,7 @@ const val isTestingPayment = true;
 
 class StatePayment: PaymentState(if(isTestingPayment) VERIFICATION_PUBLIC_KEY_TESTING else VERIFICATION_PUBLIC_KEY) {
 
-    override val isTesting: Boolean get() = isTestingPayment;
+    public override val isTesting: Boolean get() = isTestingPayment;
 
     override val polarOrgSlug: String get() = "futo-music";
     override val polarProductSlug: String get() = "futo-music";
@@ -33,6 +33,16 @@ class StatePayment: PaymentState(if(isTestingPayment) VERIFICATION_PUBLIC_KEY_TE
                 "TOpL5uwO4zHBpZOjYfZ7hKRLUfkeyeAiaUUt6kYmRLdeO6v1B+ntB1Qmte7SBpI2" +
                 "BgYGkR2uUDpU/BWdnAtynd7av14QoteKwVyPpTuwddmJKZOMUdaf+SYwfNIWWOne" +
                 "YQIDAQAB";
+
+        private val VERIFICATION_PUBLIC_KEY_TESTING = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmuvxAcKFKzhtbAFEJXal" +
+                "dTXO99WohJ3ZZGYqQQvSWsIYbvSWQC/jNuM7uG6T3SFoQ7LnHYn7xPhOZJY+A+u9" +
+                "RuE3ZBVSsRUrZUgziNRu1OEQfhrxFkreDuWKG1GMIR20vAwMRZUpmkbMm2RYDqXE" +
+                "ho6ur0gDXXPYqLlhuTS66v5BIke65H4/ddfg38XaeQQCVx/sP5T4P2OAWt96yaeF" +
+                "vBmv4dfQsLQTCE1pwuokh7lje70ayDnKg3r1t8OBLhf5rEfTfg2Tv9HIDpX1X/Rr" +
+                "IyvNVQg3D9ej0cGnrJ+kGEr9K3vO9p26rKXzF3DcJ65llaTBWEMalRe722paypTj" +
+                "ZQIDAQAB";
+
+        /*
         private val VERIFICATION_PUBLIC_KEY_TESTING = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyXSsZPdXhWFh0UmV6fmG\n" +
                 "CVtDv9YBbFdiNqRYX04yDbwDUb41amLaZpLx32Cv8+57LVILE7kcKNMWoWSFmuBm\n" +
                 "GJ/TTmUhG6vmS5bde1eFPMDWAsyLaV78YHXne9bi4K5fgeuCw8RnD1xEBzkYA3lR\n" +
@@ -40,6 +50,8 @@ class StatePayment: PaymentState(if(isTestingPayment) VERIFICATION_PUBLIC_KEY_TE
                 "um4VBKdhcQFoBp8zXbr8biFa4jR9EoPLzA9u1fwxvsA4aUJEajHTfpj0uO2gJ1Kl\n" +
                 "4vU2499H6J3qdn6Fvz8HralRlTaLN7CNw1FEnqxCidJww2iYO5X7EYME+g8fTMGO\n" +
                 "/wIDAQAB";
+        */
+
         private var _instance : StatePayment? = null;
         val instance : StatePayment
             get(){

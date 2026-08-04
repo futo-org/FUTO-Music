@@ -71,6 +71,8 @@ class StateApp {
             StateTelemetry.instance.initialize();
             StateTelemetry.instance.upload();
         }
+
+        StatePayment.instance.initialize();
     }
 
     fun shareFile(title: String, type: String, file: File) {
