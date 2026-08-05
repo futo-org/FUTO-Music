@@ -192,6 +192,8 @@ class NotificationOverlayView: ConstraintLayout {
                     _progress.max = 100;
                     val lifecycleScope = _viewGroup.findViewTreeLifecycleOwner()?.lifecycleScope;
                     value.onProgressChanged.subscribe {
+                        if(_announcement != value)
+                            return@subscribe;
                         val prog = it.progress;
                         if(prog == 0.toDouble() || prog == 100.toDouble()) {
                             _progress.isIndeterminate = true;
@@ -214,6 +216,7 @@ class NotificationOverlayView: ConstraintLayout {
                 _buttonExtra.visibility = GONE;
                 _icon.visibility = GONE;
                 _buttonIgnore.visibility = VISIBLE;
+                _progress.isVisible = false;
             }
 
             if(value.announceType == AnnouncementType.ONGOING) {

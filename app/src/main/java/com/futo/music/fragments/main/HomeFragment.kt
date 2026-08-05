@@ -75,6 +75,9 @@ class HomeFragment: MainFragment() {
         _dataUnrated = null;
         _dataMostPlayed = null;
     }
+    fun clearUnratedCache() {
+        _dataUnrated = null;
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState);
@@ -233,6 +236,7 @@ class HomeFragment: MainFragment() {
                 }
             }
             gridUnrated.onClick.subscribe {
+                fragment.clearUnratedCache();
                 it.openPlayable(fragment, true);
             }
             gridUnrated.setButtonListener {

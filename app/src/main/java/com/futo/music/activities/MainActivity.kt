@@ -935,7 +935,7 @@ class MainActivity : AppCompatActivity() {
             val last = _queue.lastOrNull();
             if (last != null) {
                 _queue.remove(last);
-                navigate(last.first, last.second, false, true);
+                navigate(last.first, if(last.first.hasParameterHistory) last.second else null, false, true);
             } else {
                 if (false) { //Is not playing? kill
                     Logger.i(TAG, "Closing activity because _fragVideoDetail.state == closed");

@@ -15,6 +15,7 @@ abstract class MainFragment : MainActivityFragment() {
     open val isTab: Boolean = false;
     open val isOverlay: Boolean = false;
     open val isHistory: Boolean = true;
+    open val hasParameterHistory: Boolean = true;
     open val hasBottomBar: Boolean get() { return botBar != null };
     var topBar: TopFragment? = null;
     var botBar: BotFragment? = null;

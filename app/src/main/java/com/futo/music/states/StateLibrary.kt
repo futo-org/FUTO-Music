@@ -231,7 +231,9 @@ class StateLibrary {
             plays = if(existing != null) existing.plays else 0,
             metadataType = if(hasMediaStoreData) MetadataType.MEDIASTORE else MetadataType.UNKNOWN,
             mediaStoreId = album?.id?.toLongOrNull() ?: existing?.mediaStoreId ?: -1,
-            mediaStoreArtistId = album.artistId ?: existing?.mediaStoreArtistId ?: -1
+            mediaStoreArtistId = album.artistId ?: existing?.mediaStoreArtistId ?: -1,
+            hidden = if(existing != null) existing.hidden else false,
+            shuffleCombined = if(existing != null) existing.shuffleCombined else false
         )
 
         Logger.i(TAG, "Inserting album [${album.name}] (new: ${existing == null})")
@@ -256,6 +258,7 @@ class StateLibrary {
             plays = if(existing != null) existing.plays else 0,
             metadataType = if(artist.id?.toLongOrNull() != null) MetadataType.MEDIASTORE else MetadataType.UNKNOWN,
             mediaStoreId = artist.id?.toLongOrNull() ?: existing?.mediaStoreId ?: -1,
+            hidden = if(existing != null) existing.hidden else false
         );
 
         Logger.i(TAG, "Inserting artist [${artist.name}] (new: ${existing == null})")
@@ -298,7 +301,10 @@ class StateLibrary {
             mediaStoreArtistId = track.artist?.id?.toLongOrNull() ?: existing?.mediaStoreArtistId ?: -1,
             mediaStoreAlbumId = track.album?.id?.toLongOrNull() ?: existing?.mediaStoreAlbumId ?: -1,
             mimeType = track.mimeType,
-            fileName = track.fileName
+            fileName = track.fileName,
+            hidden = if(existing != null) existing.hidden else false,
+            scoreLevel = if(existing != null) existing.scoreLevel else 0,
+            markedRated = if(existing != null) existing.markedRated else false,
         )
 
         Logger.i(TAG, "Inserting track [${track.name}] (new: ${existing == null})")

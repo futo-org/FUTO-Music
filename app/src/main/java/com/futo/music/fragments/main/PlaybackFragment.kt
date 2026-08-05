@@ -66,6 +66,8 @@ class PlaybackFragment: MainFragment() {
     override val isTab: Boolean = false;
     override val isHistory: Boolean = true;
 
+    override val hasParameterHistory: Boolean = false;
+
     private var _player: PlayerManager? = null;
 
     private var _view: FragView? = null;

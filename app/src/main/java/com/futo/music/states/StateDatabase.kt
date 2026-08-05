@@ -7,6 +7,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.futo.music.RootApplication
 import com.futo.music.constructs.Event0
+import com.futo.music.fragments.main.HomeFragment
 import com.futo.music.levenshtein
 import com.futo.music.levenshteinDistance
 import com.futo.music.logging.Logger
@@ -67,6 +68,12 @@ class StateDatabase(
     val context: Context
 ) {
     val onLibraryUpdated = Event0();
+
+    init {
+        onLibraryUpdated.subscribe(this) {
+            StateApp.instance.activity()?.getFragment<HomeFragment>()?.clearCache();
+        }
+    }
 
     val db = Room
         .databaseBuilder(context.applicationContext, AppDatabase::class.java, "fmusic")

@@ -4,7 +4,7 @@ import com.futo.futopay.PaymentState
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.StringStorage
 
-const val isTestingPayment = true;
+const val isTestingPayment = false;
 
 class StatePayment: PaymentState(if(isTestingPayment) VERIFICATION_PUBLIC_KEY_TESTING else VERIFICATION_PUBLIC_KEY) {
 
@@ -26,13 +26,13 @@ class StatePayment: PaymentState(if(isTestingPayment) VERIFICATION_PUBLIC_KEY_TE
 
 
     companion object {
-        private val VERIFICATION_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvdPgWITZZt9l3E2XGWKb" +
-                "53r35qPNG3zh0xPi1oHzTMzwLMcz/OPo91C5Gih0kp7L+EgQg9i4lDFjFlIPFSGT" +
-                "I/uCr2jmoK/EZhdV6VSojQCudvkrnu08ErNzmkHoHEdKnW5ab7vy0vwydLyVGnq+" +
-                "sdkcmh1LNQdj5mJzMaVrlFE+s3gm/ES+HVA/9leulIA9dlv+rnD3dE9pYdRN68qw" +
-                "TOpL5uwO4zHBpZOjYfZ7hKRLUfkeyeAiaUUt6kYmRLdeO6v1B+ntB1Qmte7SBpI2" +
-                "BgYGkR2uUDpU/BWdnAtynd7av14QoteKwVyPpTuwddmJKZOMUdaf+SYwfNIWWOne" +
-                "YQIDAQAB";
+        private val VERIFICATION_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzhYbz1w0eezegXZJz+Ho\n" +
+                "360EaBQRlkkDxDMDHYfLuk5zHMMJH/7OdS6PutBSdqkfmXQ2F0OF7+R4zEl8fhSB" +
+                "TvIwqW1209lDiRo6i8khAypZoGeesbU414hWGP5Bf7S07BwjnDT+6OTBztM8xT86" +
+                "Z6n5b7tlVh0So+UL0K3F217ivB8epp78fNszlhsd/w4HcEpN5Rj7YpGy1+nEkasa" +
+                "JOINoyDrWGu/a8SogTKio5oEmG4uiZ1+y5NIsKTlsmjaVlb0Nodoc6xETBr5d4mn" +
+                "oUdP+qY57/Q+w6N/Cvthn+EZHOqNCyPFVaDjg0bFc2gDyK1a+zZqiv9IJFxqw81G" +
+                "JwIDAQAB";
 
         private val VERIFICATION_PUBLIC_KEY_TESTING = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmuvxAcKFKzhtbAFEJXal" +
                 "dTXO99WohJ3ZZGYqQQvSWsIYbvSWQC/jNuM7uG6T3SFoQ7LnHYn7xPhOZJY+A+u9" +

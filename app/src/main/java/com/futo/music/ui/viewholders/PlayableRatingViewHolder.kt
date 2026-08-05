@@ -59,7 +59,11 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
 
             _playable?.let {
                 if(it is DBTrack) {
-                    setDone(rating > 0, rating = rating)
+                    setDone(true, rating = it.score);
+                    StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
+                        StateDatabase.instance.db.tracksDao().setMarkedRated(DBSetMarkRated(it.id, _markedRated));
+                        it.markedRated = true;
+                    }
                 }
             }
         }
@@ -80,6 +84,7 @@ class PlayableRatingViewHolder(val viewGroup: ViewGroup) : AnyAdapter.AnyViewHol
                     setDone(newValue, rating = it.score);
                     StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
                         StateDatabase.instance.db.tracksDao().setMarkedRated(DBSetMarkRated(it.id, _markedRated));
+                        it.markedRated = newValue;
                     }
                 }
             }
