@@ -104,6 +104,12 @@ class PlayableOptionOverlay: ConstraintLayout {
             }
             hide();
         }
+        _buttonQueueAdd.onClick.subscribe {
+            _currentPlayable?.let {
+                if(it is DBTrack)
+                    StateQueue.instance.setQueueAdd(context, it);
+            }
+        }
         _buttonPlaylistAdd.onClick.subscribe {
             _currentPlayable?.let {
                 if(it is DBTrack) {

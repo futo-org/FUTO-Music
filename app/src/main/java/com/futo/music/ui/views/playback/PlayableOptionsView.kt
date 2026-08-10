@@ -148,10 +148,9 @@ class PlayableOptionsView: ConstraintLayout {
         _buttonQueueAdd.onClick.subscribe {
             _currentPlayable?.let {
                 if(it is DBTrack)
-                {
-                    //TODO: QueueAdd
-                }
+                    StateQueue.instance.setQueueAdd(context, it);
             }
+            hide();
         }
         _buttonPlaylistAdd.onClick.subscribe {
             _currentPlayable?.let {

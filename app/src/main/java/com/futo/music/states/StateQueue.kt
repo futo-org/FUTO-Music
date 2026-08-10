@@ -305,6 +305,11 @@ class StateQueue {
             currentQueue.add(index + 1, playable);
         setQueueModify(context, currentQueue)
     }
+    fun setQueueAdd(context: Context, playable: IPlayableTrack) {
+        val currentQueue = getQueue().toMutableList();
+        currentQueue.add(playable);
+        setQueueModify(context, currentQueue);
+    }
 
 
     companion object {
