@@ -333,7 +333,9 @@ class FilesFragment: MainFragment() {
             }
         }
         fun back() {
-            stack.removeLast();
+            val last = stack.lastOrNull();
+            if(last != null)
+                stack.remove(last);
             updateContent();
         }
 
