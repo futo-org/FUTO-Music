@@ -18,6 +18,8 @@ class TextInputForm: LinearLayout {
     val buttonCancel: StandardButton;
     val buttonSubmit: StandardButton;
 
+    private var submitAction: ((String)->Unit)? = null;
+
 
     constructor(context: Context): super(context) {
         inflate(context, R.layout.text_input_form, this);
@@ -36,6 +38,11 @@ class TextInputForm: LinearLayout {
                 buttonSubmit.isEnabled = false;
                 buttonSubmit.alpha = 0.5f;
             }
+            if(it?.lastOrNull() == '\n') {
+                val trimmed = it?.toString()?.trim()
+                input.setText(trimmed);
+                submitAction?.invoke(trimmed ?: return@addTextChangedListener);
+            }
         }
         buttonSubmit.isEnabled = false;
     }
@@ -53,6 +60,7 @@ class TextInputForm: LinearLayout {
         }
         this.buttonSubmit.text.text = submitName;
         this.buttonSubmit.onClick.clear();
+        submitAction = handleSubmit;
         this.buttonSubmit.onClick.subscribe {
             handleSubmit(this.input.text?.toString() ?: "");
         }

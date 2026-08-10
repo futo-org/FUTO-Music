@@ -21,6 +21,7 @@ import com.futo.music.fragments.top.NavigationTopBarFragment
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.openPlayable
 import com.futo.music.setHeaderScrollFade
+import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBSetShuffleCombined
@@ -139,6 +140,8 @@ class PlaylistFragment: MainFragment() {
                 if(track is DBTrack)
                     fragment.lifecycleScope.launch(Dispatchers.IO) {
                         StateDatabase.instance.removeTrackFromPlaylist(playlistCurrent?.id ?: return@launch, track.id);
+                        StateDatabase.instance.updatePlaylistMetadata(playlistCurrent?.id ?:return@launch);
+                        StateApp.instance?.activity()?.getFragment<HomeFragment>()?.clearPlaylistsCache();
                     }
             }
             trackList.onTrackOrderChanged.subscribe {

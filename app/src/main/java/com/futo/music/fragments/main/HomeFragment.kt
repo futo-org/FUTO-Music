@@ -75,6 +75,9 @@ class HomeFragment: MainFragment() {
         _dataUnrated = null;
         _dataMostPlayed = null;
     }
+    fun clearPlaylistsCache() {
+        _dataPlaylists = null;
+    }
     fun clearUnratedCache() {
         _dataUnrated = null;
     }
