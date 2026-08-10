@@ -9,9 +9,12 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
 import com.futo.futopay.PaymentManager
+import com.futo.futopay.SlideUpPayment
 import com.futo.music.R
 import com.futo.music.UIDialogs
+import com.futo.music.dp
 import com.futo.music.fragments.MainFragView
+import com.futo.music.states.StateApp
 import com.futo.music.states.StatePayment
 
 class BuyFragment: MainFragment() {
@@ -57,8 +60,10 @@ class BuyFragment: MainFragment() {
         init {
             textPrice = findViewById(R.id.text_price);
             buttonNext = findViewById(R.id.button_next);
-            _overlayPaying = findViewById(R.id.overlay_paying);
+            _overlayPaying = StateApp.instance.activity()?.overlay_container ?: findViewById(R.id.overlay_paying);
             _overlayPaid = findViewById(R.id.overlay_paid);
+
+            SlideUpPayment.reduceMarginBottom = 60.dp(resources);
 
             _paymentManager = PaymentManager(StatePayment.instance, fragment, _overlayPaying) { success, purchaseId, exception ->
                 if(success) {

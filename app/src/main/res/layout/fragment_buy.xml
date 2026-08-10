@@ -71,7 +71,9 @@
     <FrameLayout
         android:id="@+id/overlay_paying"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:elevation="999dp"
         android:visibility="gone" />
     <FrameLayout

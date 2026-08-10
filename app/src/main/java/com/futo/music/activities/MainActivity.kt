@@ -140,6 +140,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var _fragContainerSheet: FragmentContainerView;
     private lateinit var _containerSheet: FrameLayout;
+    lateinit var overlay_container: FrameLayout;
     private lateinit var _sheetBehavior: BottomSheetBehavior<FrameLayout>;
     private var _sheetCloseHandler: (()->Unit)? = null;
 
@@ -273,6 +274,7 @@ class MainActivity : AppCompatActivity() {
         _fragContainerBotBar = findViewById(R.id.fragment_bottom_bar);
         _fragContainerSheet = findViewById(R.id.overlay_sheet_fragment);
         _containerSheet = findViewById(R.id.overlay_sheet);
+        overlay_container = findViewById(R.id.overlay_container);
         _toastView = findViewById(R.id.toast_view);
         _overlayPlayable = findViewById(R.id.overlay_playable)
 
