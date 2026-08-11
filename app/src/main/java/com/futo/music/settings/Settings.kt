@@ -90,6 +90,12 @@ class Settings : FragmentedStorageFileJson() {
             else
                 (if(StatePayment.instance.hasPaid) "Activated (Test)" else if(BuildConfig.IS_PLAYSTORE_BUILD) "Playstore (Test)" else "Not Activated (Test)")
 
+
+
+        @Setting("Prefer List View", "Default to list views instead of grid views where possible", order = 9)
+        public var preferListView = false;
+
+
         //@Setting("Queue Entire Collections", "When tapping specific track in collection, queue entire collection instead of just one track", order = 1)
         public var queueEntireCollection = true;
 

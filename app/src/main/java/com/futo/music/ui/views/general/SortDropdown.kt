@@ -8,8 +8,6 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.BaseAdapter
 import android.widget.ImageView
-import android.widget.Spinner
-import android.widget.SpinnerAdapter
 import android.widget.TextView
 import com.futo.music.R
 import com.futo.music.constructs.Event1
@@ -22,7 +20,9 @@ enum class SortDropdownType {
     Played,
     PlayedDesc,
     Count,
-    CountDesc
+    CountDesc,
+    Plays,
+    PlaysDesc
 }
 
 class SortDropdown: androidx.appcompat.widget.AppCompatSpinner {
@@ -35,7 +35,10 @@ class SortDropdown: androidx.appcompat.widget.AppCompatSpinner {
             SortDropdownType.Played,
             SortDropdownType.PlayedDesc,
             SortDropdownType.Count,
-            SortDropdownType.CountDesc);
+            SortDropdownType.CountDesc,
+            SortDropdownType.Plays,
+            SortDropdownType.PlaysDesc
+            );
     }
 
     var availableOptions: List<SortDropdownType> = OPTIONS
@@ -79,6 +82,8 @@ class SortDropdown: androidx.appcompat.widget.AppCompatSpinner {
                 SortDropdownType.PlayedDesc -> SpinnerItem(R.drawable.ic_played, "Played (Newest)");
                 SortDropdownType.Count -> SpinnerItem(R.drawable.ic_count, "Count (Asc)");
                 SortDropdownType.CountDesc -> SpinnerItem(R.drawable.ic_count, "Count (Desc)");
+                SortDropdownType.Plays -> SpinnerItem(R.drawable.ic_play_tinted, "Plays (Asc)");
+                SortDropdownType.PlaysDesc -> SpinnerItem(R.drawable.ic_play_tinted, "Plays (Desc)");
                 else -> null
             }
             if(result != null)

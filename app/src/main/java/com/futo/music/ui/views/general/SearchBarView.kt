@@ -72,6 +72,10 @@ class SearchBarView: ConstraintLayout {
         }
     }
 
+    fun setRootBackground(id: Int) {
+        _root.setBackgroundResource(id);
+    }
+
     fun clear() {
         _text.setText("");
     }

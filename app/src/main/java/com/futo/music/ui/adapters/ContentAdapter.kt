@@ -18,7 +18,7 @@ import com.futo.music.ui.views.grid.ContentTrackGridView
 import com.futo.music.ui.views.grid.GridSettings
 import com.futo.music.ui.views.grid.IContentGridView
 
-class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?): RecyclerView.Adapter<ContentAdapter.ViewHolder>() {
+class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?, val settings: GridSettings): RecyclerView.Adapter<ContentAdapter.ViewHolder>() {
     val data: MutableList<IPlayable> = mutableListOf();
     val dataAll: MutableList<IPlayable> = mutableListOf();
     var filter: String? = null;
@@ -27,7 +27,7 @@ class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?): 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val result = when(viewType) {
-            PlayableType.Track.value -> ViewHolder(ContentTrackGridView(parent))
+            PlayableType.Track.value -> ViewHolder(ContentTrackGridView(parent, settings.listView))
             PlayableType.Artist.value -> ViewHolder(ContentArtistGridView(parent))
             PlayableType.Album.value -> ViewHolder(ContentAlbumGridView(parent))
             PlayableType.Playlist.value -> ViewHolder(ContentPlaylistGridView(parent))

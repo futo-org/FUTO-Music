@@ -116,6 +116,14 @@ class SettingsFragment: MainFragment() {
             viewPager.isSaveEnabled = false;
             val tabLayoutMediator = TabLayoutMediator(tabs, viewPager, adapter::getTabNames);
             tabLayoutMediator.attach();
+            tabs.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(p0: TabLayout.Tab?) {
+                    tabIndex = p0?.position ?: return;
+                }
+                override fun onTabUnselected(p0: TabLayout.Tab?) {}
+                override fun onTabReselected(p0: TabLayout.Tab?) {}
+            })
+            tabs.getTabAt(tabIndex)?.select();
         }
 
 
@@ -129,5 +137,9 @@ class SettingsFragment: MainFragment() {
             Logger.i("SettingsFragment", "On hide fragment");
             _settings.save();
         }
+    }
+
+    companion object {
+        var tabIndex: Int = 0;
     }
 }

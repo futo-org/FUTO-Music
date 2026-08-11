@@ -394,27 +394,41 @@ class PlaybackFragment: MainFragment() {
                 onPlayerAvailable(it);
             }
 
-            _textArtist.setOnClickListener {
+            fun navArtist() {
                 fragment.lifecycleScope.launch(Dispatchers.IO) {
                     val track = _trackCurrent ?: return@launch;
                     val artist = StateDatabase.instance.getTrackArtists(track.id).firstOrNull();
                     withContext(Dispatchers.Main) {
                         if(artist == null)
-                            UIDialogs.appToast("Couldn't find artist?");
-                        fragment.navigate<ArtistFragment>(artist);
+                            UIDialogs.appToast("No artist found");
+                        else
+                            fragment.navigate<ArtistFragment>(artist);
                     }
                 }
             }
-            _textAlbum.setOnClickListener {
+            _imageArtist.setOnClickListener {
+                navArtist();
+            }
+            _textArtist.setOnClickListener {
+                navArtist()
+            }
+            fun navAlbum() {
                 fragment.lifecycleScope.launch(Dispatchers.IO) {
                     val track = _trackCurrent ?: return@launch;
                     val album = StateDatabase.instance.getTrackAlbums(track.id).firstOrNull();
                     withContext(Dispatchers.Main) {
                         if(album == null)
-                            UIDialogs.appToast("Couldn't find album?");
-                        fragment.navigate<AlbumFragment>(album);
+                            UIDialogs.appToast("No album found");
+                        else
+                            fragment.navigate<AlbumFragment>(album);
                     }
                 }
+            }
+            _imageAlbum.setOnClickListener {
+                navAlbum();
+            }
+            _textAlbum.setOnClickListener {
+                navAlbum();
             }
         }
 
@@ -610,11 +624,11 @@ class PlaybackFragment: MainFragment() {
                     if(track == null)
                         return@launch;
                     _textTitle.text = (track?.name ?: mediaMetadata.title);
-                    _textArtist.text = (track?.artistLine ?: mediaMetadata.artist);
-                    _textAlbum.text = (track?.albumLine ?: mediaMetadata.albumTitle);
+                    _textArtist.text = (track?.artistLine ?: mediaMetadata.artist) ?: "Unknown Artist";
+                    _textAlbum.text = (track?.albumLine ?: mediaMetadata.albumTitle)
 
-                    _imageArtist.isVisible = !_textArtist.text.isEmpty();
-                    _imageAlbum.isVisible = !_textAlbum.text.isEmpty();
+                    //_imageArtist.isVisible = !_textArtist.text.isEmpty();
+                    //_imageAlbum.isVisible = !_textAlbum.text.isEmpty();
 
                 }
                 catch(ex: Throwable) {

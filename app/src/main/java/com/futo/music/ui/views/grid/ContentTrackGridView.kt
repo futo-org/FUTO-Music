@@ -3,6 +3,7 @@ package com.futo.music.ui.views.grid
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
@@ -23,7 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
+class ContentTrackGridView(viewGroup: ViewGroup, val asList: Boolean = false) : IContentGridView {
 
     override val root: ConstraintLayout;
     val imageThumbnail: ShapeableImageView;
@@ -41,12 +42,14 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
     private var _showPlays: Boolean = false;
 
     init {
-        root = LayoutInflater.from(viewGroup.context).inflate(R.layout.grid_track, viewGroup, false) as ConstraintLayout;
+        root = LayoutInflater.from(viewGroup.context).inflate(if(!asList) R.layout.grid_track else R.layout.grid_track_list, viewGroup, false) as ConstraintLayout;
         imageThumbnail = root.findViewById(R.id.image_thumbnail);
         textName = root.findViewById(R.id.text_name);
         textMeta = root.findViewById(R.id.text_metadata);
         textCount = root.findViewById(R.id.text_count);
         textTag = root.findViewById(R.id.text_tag);
+
+        val buttonOptions = root.findViewById<ImageButton?>(R.id.button_options);
 
         root.setOnClickListener {
             playableItem?.let {
@@ -59,6 +62,13 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
             }
             return@setOnLongClickListener true;
         }
+
+        if(buttonOptions != null)
+            buttonOptions.setOnClickListener {
+                playableItem?.let {
+                    onLongClick.emit(it);
+                }
+            }
     }
 
     override fun bind(playable: IPlayable) {
@@ -111,6 +121,8 @@ class ContentTrackGridView(viewGroup: ViewGroup) : IContentGridView {
     }
 
     override fun setSize(width: Int, height: Int) {
+        if(asList)
+            return;
         val dp10 = 10.dp(root.resources);
         val dp20 = 20.dp(root.resources);
         val dp40 = 40.dp(root.resources);

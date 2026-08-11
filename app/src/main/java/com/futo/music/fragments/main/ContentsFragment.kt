@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageButton
 import androidx.collection.emptyLongSet
 import androidx.compose.animation.core.updateTransition
 import androidx.core.view.isVisible
@@ -16,6 +17,7 @@ import com.futo.music.fragments.top.GeneralTopBarFragment
 import com.futo.music.fragments.top.NavigationTopBarFragment
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.openPlayable
+import com.futo.music.settings.Settings
 import com.futo.music.sort
 import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateDatabase
@@ -71,6 +73,7 @@ class ContentsFragment: MainFragment() {
         val gridContent: ContentGrid;
         val emptyView: NoResultsView;
         val dropdownSort: SortDropdown;
+        val toggleList: ImageButton;
 
         var contents: List<IPlayable>? = null;
 
@@ -94,10 +97,17 @@ class ContentsFragment: MainFragment() {
                     updateContent(it);
                 }
             }
+            toggleList = findViewById(R.id.toggle_list);
+            toggleList.setOnClickListener {
+                setListView(!gridContent.gridSettings.listView);
+            }
 
             gridContent.onClick.subscribe {
                 //fragment.navigate<PlaybackFragment>(it);
                 it.openPlayable(fragment, _alwaysOptions);
+            }
+            gridContent.onLongClick.subscribe {
+                it.openPlayable(fragment, true);
             }
             search.onChange.subscribe {
                 contents?.let { contents ->
@@ -108,8 +118,14 @@ class ContentsFragment: MainFragment() {
                         updateContent(contents);
                 }
             }
+            search.setBackgroundResource(R.drawable.background_bar_transparant_71_light_round_4dp);
 
             updateContent(listOf());
+        }
+
+        fun setListView(enabled: Boolean) {
+            toggleList.setImageResource(if(enabled)R.drawable.ic_list else R.drawable.ic_grid_view);
+            gridContent.setListView(enabled);
         }
 
         fun updateContent(contents: List<IPlayable>) {
@@ -155,7 +171,28 @@ class ContentsFragment: MainFragment() {
                 topbar.setTitle(parameter.first as String);
                 contents = (parameter.second as List<*>).filterIsInstance<IPlayable>()
                 _alwaysOptions = (parameter.third as List<*>).contains(1);
+                if((parameter.third as List<*>).contains(FLAG_MOST_PLAYED))
+                    gridContent.gridSettings.showPlays = true;
                 updateContent((parameter.second as List<*>).filterIsInstance<IPlayable>());
+            }
+            else if(parameter is Parameters) {
+                if(parameter.title?.isNotBlank() ?: false) {
+                    fragment.customTitle = parameter.title;
+                    fragment.topBar?.let {
+                        if (it is GeneralTopBarFragment)
+                            it.setTitle(parameter.title)
+                    }
+                    topbar.setTitle(parameter.title);
+                }
+                contents = parameter.collection;
+                _alwaysOptions = parameter.flags?.contains(1) ?: false;
+                updateContent(parameter.collection);
+                if(parameter?.flags?.contains(FLAG_MOST_PLAYED) ?: false)
+                    gridContent.gridSettings.showPlays = true;
+                if(parameter?.flags?.contains(FLAG_LIST) ?: false)
+                    setListView(true)
+                else
+                    setListView(Settings.instance.general.preferListView);
             }
             contents?.let {
                 if(it.all { it is DBTrack }) {
@@ -165,10 +202,29 @@ class ContentsFragment: MainFragment() {
                     dropdownSort.setFilters(SortDropdown.OPTIONS);
                 }
             }
+            if(parameter is Parameters) {
+                if(parameter.sortOrder != null) {
+                    _selectedSort = parameter.sortOrder;
+                    dropdownSort.setSelected(parameter.sortOrder);
+                }
+            }
         }
 
         fun onHide() {
 
         }
+    }
+
+    class Parameters(
+        val collection: List<IPlayable>,
+        val title: String? = null,
+        val flags: List<Int>? = null,
+        val sortOrder: SortDropdownType? = null
+    )
+
+    companion object {
+        val FLAG_ALWAYS_OPTIONS = 1;
+        val FLAG_MOST_PLAYED = 2;
+        val FLAG_LIST = 3;
     }
 }

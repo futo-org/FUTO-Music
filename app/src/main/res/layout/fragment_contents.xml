@@ -12,10 +12,10 @@
 
     <com.futo.music.ui.views.general.SearchBarView
         android:id="@+id/view_search"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginRight="2dp"
         android:layout_marginTop="10dp"
         android:paddingBottom="20dp"
         app:SearchBarView_hint="@string/hint_filter"
@@ -26,10 +26,26 @@
         android:id="@+id/dropdown_sort"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
-        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginRight="2dp"
+        android:layout_marginTop="20dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:background="@drawable/background_bar_transparant_71_light_round_4dp"
+        app:layout_constraintRight_toLeftOf="@id/toggle_list"
         app:layout_constraintTop_toTopOf="@id/view_search"
         app:layout_constraintBottom_toBottomOf="@id/view_search"
         android:layout_marginBottom="20dp" />
+    <ImageButton
+        android:id="@+id/toggle_list"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginRight="2dp"
+        android:background="@drawable/background_bar_transparant_71_light_round_4dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/view_search"
+        app:layout_constraintBottom_toBottomOf="@id/view_search"
+        android:src="@drawable/ic_grid_view"
+        />
 
 
     <com.futo.music.ui.views.containers.ContentGrid

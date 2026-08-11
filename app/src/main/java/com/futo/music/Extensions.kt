@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.view.View
 import androidx.core.view.isVisible
@@ -15,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.request.RequestListener
@@ -34,16 +32,13 @@ import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBTrack
-import com.futo.music.ui.views.general.SortDropdown
 import com.futo.music.ui.views.general.SortDropdownType
 import jp.wasabeef.glide.transformations.BitmapTransformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import java.io.File
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -153,6 +148,8 @@ fun List<IPlayable>.sort(sortType: SortDropdownType?): List<IPlayable> {
         SortDropdownType.PlayedDesc -> this.sortedByDescending { it.getPlayedDate() };
         SortDropdownType.Count -> this.sortedBy { it.getItemCount() }
         SortDropdownType.CountDesc -> this.sortedByDescending { it.getItemCount() }
+        SortDropdownType.Plays -> this.sortedBy { if(it is DBTrack) it.plays else 0 };
+        SortDropdownType.PlaysDesc -> this.sortedByDescending { if(it is DBTrack) it.plays else 0 };
     }
 }
 

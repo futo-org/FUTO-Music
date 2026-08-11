@@ -59,7 +59,8 @@ class ContentGrid: ConstraintLayout {
                 context.resources.configuration.screenWidthDp / 150;
             else 3;
             recycler.layoutManager = GridLayoutManager(context, rowCountFit);
-            recycler.addItemDecoration(HorizontalCenterDecoration(context.resources.configuration.screenWidthDp.dp(resources) / rowCountFit))
+            if(recycler.itemDecorationCount == 0)
+                recycler.addItemDecoration(HorizontalCenterDecoration(context.resources.configuration.screenWidthDp.dp(resources) / rowCountFit))
             buttonList = null;
         }
         else {
@@ -76,7 +77,7 @@ class ContentGrid: ConstraintLayout {
         else
             textTitle.text = initialText;
 
-        adapter = ContentAdapter {
+        adapter = ContentAdapter({
             it.setSize(rowHeight, rowHeight);
             it.setSettings(gridSettings);
             it.view.onClick.subscribe {
@@ -85,7 +86,7 @@ class ContentGrid: ConstraintLayout {
             it.view.onLongClick.subscribe {
                 onLongClick.emit(it);
             }
-        }
+        }, gridSettings)
         recycler.adapter = adapter;
     }
     constructor(context: Context, vertical: Boolean, rowHeight: Int, initialText: String): super(context) {
@@ -120,7 +121,7 @@ class ContentGrid: ConstraintLayout {
         else
             textTitle.text = initialText;
 
-        adapter = ContentAdapter {
+        adapter = ContentAdapter({
             it.setSize(rowHeight, rowHeight);
             it.setSettings(gridSettings);
             it.view.onClick.subscribe {
@@ -129,8 +130,33 @@ class ContentGrid: ConstraintLayout {
             it.view.onLongClick.subscribe {
                 onLongClick.emit(it);
             }
-        }
+        }, gridSettings)
         recycler.adapter = adapter;
+    }
+
+    fun recreateAdapter() {
+        recycler.adapter = null;
+        recycler.adapter = adapter;
+    }
+
+    fun setListView(enabled: Boolean = false) {
+        if(enabled) {
+            val rowCountFit = 1
+            recycler.layoutManager = GridLayoutManager(context, rowCountFit);
+            while(recycler.itemDecorationCount > 0)
+                recycler.removeItemDecorationAt(0);
+            gridSettings.listView = true;
+        }
+        else {
+            val rowCountFit = if(context.resources.configuration.screenWidthDp > 700)
+                context.resources.configuration.screenWidthDp / 150;
+            else 3;
+            recycler.layoutManager = GridLayoutManager(context, rowCountFit);
+            if(recycler.itemDecorationCount == 0)
+                recycler.addItemDecoration(HorizontalCenterDecoration(context.resources.configuration.screenWidthDp.dp(resources) / rowCountFit))
+            gridSettings.listView =false;
+        }
+        recreateAdapter();
     }
 
     fun setCenterGravity() {

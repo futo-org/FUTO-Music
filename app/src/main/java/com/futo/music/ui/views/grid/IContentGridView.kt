@@ -18,5 +18,6 @@ interface IContentGridView {
 
 class GridSettings(
     var hideMetadata: Boolean = false,
-    var showPlays: Boolean = false
+    var showPlays: Boolean = false,
+    var listView: Boolean = false
 )

@@ -348,7 +348,7 @@ class FilesFragment: MainFragment() {
                             UIDialogs.Companion.GuideItem("Album Thumbnails", "Adding directories that contain your media files allows for scanning for thumbnail images (eg. folder.jpg) to display in the app.", R.drawable.ic_album),
                             UIDialogs.Companion.GuideItem("Playlist Files", "Playlist files (.m3u) are automatically found and synced on startup after selecting them.", R.drawable.ic_playlist_add,
                                 listOf())
-                        ))
+                        ), finalText = "Ok")
                     }
                     it.setGeneralButton(R.drawable.ic_add) {
                         StateApp.instance.activity()?.pickFolder { uri ->

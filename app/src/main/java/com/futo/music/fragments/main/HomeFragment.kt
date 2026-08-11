@@ -31,6 +31,7 @@ import com.futo.music.ui.buttons.RoundButton
 import com.futo.music.ui.buttons.StandardButton
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
+import com.futo.music.ui.views.general.SortDropdownType
 import com.futo.music.ui.views.topbars.GeneralTopBarView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -197,12 +198,12 @@ class HomeFragment: MainFragment() {
 
             gridArtists.setButtonListener {
                 fragment._dataArtists?.let {
-                    fragment.navigate<ContentsFragment>(Pair("Artists", it));
+                    fragment.navigate<ContentsFragment>(ContentsFragment.Parameters(it, "Artists"));
                 }
             }
             gridAlbums.setButtonListener {
                 fragment._dataAlbums?.let {
-                    fragment.navigate<ContentsFragment>(Pair("Albums", it));
+                    fragment.navigate<ContentsFragment>(ContentsFragment.Parameters(it, "Albums"));
                 }
             }
             gridPlaylists.setButtonListener(androidx.media3.session.R.drawable.media3_icon_plus) {
@@ -210,31 +211,11 @@ class HomeFragment: MainFragment() {
             }
             gridSongRecent.setButtonListener {
                 fragment.lifecycleScope.launch(Dispatchers.IO) {
-                    val count = StateDatabase.instance.getTrackCount();
-                    if(count > 2000) {
-                        withContext(Dispatchers.Main) {
-                            UIDialogs.showDialog(context, R.drawable.ic_music_note, "High Track Count", "You appear to have lots of music (${count}) on this phone, are you sure you want to list all?\n\nThis UI has not been optimized yet.\n\nSearching your music might be a better idea.",
-                                null, 0,
-                                UIDialogs.Action("Nevermind", {}),
-                                UIDialogs.Action("Open", {
-
-                                    fragment.lifecycleScope.launch(Dispatchers.IO) {
-                                        val allSongs = StateDatabase.instance.getAllTracks();
-                                        withContext(Dispatchers.Main) {
-                                            fragment.navigate<ContentsFragment>(Pair("Songs", allSongs));
-                                        }
-                                    }
-
-
-                                }, UIDialogs.ActionStyle.DANGEROUS))
-                        }
-
-                    }
-                    else {
-                        val allSongs = StateDatabase.instance.getAllTracks();
-                        withContext(Dispatchers.Main) {
-                            fragment.navigate<ContentsFragment>(Pair("Songs", allSongs));
-                        }
+                    val count = StateDatabase.instance.getTrackCount()
+                    val allSongs = StateDatabase.instance.getAllTracks();
+                    withContext(Dispatchers.Main) {
+                        fragment.navigate<ContentsFragment>(ContentsFragment.Parameters(allSongs, "Songs",
+                            sortOrder = SortDropdownType.AddedDesc));
                     }
                 }
             }
@@ -252,7 +233,11 @@ class HomeFragment: MainFragment() {
                 fragment.lifecycleScope.launch(Dispatchers.IO) {
                     val mostPlayed = StateDatabase.instance.getMostPlayed(20);
                     withContext(Dispatchers.Main) {
-                        fragment.navigate<ContentsFragment>(Pair("Most Played", mostPlayed));
+                        fragment.navigate<ContentsFragment>(ContentsFragment.Parameters(
+                            mostPlayed,
+                            "Most Played",
+                            listOf(ContentsFragment.FLAG_MOST_PLAYED, ContentsFragment.FLAG_LIST),
+                            SortDropdownType.PlaysDesc));
                     }
                 }
             }
@@ -280,6 +265,14 @@ class HomeFragment: MainFragment() {
             }
             gridRecent.onLongClick.subscribe {
                 it.openPlayable(fragment, true);
+            }
+            gridRecent.setButtonListener {
+                fragment.lifecycleScope.launch(Dispatchers.IO) {
+                    val allSongs = StateDatabase.instance.getAllTracks();
+                    withContext(Dispatchers.Main) {
+                        fragment.navigate<ContentsFragment>(ContentsFragment.Parameters(allSongs, "All Songs", listOf(), sortOrder = SortDropdownType.PlayedDesc));
+                    }
+                }
             }
             gridSongRecent.onClick.subscribe {
                 it.openPlayable(fragment);
@@ -337,7 +330,7 @@ class HomeFragment: MainFragment() {
                 UIDialogs.showGuideDialog(context, fragment.lifecycleScope, listOf(
                     UIDialogs.Companion.GuideItem("Shuffle", "This will shuffle all music known to the app.", R.drawable.ic_shuffle),
                     UIDialogs.Companion.GuideItem("Smart Shuffle", "This will shuffle your rated music, with higher ratings showing up earlier/more likely.\n\nThis is being improved.", R.drawable.ic_imagine),
-                    UIDialogs.Companion.GuideItem("Home", "Here you find various subsections of items.\nMost are self explanatory.\ntems are ordered by last played, otherwise by item count.", R.drawable.ic_home)
+                    UIDialogs.Companion.GuideItem("Home", "Here you find various subsections of items.\nMost are self explanatory.\nItems are ordered by last played, otherwise by item count.", R.drawable.ic_home)
                 ), true)
             }
 
