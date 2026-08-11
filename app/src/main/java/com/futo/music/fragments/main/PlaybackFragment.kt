@@ -624,7 +624,7 @@ class PlaybackFragment: MainFragment() {
                     if(track == null)
                         return@launch;
                     _textTitle.text = (track?.name ?: mediaMetadata.title);
-                    _textArtist.text = (track?.artistLine ?: mediaMetadata.artist) ?: "Unknown Artist";
+                    _textArtist.text = (track?.artistLine ?: mediaMetadata.artist).let { if(it.isNullOrEmpty()) "Unknown Artist" else it };
                     _textAlbum.text = (track?.albumLine ?: mediaMetadata.albumTitle)
 
                     //_imageArtist.isVisible = !_textArtist.text.isEmpty();
@@ -638,7 +638,7 @@ class PlaybackFragment: MainFragment() {
         }
         fun setTrackMetadata(track: DBTrack) {
             _textTitle.text = track.name;
-            _textArtist.text = track.artistLine;
+            _textArtist.text = track.artistLine.let { if(it.isNullOrEmpty()) "Unknown Artist" else it };
             _textAlbum.text = track.albumLine;
 
             _imageArtist.isVisible = !_textArtist.text.isEmpty();
