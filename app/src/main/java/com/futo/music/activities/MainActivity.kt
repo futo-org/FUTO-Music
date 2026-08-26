@@ -443,8 +443,17 @@ class MainActivity : AppCompatActivity() {
             store.setAndSave("v1");
             showAlphaNotice();
         }
+
+        StateLibrary.instance.onSyncCompleted.subscribe {
+            getFragment<HomeFragment>()?.clearCache()
+        }
     }
 
+    override fun onDestroy() {
+        super.onDestroy();
+
+        StateLibrary.instance.onSyncCompleted.remove(this);
+    }
 
     val requestUnknownInstallUnknownLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         try {
@@ -565,6 +574,8 @@ class MainActivity : AppCompatActivity() {
 
     fun sync(force: Boolean = false) {
         lifecycleScope.launch(Dispatchers.IO) {
+            if(isSyncing)
+                return@launch;
             var shouldSync = force || StateLibrary.instance.requireSync(this@MainActivity);
 
             if(!shouldSync) {

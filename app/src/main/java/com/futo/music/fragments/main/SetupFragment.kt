@@ -85,9 +85,12 @@ class SetupFragment: MainFragment() {
         fun updateState() {
             fragment.activity?.let {
                 if(it is MainActivity) {
+                    val act = it;
                     it.requestPermissionAudio {
-                        if(it)
+                        if(it) {
+                            act.sync();
                             fragment.navigate<HomeFragment>();
+                        }
                         else {
                             UIDialogs.appToast("Permissions were denied.\nPlease allow them in app-permissions.");
                             buttonNext.isVisible = true;

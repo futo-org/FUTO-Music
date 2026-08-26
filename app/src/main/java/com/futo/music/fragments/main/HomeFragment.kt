@@ -328,9 +328,9 @@ class HomeFragment: MainFragment() {
 
             buttonHelp.onClick.subscribe {
                 UIDialogs.showGuideDialog(context, fragment.lifecycleScope, listOf(
-                    UIDialogs.Companion.GuideItem("Shuffle", "This will shuffle all music known to the app.", R.drawable.ic_shuffle),
-                    UIDialogs.Companion.GuideItem("Smart Shuffle", "This will shuffle your rated music, with higher ratings showing up earlier/more likely.\n\nThis is being improved.", R.drawable.ic_imagine),
-                    UIDialogs.Companion.GuideItem("Home", "Here you find various subsections of items.\nMost are self explanatory.\nItems are ordered by last played, otherwise by item count.", R.drawable.ic_home)
+                    UIDialogs.Companion.GuideItem("Shuffle", "Shuffle will shuffles all music in the app, disregarding any orderings.", R.drawable.ic_shuffle),
+                    UIDialogs.Companion.GuideItem("Smart Shuffle", "Smart Shuffle will shuffle your rated music, with higher ratings showing up earlier/more likely.\n\nWe're still refining this.", R.drawable.ic_imagine),
+                    UIDialogs.Companion.GuideItem("Home", "Here you will find various subsections of items.\nMost are self explanatory.\nItems are ordered by last played, otherwise by item count.", R.drawable.ic_home)
                 ), true)
             }
 

@@ -28,8 +28,8 @@ class ContentAdapter(val onCreate: ((hold: ContentAdapter.ViewHolder)->Unit)?, v
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val result = when(viewType) {
             PlayableType.Track.value -> ViewHolder(ContentTrackGridView(parent, settings.listView))
-            PlayableType.Artist.value -> ViewHolder(ContentArtistGridView(parent))
-            PlayableType.Album.value -> ViewHolder(ContentAlbumGridView(parent))
+            PlayableType.Artist.value -> ViewHolder(ContentArtistGridView(parent, settings.listView))
+            PlayableType.Album.value -> ViewHolder(ContentAlbumGridView(parent, settings.listView))
             PlayableType.Playlist.value -> ViewHolder(ContentPlaylistGridView(parent))
             PlayableType.Vibe.value -> ViewHolder(ContentAlbumGridView(parent))
             else -> throw NotImplementedError();

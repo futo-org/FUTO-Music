@@ -212,6 +212,9 @@ class PlaybackService: MediaLibraryService() {
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
+        _mediaSession?.run {
+            player?.pause();
+        }
     }
 
     override fun onDestroy() {

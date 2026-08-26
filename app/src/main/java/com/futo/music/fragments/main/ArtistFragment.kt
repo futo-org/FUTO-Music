@@ -23,6 +23,7 @@ import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.AnyInsertedAdapterView
 import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
+import com.futo.music.ui.decorator.BottomSpacingDecoration
 import com.futo.music.ui.viewholders.TrackAnyViewHolder
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.ContentGrid
@@ -96,6 +97,8 @@ class ArtistFragment: MainFragment() {
             gridAlbums.onLongClick.subscribe {
                 it.openPlayable(fragment, true);
             }
+            recycler.focusable = NOT_FOCUSABLE
+            recycler.addItemDecoration(BottomSpacingDecoration(250.dp(resources)));
 
             containerTop = findViewById(R.id.container_top);
             buttonBack = findViewById(R.id.button_back);

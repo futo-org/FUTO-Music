@@ -28,6 +28,7 @@ import com.futo.music.storage.db.DBSetShuffleCombined
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.AnyInsertedAdapterView
 import com.futo.music.ui.adapters.AnyInsertedAdapterView.Companion.asAnyWithViews
+import com.futo.music.ui.decorator.BottomSpacingDecoration
 import com.futo.music.ui.viewholders.TrackAnyViewHolder
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.PlayableHeader
@@ -97,6 +98,8 @@ class AlbumFragment: MainFragment() {
             recycler = findViewById(R.id.recycler)
             header = PlayableHeader(context);
             emptyView = NoResultsView(context);
+
+            recycler.addItemDecoration(BottomSpacingDecoration(100.dp(resources)));
 
             containerTop = findViewById(R.id.container_top);
             buttonBack = findViewById(R.id.button_back);

@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
+import androidx.compose.ui.text.toLowerCase
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
@@ -158,7 +159,8 @@ class DBTrack(
     }
 
     fun filter(query: String): Boolean {
-        return name.lowercase().contains(query) || (artistLine != null && artistLine.contains(query))
+        val qLower = query.lowercase();
+        return name.lowercase().contains(qLower) || (artistLine != null && artistLine.lowercase().contains(qLower))
     }
 }
 

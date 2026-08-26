@@ -17,11 +17,14 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/button_clear"
+        app:layout_constraintRight_toRightOf="parent"
         android:fontFamily="@font/inter_regular"
         android:textColorHint="#444444"
-        android:background="@null"
+        android:background="@drawable/background_bar_transparant_71_round_4dp"
+        android:backgroundTint="@null"
+        android:foreground="@color/transparent"
         android:paddingLeft="10dp"
+        android:layout_margin="0dp"
         />
 
     <ImageButton

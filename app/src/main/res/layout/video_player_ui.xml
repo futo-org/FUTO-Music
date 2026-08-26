@@ -23,9 +23,9 @@
         app:scrubber_disabled_size="0dp"
         app:scrubber_enabled_size="16dp"
         app:scrubber_dragged_size="20dp"
-        app:played_color="#44FFFFFF"
-        app:buffered_color="#44222222"
-        app:unplayed_color="#44222222"
+        app:played_color="#99FFFFFF"
+        app:buffered_color="#22FFFFFF"
+        app:unplayed_color="#22FFFFFF"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />

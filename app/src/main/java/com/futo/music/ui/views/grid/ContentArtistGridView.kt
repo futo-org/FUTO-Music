@@ -2,6 +2,7 @@ package com.futo.music.ui.views.grid
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
@@ -13,7 +14,7 @@ import com.futo.music.models.playable.IPlayable
 import com.futo.music.storage.db.DBArtist
 import com.google.android.material.imageview.ShapeableImageView
 
-class ContentArtistGridView(viewGroup: ViewGroup) : IContentGridView {
+class ContentArtistGridView(viewGroup: ViewGroup, val asList: Boolean = false) : IContentGridView {
 
     override val root: ConstraintLayout;
     val imageThumbnail: ShapeableImageView;
@@ -29,7 +30,7 @@ class ContentArtistGridView(viewGroup: ViewGroup) : IContentGridView {
     private var _hideMetadata: Boolean = false;
 
     init {
-        root = LayoutInflater.from(viewGroup.context).inflate(R.layout.grid_artist, viewGroup, false) as ConstraintLayout;
+        root = LayoutInflater.from(viewGroup.context).inflate(if(!asList) R.layout.grid_artist else R.layout.grid_track_list, viewGroup, false) as ConstraintLayout;
         imageThumbnail = root.findViewById(R.id.image_thumbnail);
         textName = root.findViewById(R.id.text_name);
         textMeta = root.findViewById(R.id.text_metadata);
@@ -46,6 +47,14 @@ class ContentArtistGridView(viewGroup: ViewGroup) : IContentGridView {
             }
             return@setOnLongClickListener true;
         }
+
+        val buttonOptions = root.findViewById<ImageButton?>(R.id.button_options);
+        if(buttonOptions != null)
+            buttonOptions.setOnClickListener {
+                playableItem?.let {
+                    onLongClick.emit(it);
+                }
+            }
     }
 
     override fun bind(playable: IPlayable) {
@@ -73,6 +82,9 @@ class ContentArtistGridView(viewGroup: ViewGroup) : IContentGridView {
     }
 
     override fun setSize(width: Int, height: Int) {
+        if(asList)
+            return;
+
         val dp10 = 10.dp(root.resources);
         val dp20 = 20.dp(root.resources);
         val dp40 = 40.dp(root.resources);
