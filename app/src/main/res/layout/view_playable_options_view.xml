@@ -48,7 +48,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             app:IconButton_background="@drawable/background_round_playable_primary"
-            app:IconButton_image="@drawable/ic_add_to_queue"
+            app:IconButton_image="@drawable/ic_queue_add"
             app:IconButton_text="Queue Add" />
         <!--
         <com.futo.music.ui.buttons.IconButton
