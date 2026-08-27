@@ -135,8 +135,10 @@ class DBTrack(
             metadataBuilder.setTitle(name);
             metadataBuilder.setArtist(artistLine);
         }
-        else
+        else {
             metadataBuilder.setTitle(name);
+            metadataBuilder.setDisplayTitle(name);
+        }
         val art = albums.find { it.artUri != null }?.artUri ?:
             artists.find { it.artUri != null }?.artUri;
 

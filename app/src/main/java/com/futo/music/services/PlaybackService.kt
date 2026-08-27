@@ -97,14 +97,12 @@ class PlaybackService: MediaLibraryService() {
         override fun onAddMediaItems(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>): ListenableFuture<List<MediaItem>> {
             _lastMediaItems = mediaItems;
 
-
             return super.onAddMediaItems(mediaSession, controller, mediaItems)
         }
 
         @OptIn(UnstableApi::class)
         override fun onSetMediaItems(mediaSession: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>, startIndex: Int, startPositionMs: Long): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
             _lastMediaItems = mediaItems;
-
 
             return super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
         }
@@ -150,8 +148,9 @@ class PlaybackService: MediaLibraryService() {
             }
 
             override fun createMediaSource(mediaItem : MediaItem) : MediaSource {
-                    return ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this@PlaybackService))
-                        .createMediaSource(MediaItem.fromUri(mediaItem.localConfiguration?.uri ?: Uri.EMPTY));
+                    return ProgressiveMediaSource.Factory(
+                        DefaultDataSource.Factory(this@PlaybackService)
+                    ).createMediaSource(mediaItem)
             }
         }
         val player = ExoPlayer.Builder(this)

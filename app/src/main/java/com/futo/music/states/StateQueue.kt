@@ -2,6 +2,7 @@ package com.futo.music.states
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.media3.common.MediaItem
 import com.futo.music.constructs.Event1
 import com.futo.music.logic.PlayerManager
@@ -166,6 +167,7 @@ class StateQueue {
                     _player?.player?.setMediaItems(mediaItems);
                 _player?.player?.prepare();
                 _player?.player?.play();
+
             }
             onQueueChanged.emit(newQueue);
             cb?.invoke(newQueue);
