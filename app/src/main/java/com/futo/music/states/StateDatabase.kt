@@ -28,6 +28,7 @@ import com.futo.music.storage.db.DBPlaylistUpdatePlayed
 import com.futo.music.storage.db.DBPlaylistUpdateRating
 import com.futo.music.storage.db.DBPlaylistUpdateTrackMetadata
 import com.futo.music.storage.db.DBTrack
+import com.futo.music.storage.db.DBTrackIds
 import com.futo.music.storage.db.DBTrackUpdateOpened
 import com.futo.music.storage.db.DBTrackUpdatePlayed
 import com.futo.music.storage.db.DBTrackUpdateRating
@@ -197,6 +198,9 @@ class StateDatabase(
     }
     fun getAllTracks(): List<DBTrack> {
         return db.tracksDao().getAll();
+    }
+    fun getAllTrackIds(): List<DBTrackIds> {
+        return db.tracksDao().getAllIdPairs();
     }
     fun getTracks(ids: List<Long>, ordered: Boolean = true): List<DBTrack> {
         if(ordered)
@@ -414,6 +418,11 @@ class StateDatabase(
     }
     fun removeTrackFromPlaylist(playlistId: Long, trackId: Long) {
         return db.playlistDao().deletePlaylistTrack(playlistId, trackId);
+    }
+
+    fun deleteTrack(id: Long): Int {
+        //TODO: Resolve relations (eg. Playlists/Albums/etc)
+        return db.tracksDao().delete(id);
     }
 
     fun deletePlaylist(id: Long) {

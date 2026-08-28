@@ -577,11 +577,13 @@ class MainActivity : AppCompatActivity() {
             if(isSyncing)
                 return@launch;
             var shouldSync = force || StateLibrary.instance.requireSync(this@MainActivity);
+            var shouldScanDeleted = false;
 
             if(!shouldSync) {
                 val countDB = StateDatabase.instance.getTrackCount();
                 val countMS = StateLibrary.instance.getTrackCount(this@MainActivity);
                 shouldSync = countDB < countMS;
+                shouldScanDeleted = countDB > countMS;
             }
             if(shouldSync) {
                 isSyncing = true;
@@ -605,6 +607,11 @@ class MainActivity : AppCompatActivity() {
                 finally {
                     isSyncing = false;
                 }
+            }
+            else if(shouldScanDeleted) {
+                val deleted = StateLibrary.instance.syncDatabaseDeleted(applicationContext);
+                if(deleted > 0)
+                    StateAnnouncement.instance.registerAnnouncement("import-deleted-" + UUID.randomUUID().toString(), "Tracks removed", "Removed ${deleted} tracks as they were not found on your device", AnnouncementType.SESSION);
             }
         }
     }

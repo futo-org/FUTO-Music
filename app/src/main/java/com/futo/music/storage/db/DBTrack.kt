@@ -12,6 +12,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
 import androidx.room.ColumnInfo
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.Insert
@@ -172,6 +173,8 @@ interface DBTrackDao {
     fun getAll(): List<DBTrack>;
     @Query("SELECT id FROM tracks WHERE hidden != 1")
     fun getAllIds(): List<Long>;
+    @Query("SELECT id, artistId, mediaStoreId, mediaStoreArtistId, mediaStoreAlbumId, hidden FROM tracks")
+    fun getAllIdPairs(): List<DBTrackIds>;
     @Query("SELECT * FROM tracks WHERE hidden == 1")
     fun getAllHidden(): List<DBTrack>;
     @Query("SELECT * FROM tracks WHERE id = :id")
@@ -239,6 +242,9 @@ interface DBTrackDao {
     @Update(entity = DBTrack::class)
     fun update(vararg tracks: DBTrack): Int
 
+    @Query("DELETE FROM tracks WHERE id = :id")
+    fun delete(id: Long): Int
+
     @Update(entity = DBTrack::class)
     fun setPlayed(update: DBTrackUpdatePlayed)
     @Update(entity = DBTrack::class)
@@ -294,6 +300,16 @@ class DBTrackUpdateRatingCalculated(
     val id: Long,
     val scoreLevel: Int,
     val scoreCalculated: Int
+)
+
+@Entity
+class DBTrackIds(
+    val id: Long,
+    val artistId: Long,
+    val mediaStoreId: Long,
+    val mediaStoreArtistId: Long,
+    val mediaStoreAlbumId: Long,
+    val hidden: Boolean
 )
 
 class ScoredItem(

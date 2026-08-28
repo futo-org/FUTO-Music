@@ -28,6 +28,7 @@ import com.futo.music.storage.db.DBArtistTrack
 import com.futo.music.storage.db.DBArtistUpdateTrackMetadata
 import com.futo.music.storage.db.DBPlaylistUpdateTrackMetadata
 import com.futo.music.storage.db.DBTrack
+import com.futo.music.storage.db.DBTrackIds
 import com.futo.music.storage.db.MetadataType
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.StringArrayStorage
@@ -80,6 +81,28 @@ class StateLibrary {
         }
         return false;
     }
+    fun syncDatabaseDeleted(context: Context): Int {
+        var trackDeleted: Int = 0;
+        val allDatabaseTracks = mutableMapOf<Long, DBTrackIds>();
+        StateDatabase.instance.getAllTrackIds().filter { it.mediaStoreId > 0 }.associateByTo(allDatabaseTracks) { it.mediaStoreId };
+        allTracks(context) { count, progress, track ->
+            val id = track.id.toLongOrNull() ?: return@allTracks;
+            if(id > 0 && allDatabaseTracks.containsKey(id))
+                allDatabaseTracks.remove(id);
+        }
+        Logger.i(TAG, "Found ${allDatabaseTracks.count()} deleted tracks");
+        for(track in allDatabaseTracks) {
+            try {
+                StateDatabase.instance.deleteTrack(track.value.id);
+                trackDeleted++;
+            }
+            catch(ex: Throwable) {
+                Logger.e(TAG, "Failed to delete track [${track.value.id}]: " + ex.message, ex);
+            }
+        }
+        onSyncCompleted.emit();
+        return trackDeleted;
+    }
     fun syncDatabase(context: Context, onProgress: (Int, Int, String, String)->Unit): ImportResult {
         val albums = getAlbums(context);
         var albumPos = 0;
@@ -101,12 +124,30 @@ class StateLibrary {
         }
         var trackPos = 0;
         var trackNew = 0;
+        var trackDeleted: Int = 0;
+        val allDatabaseTracks = mutableMapOf<Long, DBTrackIds>();
+        StateDatabase.instance.getAllTrackIds().filter { it.mediaStoreId > 0 }.associateByTo(allDatabaseTracks) { it.mediaStoreId };
         allTracks(context) { count, progress, track ->
             if(updateTrack(track))
                 trackNew++;
             trackPos++;
             onProgress(count, progress, "track", "Syncing track " + track.name);
+
+            val id = track.id.toLongOrNull() ?: return@allTracks;
+            if(id > 0 && allDatabaseTracks.containsKey(id)) {
+                allDatabaseTracks.remove(id);
+                trackDeleted++;
+            }
         };
+        Logger.i(TAG, "Found ${allDatabaseTracks.count()} deleted tracks");
+        for(track in allDatabaseTracks) {
+            try {
+                StateDatabase.instance.deleteTrack(track.value.id);
+            }
+            catch(ex: Throwable) {
+                Logger.e(TAG, "Failed to delete track [${track.value.id}]: " + ex.message, ex);
+            }
+        }
 
         val mediaStoreVersion = MediaStore.getVersion(context);
         _mediaStoreVersions.setAndSave(MediaStore.VOLUME_EXTERNAL_PRIMARY, mediaStoreVersion);
@@ -115,7 +156,7 @@ class StateLibrary {
 
         onSyncCompleted.emit();
         return ImportResult(albumPos, artistPos, trackPos,
-            albumNew, artistNew, trackNew);
+            albumNew, artistNew, trackNew, trackDeleted);
     }
 
     fun syncDatabaseMetadata(onProgress: (Int, Int, String, String)->Unit) {
@@ -194,7 +235,8 @@ class StateLibrary {
         val tracks: Int,
         val albumsNew: Int,
         val artistsNew: Int,
-        val tracksNew: Int
+        val tracksNew: Int,
+        val tracksDeleted: Int
     )
 
     fun checkAlbumArt(albumMediastoreId: Long): Boolean {
