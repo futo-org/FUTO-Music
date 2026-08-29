@@ -26,6 +26,20 @@
     <string name="close">Close</string>
 
 
+    <string-array name="shuffle_reoccurrence">
+        <item>Never</item>
+        <item>3 tracks</item>
+        <item>5 tracks</item>
+        <item>7 tracks</item>
+        <item>10 tracks</item>
+        <item>20 tracks</item>
+    </string-array>
+    <string-array name="shuffle_reoccurrence_time">
+        <item>Full Chance</item>
+        <item>Gradual 3 tracks</item>
+        <item>Gradual 5 tracks</item>
+        <item>Gradual 10 tracks</item>
+    </string-array>
 
 
     <string name="success">Success</string>

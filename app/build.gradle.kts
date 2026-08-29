@@ -30,7 +30,6 @@ android {
         version = release(36)
     }
 
-
     flavorDimensions("buildType")
     productFlavors {
         create("stable") {

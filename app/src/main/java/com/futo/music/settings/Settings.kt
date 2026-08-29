@@ -3,10 +3,11 @@ package com.futo.music.settings
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.BuildConfig
 import com.futo.music.R
+import com.futo.music.R.array.shuffle_reoccurrence
+import com.futo.music.R.array.shuffle_reoccurrence_time
 import com.futo.music.UIDialogs
 import com.futo.music.fragments.main.BuyFragment
 import com.futo.music.fragments.main.ContentsFragment
-import com.futo.music.fragments.main.SearchFragment
 import com.futo.music.logging.Logger
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
@@ -19,6 +20,7 @@ import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.FragmentedStorageFileJson
 import com.futo.music.storage.file.StringStorage
 import com.futo.music.ui.views.containers.Setting
+import com.futo.music.ui.views.containers.SettingDropdownOptions
 import com.futo.music.ui.views.containers.SettingType
 import com.futo.music.ui.views.containers.SettingsGroup
 import kotlinx.coroutines.Dispatchers
@@ -27,14 +29,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
-import kotlin.reflect.KProperty
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
-import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaGetter
-import kotlin.streams.asStream
-import kotlin.streams.toList
 
 
 @Serializable
@@ -147,6 +145,43 @@ class Settings : FragmentedStorageFileJson() {
     }
     @SettingsGroup("Media", 2)
     var media = MediaSettings();
+
+
+    @Serializable
+    class ShuffleSettings {
+        @Setting("Shuffle Re-occurrence", "How many tracks have to pass before a track re-occurs in smart shuffle.", order = 8, type = SettingType.DROPDOWN)
+        @SettingDropdownOptions(shuffle_reoccurrence)
+        public var shuffleReoccurrenceTime = 0;
+
+        @Setting("Shuffle Re-occurrence Chance", "How likely it is for a track to re-occur after re-occurrence is allowed.", order = 9, type = SettingType.DROPDOWN)
+        @SettingDropdownOptions(shuffle_reoccurrence_time)
+        public var shuffleReoccurrenceChance = 3;
+
+
+        fun getShuffleReoccurenceTime(): Int {
+            return when(shuffleReoccurrenceTime) {
+                0 -> -1
+                1 -> 3
+                2 -> 5
+                3 -> 7
+                4 -> 10
+                5 -> 20
+                else -> -1
+            }
+        }
+        fun getShuffleReoccurenceChanceTurns(): Int{
+            return when(shuffleReoccurrenceChance) {
+                0 -> 0
+                1 -> 3
+                2 -> 5
+                3 -> 10
+                else -> 0
+            }
+        }
+
+    }
+    @SettingsGroup("Shuffle", 3)
+    var shuffle = ShuffleSettings();
 
 
     @Serializable

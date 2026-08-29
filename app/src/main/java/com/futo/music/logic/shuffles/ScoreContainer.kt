@@ -4,9 +4,10 @@ import com.futo.music.states.DBPlayableType
 import com.futo.music.states.StateDatabase
 import com.futo.music.storage.db.ScoredItem
 
-class ScoreContainer(val scores: Map<Int, MutableList<ScoredItem>>, _allTracks: Map<Long, ScoredItem>? = null) {
+class ScoreContainer(val scores: MutableMap<Int, MutableList<ScoredItem>>, _allTracks: Map<Long, ScoredItem>? = null) {
 
     val allTracks: Map<Long, ScoredItem>;
+    val trackScoreAlias = mutableMapOf<Long, Int>();
 
     init {
         allTracks = if(_allTracks != null)
@@ -19,15 +20,34 @@ class ScoreContainer(val scores: Map<Int, MutableList<ScoredItem>>, _allTracks: 
             }
     }
 
+    fun getTrackScoreAlias(id: Long): Int {
+        return trackScoreAlias.getOrDefault(id, -1);
+    }
     fun getTrackById(id: Long): ScoredItem? {
         return allTracks[id];
     }
 
     fun removeTrack(id: Long) {
         val item = allTracks.getOrDefault(id, null) ?: return;
+        val scoreId = if(trackScoreAlias.containsKey(item.id)) trackScoreAlias[item.id] else item.score;
 
-        val collection = scores[item.score];
+        val collection = scores[scoreId];
         collection?.remove(item);
+    }
+    fun rescoreTrack(id: Long, newScore: Int) {
+        val item = allTracks.getOrDefault(id, null) ?: return;
+        val scoreId = if(trackScoreAlias.containsKey(item.id)) trackScoreAlias[item.id] else item.score;
+
+        if(item.score != newScore) {
+            trackScoreAlias[id] = newScore;
+
+            val collection = scores[scoreId];
+            collection?.remove(item);
+
+            val newCollection = scores[newScore];
+            if(scores.containsKey(newScore))
+                newCollection?.add(item);
+        }
     }
 
     fun copy(): ScoreContainer {
@@ -49,7 +69,7 @@ class ScoreContainer(val scores: Map<Int, MutableList<ScoredItem>>, _allTracks: 
 
             val grouped = (items + tracks).groupBy<ScoredItem, Int>{ it.score };
 
-            return ScoreContainer(grouped.mapValues { it.value.toMutableList() }, trackMap);
+            return ScoreContainer(grouped.mapValues { it.value.toMutableList() }.toMutableMap(), trackMap);
         }
     }
 }

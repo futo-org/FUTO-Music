@@ -6,6 +6,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.DrawableRes
+import androidx.annotation.IdRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.updateLayoutParams
 import com.futo.music.BuildConfig
@@ -13,6 +14,8 @@ import com.futo.music.R
 import com.futo.music.constructs.Event0
 import com.futo.music.constructs.Event1
 import com.futo.music.dp
+import com.futo.music.ui.views.general.GeneralDropdown
+import com.futo.music.ui.views.general.SortDropdown
 import com.futo.music.ui.views.general.Toggle
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KType
@@ -85,6 +88,13 @@ class SettingsView: LinearLayout {
 
             val view = when(type) {
                 SettingType.TOGGLE -> SettingsToggleView(context);
+                SettingType.DROPDOWN -> {
+                    val view = SettingsDropdownView(context);
+                    val options = item.first.findAnnotation<SettingDropdownOptions>();
+                    if(options != null)
+                        view.setOptions(options.stringsArrayId);
+                    view;
+                };
                 SettingType.INFO -> SettingsInfoView(context);
                 else -> throw NotImplementedError("Unknown setting type ${type}");
             }
@@ -112,6 +122,13 @@ class SettingsView: LinearLayout {
 
             val view = when(type) {
                 SettingType.TOGGLE -> SettingsToggleView(context);
+                SettingType.DROPDOWN -> {
+                    val view = SettingsDropdownView(context);
+                    val options = item.first.findAnnotation<SettingDropdownOptions>();
+                    if(options != null)
+                        view.setOptions(options.stringsArrayId);
+                    view;
+                }
                 SettingType.INFO -> SettingsInfoView(context);
                 else -> throw NotImplementedError("Unknown setting type ${type}");
             }
@@ -143,7 +160,8 @@ class SettingsView: LinearLayout {
     private fun settingTypeFromType(type: KType): SettingType {
         if(type.classifier == Boolean::class)
             return SettingType.TOGGLE;
-
+        else
+            return SettingType.INFO;
         throw NotImplementedError("Unknown type ${type}");
     }
 }
@@ -157,9 +175,14 @@ annotation class SettingsGroup(val name: String, val order: Int = 999);
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Setting(val name: String, val description: String, val type: SettingType = SettingType.UNKNOWN, val order: Int = 999, val icon: String = "", val filterPlaystore: Boolean = false);
 
+@Target(AnnotationTarget.FIELD, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class SettingDropdownOptions(@IdRes val stringsArrayId: Int);
+
 enum class SettingType {
     UNKNOWN,
     TOGGLE,
+    DROPDOWN,
     INFO
 }
 
@@ -193,6 +216,35 @@ class SettingsToggleView: ConstraintLayout, ISettingsSubView {
     }
     override fun setValue(obj: Any) {
         toggle.setValue(obj as Boolean, false, false);
+    }
+}
+class SettingsDropdownView: ConstraintLayout, ISettingsSubView {
+
+    val dropdown: GeneralDropdown;
+    val text: TextView;
+    val description: TextView;
+
+    override val onValueChanged = Event1<Any>();
+
+    constructor(context: Context): super(context) {
+        inflate(context, R.layout.view_settings_dropdown, this);
+
+        text = findViewById(R.id.text);
+        description = findViewById(R.id.description)
+        dropdown = findViewById(R.id.dropdown);
+        dropdown.onSelectedChanged.subscribe(onValueChanged::emit);
+    }
+
+    fun setOptions(arrayId: Int) {
+        dropdown.setOptions(arrayId);
+    }
+
+    override fun setLabel(str: String, desc: String?) {
+        text.text = str;
+        description.text = desc;
+    }
+    override fun setValue(obj: Any) {
+        dropdown.setSelected(obj as Int);
     }
 }
 class SettingsButtonView: ConstraintLayout {
