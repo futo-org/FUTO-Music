@@ -204,6 +204,8 @@ class FilesFragment: MainFragment() {
                                 UIDialogs.showConfirmSheet(context, R.drawable.ic_trash, "Remove [${item.name}]", "Would you like to remove ${item.name} from the app?", {
                                    fragment.lifecycleScope.launch(Dispatchers.IO) {
                                        StateDatabase.instance.db.directoryDao().delete(item.id);
+                                       StateDatabase.instance.db.filesDao().deleteRoot(item.id);
+                                       StateFiles.instance.updateFileAccessIds();
                                        withContext(Dispatchers.Main) {
                                            updateContent();
                                        }
@@ -213,9 +215,11 @@ class FilesFragment: MainFragment() {
                             ListButton(context).withData(R.drawable.ic_scan, "Rescan") {
                                 sheet?.dismiss();
                                 fragment.lifecycleScope.launch(Dispatchers.IO) {
-                                    val dirs = StateDatabase.instance.db.directoryDao().getAll();
-                                    for(scan in dirs)
-                                        StateFiles.instance.scanAndProcessDirectory(context, scan);
+                                    val id = item.id;
+                                    val dir = StateDatabase.instance.db.directoryDao().get(id);
+                                    if(dir != null)
+                                        StateFiles.instance.scanAndProcessDirectory(context, dir);
+                                    else UIDialogs.appToast("Directory not found?");
                                 }
                             }.withMarginBottom(5)
                         );
@@ -368,9 +372,14 @@ class FilesFragment: MainFragment() {
                                         OffsetDateTime.now(),
                                         uri.toString(), false
                                     );
-                                    StateDatabase.instance.db.directoryDao().insert(item);
+                                    val ids = StateDatabase.instance.db.directoryDao().insert(item);
                                     withContext(Dispatchers.Main) {
                                         updateContent();
+                                    }
+                                    if(ids.size > 0) {
+                                        val refetch = StateDatabase.instance.db.directoryDao().get(ids.first());
+                                        if(refetch != null)
+                                            StateFiles.instance.scanAndProcessDirectory(context, refetch);
                                     }
                                 }
                                 catch(ex: Throwable) {

@@ -70,6 +70,7 @@ class StateDatabase(
 ) {
     val onLibraryUpdated = Event0();
 
+
     init {
         onLibraryUpdated.subscribe(this) {
             StateApp.instance.activity()?.getFragment<HomeFragment>()?.clearCache();

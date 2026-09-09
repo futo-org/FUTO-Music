@@ -25,6 +25,7 @@ import com.futo.music.settings.Settings
 import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateLibrary
+import com.futo.music.states.StatePayment
 import com.futo.music.ui.adapters.TabAdapter
 import com.futo.music.ui.adapters.TabDescriptor
 import com.futo.music.ui.views.containers.ContentGrid
@@ -103,6 +104,12 @@ class SettingsFragment: MainFragment() {
                                     });
                                     return@setOnLongClickListener true;
                                 }
+                            }
+                        }
+                        else if(setting.name == "Buy FUTO Music" || setting.name == "Enter License Key") {
+                            if(StatePayment.instance.hasPaid) {
+                                if(view is View)
+                                    view.isVisible = false;
                             }
                         }
                     }

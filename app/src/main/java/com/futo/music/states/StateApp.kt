@@ -11,9 +11,14 @@ import com.futo.music.activities.MainActivity
 import com.futo.music.logging.Logger
 import com.futo.music.storage.file.FragmentedStorage
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.serialization.builtins.PairSerializer
 import java.io.File
 import java.time.OffsetDateTime
+import kotlin.collections.distinctBy
 
 class StateApp {
 
@@ -58,6 +63,7 @@ class StateApp {
         _scope = scope;
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun mainAppStarting(context: Context) {
         Logger.i(TAG, "MainApp Starting");
 
@@ -73,6 +79,11 @@ class StateApp {
         }
 
         StatePayment.instance.initialize();
+
+        //Startup tasks
+        GlobalScope.launch(Dispatchers.IO) {
+            StateFiles.instance.updateFileAccessIds();
+        };
     }
 
     fun shareFile(title: String, type: String, file: File) {

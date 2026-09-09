@@ -71,6 +71,9 @@ class SettingsView: LinearLayout {
                 }
             }
 
+            if(ann != null)
+                _onSettingsViewCreate?.invoke(view, ann)
+
             views.add(Pair(view, ann.order));
         }
 
@@ -247,7 +250,7 @@ class SettingsDropdownView: ConstraintLayout, ISettingsSubView {
         dropdown.setSelected(obj as Int);
     }
 }
-class SettingsButtonView: ConstraintLayout {
+class SettingsButtonView: ConstraintLayout, ISettingsSubView {
     val text: TextView;
     val description: TextView;
     val icon: ImageView;
@@ -266,14 +269,19 @@ class SettingsButtonView: ConstraintLayout {
         }
     }
 
-    fun setLabel(str: String, desc: String?) {
+    override fun setLabel(str: String, desc: String?) {
         text.text = str;
         description.text = desc;
     }
+
+
     fun setIcon(icon: Int) {
         this.icon.setImageResource(icon);
         this.icon.visibility = VISIBLE;
     }
+
+    override val onValueChanged = Event1<Any>();
+    override fun setValue(obj: Any) { }
 }
 class SettingsInfoView : ConstraintLayout, ISettingsSubView {
     val text: TextView;

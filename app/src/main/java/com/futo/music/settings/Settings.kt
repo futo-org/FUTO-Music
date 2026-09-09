@@ -1,5 +1,7 @@
 package com.futo.music.settings
 
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.BuildConfig
 import com.futo.music.R
@@ -24,6 +26,7 @@ import com.futo.music.ui.views.containers.SettingDropdownOptions
 import com.futo.music.ui.views.containers.SettingType
 import com.futo.music.ui.views.containers.SettingsGroup
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -45,12 +48,20 @@ class Settings : FragmentedStorageFileJson() {
 
     @Serializable
     class GeneralSettings {
-        @Setting("Buy FUTO Music", "Support the development of this app.", icon = "ic_money", order = 0, filterPlaystore = true)
+
+        @Setting("Activation Status", "If this app is activated", order = 0, type = SettingType.INFO)
+        public val activated: String get() =
+            if(!StatePayment.instance.isTesting)
+                (if(StatePayment.instance.hasPaid) "Activated" else if(BuildConfig.IS_PLAYSTORE_BUILD) "Playstore" else "Not Activated")
+            else
+                (if(StatePayment.instance.hasPaid) "Activated (Test)" else if(BuildConfig.IS_PLAYSTORE_BUILD) "Playstore (Test)" else "Not Activated (Test)")
+
+        @Setting("Buy FUTO Music", "Support the development of this app.", icon = "ic_money", order = 1, filterPlaystore = true)
         fun buyNav() {
             val act = StateApp.instance.activity() ?: return;
             act.navigate<BuyFragment>();
         }
-        @Setting("Enter License Key", "If you already own a license key, click here.", icon = "ic_license", order = 1, filterPlaystore = true)
+        @Setting("Enter License Key", "If you already own a license key, click here.", icon = "ic_license", order = 2, filterPlaystore = true)
         fun enterLicense() {
             val act = StateApp.instance.activity() ?: return;
             UIDialogs.showInputDialog(act, act.lifecycleScope, "License Key", "Enter your license key from the email", "ex. ABCD-EF12-GH34-IJ56-...", "Activate") {
@@ -81,14 +92,12 @@ class Settings : FragmentedStorageFileJson() {
                 }
             };
         }
-        @Setting("Activation Status", "If this app is activated", order = 2, type = SettingType.INFO)
-        public val activated: String get() =
-            if(!StatePayment.instance.isTesting)
-                (if(StatePayment.instance.hasPaid) "Activated" else if(BuildConfig.IS_PLAYSTORE_BUILD) "Playstore" else "Not Activated")
-            else
-                (if(StatePayment.instance.hasPaid) "Activated (Test)" else if(BuildConfig.IS_PLAYSTORE_BUILD) "Playstore (Test)" else "Not Activated (Test)")
 
-
+        @Setting("Report Issue on Github", "Open our Github repository to submit an issue", icon = "ic_bug", order = 3, filterPlaystore = false)
+        fun openGithub() {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/futo-org/futo-music"))
+            StateApp.instance.activity()?.startActivity(intent)
+        }
 
         @Setting("Prefer List View", "Default to list views instead of grid views where possible", order = 9)
         public var preferListView = false;
@@ -103,8 +112,6 @@ class Settings : FragmentedStorageFileJson() {
     }
     @SettingsGroup("General", 0)
     var general = GeneralSettings();
-
-
 
 
     @Serializable
@@ -141,6 +148,9 @@ class Settings : FragmentedStorageFileJson() {
 
         @Setting("Load Track Art", "Load embedded art in individual tracks, this is significantly heavier than just album art.", order = 9)
         public var loadTrackArt = true;
+
+        @Setting("Filter By Directories", "Filter your Home by showing only the tracks that are part of directories you add to the app", order = 10)
+        public var filterByFiles = false;
 
     }
     @SettingsGroup("Media", 2)
@@ -249,6 +259,18 @@ class Settings : FragmentedStorageFileJson() {
         @Transient
         public val isShowcaseMode: Boolean = false;
 
+
+
+        @Setting("Temp Action", "Used for running temp code. Don't use if you didn't write the code.")
+        fun tempAction() {
+            GlobalScope.launch(Dispatchers.IO) {
+                val allRoots = StateDatabase.instance.db.filesDao().getAllIds().map { it.rootId }.distinct();
+                for (rootId in allRoots) {
+                    UIDialogs.appToast("Deleting rootID files: ${rootId}");
+                    StateDatabase.instance.db.filesDao().deleteRoot(rootId);
+                }
+            }
+        }
     }
     @SettingsGroup("Developer", 9999)
     var developer = DeveloperSettings();

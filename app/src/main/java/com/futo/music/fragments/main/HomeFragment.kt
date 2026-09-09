@@ -23,10 +23,12 @@ import com.futo.music.openPlayable
 import com.futo.music.settings.Settings
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
+import com.futo.music.states.StateFiles
 import com.futo.music.states.StateLibrary
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
 import com.futo.music.storage.db.DBPlaylist
+import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.buttons.RoundButton
 import com.futo.music.ui.buttons.StandardButton
 import com.futo.music.ui.views.containers.ContentGrid
@@ -362,10 +364,18 @@ class HomeFragment: MainFragment() {
                 var artists = fragment._dataArtists ?: StateDatabase.instance.getArtistsByRecent();
                 var albums = fragment._dataAlbums ?:  StateDatabase.instance.getAlbumsByRecent();
                 var playlists = (fragment._dataPlaylists ?: StateDatabase.instance.getPlaylistsByRecent()).map { it as IPlayable };
-                val songNew = fragment._dataSongNew ?: StateDatabase.instance.getTracksNew(20);
+                var songNew = fragment._dataSongNew ?: StateDatabase.instance.getTracksNew(40);
 
-                val unrated = fragment._dataUnrated ?: StateDatabase.instance.getTracksUnrated(20);
-                val mostPlayed = fragment._dataMostPlayed ?: StateDatabase.instance.getMostPlayed(20);
+                var unrated = fragment._dataUnrated ?: StateDatabase.instance.getTracksUnrated(40);
+                var mostPlayed = fragment._dataMostPlayed ?: StateDatabase.instance.getMostPlayed(40);
+
+                if(Settings.instance.media.filterByFiles) {
+                    albums = albums.filter { StateFiles.instance.albumsInFiles.contains(it.id) }
+                    artists = artists.filter { StateFiles.instance.artistsInFiles.contains(it.id) }
+                    recent = recent.filter { it !is DBTrack || StateFiles.instance.fileAccessIds.containsKey(it.id) };
+                    songNew = songNew.filter { it !is DBTrack || StateFiles.instance.fileAccessIds.containsKey(it.id) };
+                    unrated = unrated.filter { it !is DBTrack || StateFiles.instance.fileAccessIds.containsKey(it.id) };
+                }
 
                 //val vibeWeighted = fragment._dataVibeWeighted ?: Vibe("Suggested", ImageVariable.fromResource(R.drawable.ic_playlist), listOf(), listOf(), StateDatabase.instance.getTrackListWeighted(100));
 

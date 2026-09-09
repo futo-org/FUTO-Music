@@ -2,7 +2,6 @@ package com.futo.music.activities
 
 import android.animation.Animator
 import android.annotation.SuppressLint
-import android.app.ComponentCaller
 import android.content.ComponentName
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -11,14 +10,12 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Looper
 import android.provider.OpenableColumns
 import android.view.View
 import android.view.ViewGroup
@@ -37,9 +34,6 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
-import androidx.core.os.BuildCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsCompat.Type
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
@@ -50,7 +44,6 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.DrawableTransformation
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.futo.music.R
 import com.futo.music.RootInsetsController
@@ -88,20 +81,16 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.Dispatcher
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.lang.reflect.InvocationTargetException
 import java.util.LinkedList
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.math.max
-import kotlin.reflect.KClass
 import kotlin.reflect.KClassifier
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.updateLayoutParams
-import androidx.documentfile.provider.DocumentFile
 import com.bumptech.glide.RequestBuilder
 import com.futo.music.BuildConfig
 import com.futo.music.Constants
@@ -115,13 +104,10 @@ import com.futo.music.models.ImageVariable
 import com.futo.music.models.playable.Album
 import com.futo.music.models.playable.Artist
 import com.futo.music.models.playable.Track
-import com.futo.music.states.Announcement
 import com.futo.music.states.SessionAnnouncement
 import com.futo.music.states.StateFiles
 import com.futo.music.states.StatePayment
-import com.futo.music.storage.db.DBDirectory
 import com.futo.music.storage.file.FragmentedStorage
-import com.futo.music.storage.file.ManagedStore
 import com.futo.music.storage.file.StringStorage
 import com.futo.music.toGradientDrawable
 import com.futo.music.toHumanBytesSize
@@ -129,7 +115,6 @@ import com.futo.music.updater.Updater
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.DelicateCoroutinesApi
 import java.io.File
-import java.time.OffsetDateTime
 
 class MainActivity : AppCompatActivity() {
 
@@ -262,8 +247,9 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             StateQueue.instance.restoreQueue(this@MainActivity);
 
+
             val allThumbs = StateDatabase.instance.db.directoryThumbDao().getAll();
-            StateFiles.instance.prefill(allThumbs);
+            StateFiles.instance.prefillThumbnails(allThumbs);
         }
 
         setContentView(R.layout.activity_main);
