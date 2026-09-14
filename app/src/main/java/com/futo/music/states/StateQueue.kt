@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.media3.common.MediaItem
+import com.futo.music.UIDialogs
 import com.futo.music.constructs.Event1
 import com.futo.music.logic.PlayerManager
 import com.futo.music.models.playable.IPlayable
@@ -292,20 +293,24 @@ class StateQueue {
 
 
     fun setQueuePlayNext(context: Context, playable: IPlayableTrack) {
-        val currentPlaying = getCurrentTrack() ?: return;
-        val currentQueue = getQueue().toMutableList();
-        val index = currentQueue.indexOf(currentPlaying);
-        if(index < 0)
-            return;
+        try {
+            val currentPlaying = getCurrentTrack() ?: return;
+            val currentQueue = getQueue().toMutableList();
+            val index = currentQueue.indexOf(currentPlaying);
+            if (index < 0)
+                return;
 
-        val existingIndex = currentQueue.indexOfFirst { it.getItemId() == playable.getItemId() };
-        if(existingIndex >= 0) {
-            currentQueue.removeAt(existingIndex);
-            currentQueue.add(index + 1, playable);
+            val existingIndex = currentQueue.indexOfFirst { it.getItemId() == playable.getItemId() };
+            if (existingIndex >= 0) {
+                currentQueue.removeAt(existingIndex);
+                currentQueue.add(Math.min(currentQueue.size, index + 1), playable);
+            } else
+                currentQueue.add(index + 1, playable);
+            setQueueModify(context, currentQueue);
         }
-        else
-            currentQueue.add(index + 1, playable);
-        setQueueModify(context, currentQueue)
+        catch(ex: Throwable) {
+            UIDialogs.appToast("Failed to add track as next\n" + ex.message);
+        }
     }
     fun setQueueAdd(context: Context, playable: IPlayableTrack) {
         val currentQueue = getQueue().toMutableList();

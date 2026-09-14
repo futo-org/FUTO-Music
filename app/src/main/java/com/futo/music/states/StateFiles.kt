@@ -19,6 +19,7 @@ import com.futo.music.storage.db.DirectoryChildren
 import com.futo.music.toFileName
 import com.futo.music.toFileNameWithoutExtension
 import java.time.OffsetDateTime
+import java.util.UUID
 
 class StateFiles {
     val onScanning = Event1<String>();
@@ -28,6 +29,7 @@ class StateFiles {
     var fileAccessIds: Map<Long, Long> = mapOf();
     var albumsInFiles: HashSet<Long> = HashSet();
     var artistsInFiles: HashSet<Long> = HashSet();
+    var dirsInaccessibleIds: HashSet<Long> = HashSet();
     private val fileThumbnails = mutableMapOf<String, String>();
     private val albumThumbnail = mutableMapOf<Long, String>();
 
@@ -53,8 +55,22 @@ class StateFiles {
         fileAccessIds = allIds;
         albumsInFiles = HashSet(allAlbumIds);
         artistsInFiles = HashSet(allArtistIds);
+
+        StateApp.instance.refreshHome();
     }
 
+    fun updateRootDirectoryValidation(context: Context) {
+        val items = StateDatabase.instance.db.directoryDao().getAll();
+
+        val inaccessible = HashSet<Long>();
+        for(item in items) {
+            val doc = item.getDirectoryDocument(context);
+            if(doc == null) {
+                inaccessible.add(item.id);
+            }
+        }
+        dirsInaccessibleIds = inaccessible;
+    }
 
     fun scanAndProcessDirectory(context: Context, dir: DBDirectory) {
         UIDialogs.appToast("Scanning [${dir.name}]");
@@ -118,6 +134,10 @@ class StateFiles {
             }
             announcement.setProgress(1.0, "Done!");
             updateFileAccessIds();
+
+            val announcement = StateAnnouncement.instance.registerAnnouncement(SessionAnnouncement("files_scanned_" + UUID.randomUUID().toString(), "Scanned directory [${dir.name}]", "thumbnails: ${result.thumbnails.size}, playlists: ${result.playlists.size}, tracks: ${result.filePaths.size}",
+                AnnouncementType.SESSION,
+                icon = ImageVariable.fromResource(R.drawable.ic_files)));
         }
         catch(ex: Throwable) {
             Logger.e(TAG, "Scanning failed for dir [${dir.name}]", ex);

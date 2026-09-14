@@ -309,6 +309,9 @@ class PlaybackFragment: MainFragment() {
                 if(fragment._player?.player?.hasNextMediaItem() ?: false) {
                     fragment._player?.player?.seekToNextMediaItem();
                 }
+                else if((fragment._player?.player?.mediaItemCount ?: 0) > 1) {
+                    fragment._player?.player?.seekTo(0, 0);
+                }
             }
 
             _buttonInfo.setOnClickListener {
@@ -589,7 +592,7 @@ class PlaybackFragment: MainFragment() {
                     return@launch; //TODO: Clear;
                 try {
 
-                    setPlaySkipButtonStates(player.hasPreviousMediaItem(), player.hasNextMediaItem());
+                    setPlaySkipButtonStates(player.hasPreviousMediaItem(), player.hasNextMediaItem(), player.mediaItemCount > 1);
                     updateQueueState();
                     /*_imageArt.setAlbumArt(mediaMetadata, colorIntercept = {
                         if((it?.dominant ?: it?.darkVibrant) != null)
@@ -684,15 +687,27 @@ class PlaybackFragment: MainFragment() {
             else
                 _buttonPlay.setImageResource(R.drawable.ic_play);
         }
-        fun setPlaySkipButtonStates(prev: Boolean, next: Boolean) {
-            if(prev)
+        fun setPlaySkipButtonStates(prev: Boolean, next: Boolean, isCollection: Boolean = false) {
+            if(prev) {
                 _buttonLeft.alpha = 1f;
-            else
+            }
+            else {
                 _buttonLeft.alpha = 0.3f;
-            if(next)
+            }
+            if(next) {
+                _buttonRight.setImageResource(R.drawable.ic_skip_next)
                 _buttonRight.alpha = 1f;
-            else
-                _buttonRight.alpha = 0.3f;
+            }
+            else {
+                if(isCollection) {
+                    _buttonRight.setImageResource(R.drawable.ic_replay)
+                    _buttonRight.alpha = 1f;
+                }
+                else {
+                    _buttonRight.setImageResource(R.drawable.ic_skip_next)
+                    _buttonRight.alpha = 0.3f;
+                }
+            }
         }
 
         fun updateQueueState() {

@@ -44,6 +44,9 @@ class DBDirectory(
     @Ignore
     override var type = FilesItemType.Root;
 
+    fun getDirectoryDocument(context: Context): FastDocumentFile? {
+        return FastDocumentFile.fromUri(context, Uri.parse(path));
+    }
     fun getDirectoryChildren(context: Context): DirectoryChildren {
         val docFile = FastDocumentFile.fromUri(context, Uri.parse(path));
         val allFiles = docFile?.getFiles() ?: return DirectoryChildren(path, listOf(), listOf());

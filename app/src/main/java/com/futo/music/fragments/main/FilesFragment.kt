@@ -191,7 +191,11 @@ class FilesFragment: MainFragment() {
             recycler.setFadingEdgeLength(fadeOffset);
             filesAdapter = FilesAdapter({
                 it.view.onClick.subscribe { view, item ->
-                    open(item);
+                    if(item is DBDirectory && StateFiles.instance.dirsInaccessibleIds.contains(item.id)) {
+                        UIDialogs.toast("Folder is inaccessible or removed");
+                    }
+                    else
+                        open(item);
                 }
                 it.view.onOptions.subscribe { view, item ->
                     if(item is DBDirectory) {

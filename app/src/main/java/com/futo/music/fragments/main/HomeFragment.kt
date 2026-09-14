@@ -84,6 +84,9 @@ class HomeFragment: MainFragment() {
     fun clearUnratedCache() {
         _dataUnrated = null;
     }
+    fun reloadContent() {
+        _view?.updateContent();
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState);
@@ -230,6 +233,9 @@ class HomeFragment: MainFragment() {
             }
             gridMostPlayed.onClick.subscribe {
                 it.openPlayable(fragment);
+            }
+            gridMostPlayed.onLongClick.subscribe {
+                it.openPlayable(fragment, preferMenu = true)
             }
             gridMostPlayed.setButtonListener {
                 fragment.lifecycleScope.launch(Dispatchers.IO) {

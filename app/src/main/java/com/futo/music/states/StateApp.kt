@@ -8,6 +8,7 @@ import com.futo.music.BuildConfig
 import com.futo.music.R
 import com.futo.music.RootApplication
 import com.futo.music.activities.MainActivity
+import com.futo.music.fragments.main.HomeFragment
 import com.futo.music.logging.Logger
 import com.futo.music.storage.file.FragmentedStorage
 import kotlinx.coroutines.CoroutineScope
@@ -30,6 +31,13 @@ class StateApp {
 
     fun refreshHome() {
         homeRefreshTime = OffsetDateTime.now();
+        _activity?.let {
+            val cur = it.fragCurrent;
+            if(cur is HomeFragment) {
+                cur.clearCache();
+                cur.reloadContent();
+            }
+        }
     }
 
     fun registerContext(context: Context) {
@@ -83,6 +91,7 @@ class StateApp {
         //Startup tasks
         GlobalScope.launch(Dispatchers.IO) {
             StateFiles.instance.updateFileAccessIds();
+            StateFiles.instance.updateRootDirectoryValidation(context);
         };
     }
 

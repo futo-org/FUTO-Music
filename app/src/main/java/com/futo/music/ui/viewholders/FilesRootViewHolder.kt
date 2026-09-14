@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.futo.music.R
 import com.futo.music.constructs.Event2
+import com.futo.music.states.StateFiles
 import com.futo.music.storage.db.DBDirectory
 import com.futo.music.ui.adapters.IFileItem
 import com.futo.music.ui.adapters.IFilesView
@@ -48,6 +49,11 @@ class FilesRootViewHolder(val viewGroup: ViewGroup) : IFilesView {
             return;
         _textName.text = value.name;
         _textMetadata.text = value.path;
+
+        if(value is DBDirectory && StateFiles.instance.dirsInaccessibleIds.contains(value.id))
+            _imageThumbnail.setImageResource(R.drawable.ic_folder_limited_pred)
+        else
+            _imageThumbnail.setImageResource(R.drawable.ic_files);
 
         item = value;
     }
