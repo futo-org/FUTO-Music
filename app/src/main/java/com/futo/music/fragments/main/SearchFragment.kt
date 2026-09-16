@@ -13,12 +13,20 @@ import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.fragments.MainFragView
+import com.futo.music.isInFiles
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.openPlayable
+import com.futo.music.settings.Settings
 import com.futo.music.states.ArtistOrdering
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
+import com.futo.music.states.StateFiles
 import com.futo.music.states.StateLibrary
+import com.futo.music.storage.db.DBAlbum
+import com.futo.music.storage.db.DBAlbumUpdateRating
+import com.futo.music.storage.db.DBArtist
+import com.futo.music.storage.db.DBArtistUpdateRating
+import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.views.NoResultsView
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
@@ -104,7 +112,9 @@ class SearchFragment: MainFragment() {
                 emptyView.isVisible = false;
                 gridSearch.isVisible = true;
                 fragment.lifecycleScope.launch(Dispatchers.IO) {
-                    val search = StateDatabase.instance.search(str);
+                    var search = StateDatabase.instance.search(str);
+                    if(Settings.instance.media.filterByFiles)
+                        search = search.filter { it.isInFiles() };
 
                     withContext(Dispatchers.Main) {
                         if (search.isNullOrEmpty()) {

@@ -124,7 +124,7 @@ class Settings : FragmentedStorageFileJson() {
                 UIDialogs.appToast("Already scanning...");
             else {
                 UIDialogs.appToast("Scan started, you can track progress in the app notifications");
-                StateApp.instance.activity()?.sync(true);
+                StateApp.instance.activity()?.sync(true, false);
             }
         }
 

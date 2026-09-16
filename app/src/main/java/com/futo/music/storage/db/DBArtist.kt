@@ -70,6 +70,8 @@ interface DBArtistDao {
     fun getAll(): List<DBArtist>;
     @Query("SELECT id FROM artists WHERE hidden != 1")
     fun getAllIds(): List<Long>;
+    @Query("SELECT mediaStoreId FROM artists")
+    fun getAllMediastoreIds(): List<Long>;
     @Query("SELECT * FROM artists WHERE hidden == 1")
     fun getAllHidden(): List<DBArtist>;
     @Query("SELECT * FROM artists WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC")

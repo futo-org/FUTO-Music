@@ -27,6 +27,7 @@ import com.futo.music.models.playable.IPlayable
 import com.futo.music.models.playable.IPlayableTrack
 import com.futo.music.settings.Settings
 import com.futo.music.states.StateApp
+import com.futo.music.states.StateFiles
 import com.futo.music.states.StateQueue
 import com.futo.music.storage.db.DBAlbum
 import com.futo.music.storage.db.DBArtist
@@ -383,4 +384,15 @@ fun View.showAnimated() {
         .alpha(1f)
         .setDuration(300)
         .start();
+}
+
+
+fun IPlayable.isInFiles(): Boolean {
+    return if(this is DBTrack)
+        StateFiles.instance.fileAccessIds.containsKey(this.id);
+    else if(this is DBAlbum)
+        StateFiles.instance.albumsInFiles.contains(this.id);
+    else if(this is DBArtist)
+        StateFiles.instance.artistsInFiles.contains(this.id);
+    else true;
 }

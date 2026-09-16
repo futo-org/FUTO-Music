@@ -88,6 +88,8 @@ interface DBAlbumDao {
     fun getAll(): List<DBAlbum>;
     @Query("SELECT id FROM albums WHERE hidden != 1")
     fun getAllIds(): List<Long>;
+    @Query("SELECT mediaStoreId FROM albums")
+    fun getAllMediastoreIds(): List<Long>;
     @Query("SELECT * FROM albums WHERE hidden == 1")
     fun getAllHidden(): List<DBAlbum>;
     @Query("SELECT * FROM albums WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC")

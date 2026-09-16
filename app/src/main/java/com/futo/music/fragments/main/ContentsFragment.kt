@@ -15,6 +15,7 @@ import com.futo.music.R
 import com.futo.music.fragments.MainFragView
 import com.futo.music.fragments.top.GeneralTopBarFragment
 import com.futo.music.fragments.top.NavigationTopBarFragment
+import com.futo.music.isInFiles
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.openPlayable
 import com.futo.music.settings.Settings
@@ -129,7 +130,8 @@ class ContentsFragment: MainFragment() {
         }
 
         fun updateContent(contents: List<IPlayable>) {
-            val newContents = sort(contents);
+            var newContents = sort(contents);
+            newContents = newContents.filter { it.isInFiles() };
             _lastPlayables = newContents;
             if(contents.size  == 0) {
                 emptyView.isVisible = true;

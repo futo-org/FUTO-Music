@@ -119,6 +119,12 @@ class StateDatabase(
     fun getAlbums(): List<DBAlbum> {
         return db.albumDao().getAll();
     }
+    fun getAlbumIds(): List<Long> {
+        return db.albumDao().getAllIds();
+    }
+    fun getAlbumMediastoreIds(): List<Long> {
+        return db.albumDao().getAllMediastoreIds();
+    }
     fun getAlbumsByRecent(): List<DBAlbum> {
         return db.albumDao().getAllByRecentPlayed();
     }
@@ -134,6 +140,9 @@ class StateDatabase(
 
     fun getArtists(): List<DBArtist> {
         return db.artistDao().getAll();
+    }
+    fun getArtistMediastoreIds(): List<Long> {
+        return db.artistDao().getAllMediastoreIds();
     }
     fun getArtistsByRecent(): List<DBArtist> {
         return db.artistDao().getAllByRecentPlayed();

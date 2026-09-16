@@ -58,7 +58,7 @@ android {
         applicationId = "com.futo.music"
         minSdk = 29
         targetSdk = 36
-        versionCode = 45
+        versionCode = 46
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

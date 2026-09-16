@@ -558,7 +558,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun sync(force: Boolean = false) {
+    fun sync(force: Boolean = false, quick: Boolean = true) {
         lifecycleScope.launch(Dispatchers.IO) {
             if(isSyncing)
                 return@launch;
@@ -577,11 +577,18 @@ class MainActivity : AppCompatActivity() {
                     "importing", true);
                 UIDialogs.appToast("We're importing your music!\nGive us a minute.")
                 try {
-                    val results = StateLibrary.instance.syncDatabase(applicationContext, { max, progress, type, text ->
-                        if (max > 0) {
-                            announce.setProgress(progress.toDouble() / max, text);
-                        }
-                    });
+                    val results = if(quick)
+                        StateLibrary.instance.syncDatabaseQuick(applicationContext, { max, progress, type, text ->
+                            if (max > 0) {
+                                announce.setProgress(progress.toDouble() / max, text);
+                            }
+                        });
+                    else
+                        StateLibrary.instance.syncDatabase(applicationContext, { max, progress, type, text ->
+                            if (max > 0) {
+                                announce.setProgress(progress.toDouble() / max, text);
+                            }
+                        });
                     StateAnnouncement.instance.deleteAnnouncement(announce.id);
                     StateAnnouncement.instance.registerAnnouncement("import-success-" + UUID.randomUUID().toString() , "Import Success", "Imported ${results.albums} albums (${results.albumsNew} new), ${results.artists} artists (${results.artistsNew} new), ${results.tracks} tracks (${results.tracksNew} new)", AnnouncementType.SESSION);
                 }

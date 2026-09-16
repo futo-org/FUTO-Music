@@ -158,6 +158,63 @@ class StateLibrary {
         return ImportResult(albumPos, artistPos, trackPos,
             albumNew, artistNew, trackNew, trackDeleted);
     }
+    fun syncDatabaseQuick(context: Context, onProgress: (Int, Int, String, String)->Unit): ImportResult {
+        val albums = getAlbums(context);
+        var albumPos = 0;
+        var albumNew = 0;
+        val existingAlbums = HashSet(StateDatabase.instance.getAlbumMediastoreIds());
+        for(album in albums) {
+            if(album.id.toLongOrNull() != null && !existingAlbums.contains(album.id.toLong()) && updateAlbum(album))
+                albumNew++;
+            albumPos++;
+            onProgress(albums.size, albumPos, "album", "Syncing Album " + album.name);
+        }
+        val artists = getArtists(context, ArtistOrdering.Alphabethic);
+        var artistPos = 0;
+        var artistNew = 0;
+        val existingArtists = HashSet(StateDatabase.instance.getArtistMediastoreIds())
+        for(artist in artists) {
+            if(artist.id.toLongOrNull() != null && !existingArtists.contains(artist.id.toLong()) && updateArtist(artist))
+                artistNew++;
+            artistPos++;
+            onProgress(artists.size, artistPos, "artist", "Syncing artist " + artist.name);
+        }
+        var trackPos = 0;
+        var trackNew = 0;
+        var trackDeleted: Int = 0;
+        val allDatabaseTracks = mutableMapOf<Long, DBTrackIds>();
+        val existingTracks = StateDatabase.instance.getAllTrackIds().filter { it.mediaStoreId > 0 }.associateByTo(allDatabaseTracks) { it.mediaStoreId };
+        allTracks(context) { count, progress, track ->
+            if(track.id.toLongOrNull() != null && !existingTracks.containsKey(track.id.toLong()) && updateTrack(track))
+                trackNew++;
+            trackPos++;
+            onProgress(count, progress, "track", "Syncing track " + track.name);
+
+            val id = track.id.toLongOrNull() ?: return@allTracks;
+            if(id > 0 && allDatabaseTracks.containsKey(id)) {
+                allDatabaseTracks.remove(id);
+                trackDeleted++;
+            }
+        };
+        Logger.i(TAG, "Found ${allDatabaseTracks.count()} deleted tracks");
+        for(track in allDatabaseTracks) {
+            try {
+                StateDatabase.instance.deleteTrack(track.value.id);
+            }
+            catch(ex: Throwable) {
+                Logger.e(TAG, "Failed to delete track [${track.value.id}]: " + ex.message, ex);
+            }
+        }
+
+        val mediaStoreVersion = MediaStore.getVersion(context);
+        _mediaStoreVersions.setAndSave(MediaStore.VOLUME_EXTERNAL_PRIMARY, mediaStoreVersion);
+
+        syncDatabaseMetadata(onProgress);
+
+        onSyncCompleted.emit();
+        return ImportResult(albumPos, artistPos, trackPos,
+            albumNew, artistNew, trackNew, trackDeleted);
+    }
 
     fun syncDatabaseMetadata(onProgress: (Int, Int, String, String)->Unit) {
         //TODO: Optimize these into more efficient queries
