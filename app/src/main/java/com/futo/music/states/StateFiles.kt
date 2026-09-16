@@ -64,8 +64,12 @@ class StateFiles {
 
         val inaccessible = HashSet<Long>();
         for(item in items) {
-            val doc = item.getDirectoryDocument(context);
-            if(doc == null) {
+            try {
+                val doc = item.getDirectoryDocument(context);
+                if (doc == null) {
+                    inaccessible.add(item.id);
+                }
+            } catch(ex: Throwable) {
                 inaccessible.add(item.id);
             }
         }
