@@ -329,33 +329,38 @@ class FilesFragment: MainFragment() {
         }
 
         fun open(item: IFileItem) {
-            if (item is DBDirectory || item is DocumentDirectoryItem) {
-                val childs = if (item is DBDirectory) item.getFiles(context) else if (item is DocumentDirectoryItem) item.getFiles() else return;
-                updateContent(Pair(item, childs));
-            }
-            else if(item is DocumentFileItem) {
-                if(item.track != null) {
-                    item.track!!.openPlayable(fragment);
-                }
-                else if(item.path.endsWith(".m3u")) {
-                    try {
-                        val m3u = M3UPlaylist.parse(item.docFile.readAsText(context) ?: return, item.path) ?: return;
-                        val currentMusic = getCurrentMusic();
-                        val tracks = m3u.items.mapNotNull { item -> currentMusic.find { it.fileName == item.path } };
-                        if(tracks.isEmpty())
-                            UIDialogs.appToast("No compatible tracks in playlist.\nOnly same-directory audio files allowed.");
-                        else {
-                            val vibe = Vibe("M3U: ${m3u.name}", ImageVariable.fromResource(R.drawable.ic_link), listOf(), listOf(), tracks);
-                            vibe.openPlayable(fragment);
+            try {
+                if (item is DBDirectory || item is DocumentDirectoryItem) {
+                    val childs = if (item is DBDirectory) item.getFiles(context) else if (item is DocumentDirectoryItem) item.getFiles() else return;
+                    updateContent(Pair(item, childs));
+                } else if (item is DocumentFileItem) {
+                    if (item.track != null) {
+                        item.track!!.openPlayable(fragment);
+                    } else if (item.path.endsWith(".m3u")) {
+                        try {
+                            val m3u = M3UPlaylist.parse(item.docFile.readAsText(context) ?: return, item.path) ?: return;
+                            val currentMusic = getCurrentMusic();
+                            val tracks = m3u.items.mapNotNull { item -> currentMusic.find { it.fileName == item.path } };
+                            if (tracks.isEmpty())
+                                UIDialogs.appToast("No compatible tracks in playlist.\nOnly same-directory audio files allowed.");
+                            else {
+                                val vibe = Vibe("M3U: ${m3u.name}", ImageVariable.fromResource(R.drawable.ic_link), listOf(), listOf(), tracks);
+                                vibe.openPlayable(fragment);
+                            }
+                        } catch (ex: Throwable) {
+                            UIDialogs.appToast("Could not parse ${item.name}\n" + ex.message);
                         }
                     }
-                    catch(ex: Throwable){
-                        UIDialogs.appToast("Could not parse ${item.name}\n" + ex.message);
-                    }
+                } else {
+                    UIDialogs.appToast("Not implemented yet");
                 }
             }
-            else {
-                UIDialogs.appToast("Not implemented yet");
+            catch(ex: Throwable) {
+                UIDialogs.appToast("Could not open directory:\n" + ex.message);
+                if(item is DBDirectory) {
+                    StateFiles.instance.dirsInaccessibleIds.add(item.id);
+                    updateContent();
+                }
             }
         }
         fun back() {
