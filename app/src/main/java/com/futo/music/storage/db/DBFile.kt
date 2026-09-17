@@ -53,6 +53,11 @@ interface DBFileDao {
     """)
     fun getAlbumIdsInFiles(): List<Long>
 
+    @Query("""SELECT DISTINCT at.albumId FROM album_tracks AS at
+        INNER JOIN dir_files AS df ON df.trackId = at.trackId AND at.trackId IN (:trackIds)
+    """)
+    fun getAlbumIdsInFilesFromTrackIds(trackIds: List<Long>): List<Long>
+
     @Query("""SELECT DISTINCT at.artistId FROM artist_tracks AS at
         INNER JOIN dir_files AS df ON df.trackId = at.trackId
     """)
@@ -60,6 +65,9 @@ interface DBFileDao {
 
     @Query("SELECT id, trackId, rootId from dir_files WHERE rootId = :rootId")
     fun getAllIdsInDirectory(rootId: Long): List<DBFileIds>
+
+    @Query("SELECT DISTINCT rootId from dir_files WHERE trackId IN (:trackIds)")
+    fun getDirectoryIdsInTrackIds(trackIds: List<Long>): List<Long>
 
     @Query("SELECT * FROM dir_files WHERE id = :id")
     fun get(id: Long): DBFile?;

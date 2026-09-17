@@ -76,13 +76,13 @@ class StateFiles {
         dirsInaccessibleIds = inaccessible;
     }
 
-    fun scanAndProcessDirectory(context: Context, dir: DBDirectory) {
+    fun scanAndProcessDirectory(context: Context, dir: DBDirectory, onlyFindTrackNames: MutableSet<String>? = null, preventNotify: Boolean = false) {
         UIDialogs.appToast("Scanning [${dir.name}]");
         val announcement = StateAnnouncement.instance.registerLoading("Scanning directory [${dir.name}]", "", ImageVariable.fromResource(R.drawable.ic_files), null, true);
 
         try {
             announcement.setProgress(0, "Scanning...");
-            val result = scanDirectory(context, dir);
+            val result = scanDirectory(context, dir, onlyFindTrackNames);
             val allFiles = StateDatabase.instance.db.filesDao().getAllIdsInDirectory(dir.id).associateBy { it.trackId }.toMutableMap();
             announcement.setProgress(0.25, "Processing file registrations..");
             for (file in result.filePaths) {
@@ -139,9 +139,10 @@ class StateFiles {
             announcement.setProgress(1.0, "Done!");
             updateFileAccessIds();
 
-            val announcement = StateAnnouncement.instance.registerAnnouncement(SessionAnnouncement("files_scanned_" + UUID.randomUUID().toString(), "Scanned directory [${dir.name}]", "thumbnails: ${result.thumbnails.size}, playlists: ${result.playlists.size}, tracks: ${result.filePaths.size}",
-                AnnouncementType.SESSION,
-                icon = ImageVariable.fromResource(R.drawable.ic_files)));
+            if(!preventNotify)
+                StateAnnouncement.instance.registerAnnouncement(SessionAnnouncement("files_scanned_" + UUID.randomUUID().toString(), "Scanned directory [${dir.name}]", "thumbnails: ${result.thumbnails.size}, playlists: ${result.playlists.size}, tracks: ${result.filePaths.size}",
+                    AnnouncementType.SESSION,
+                    icon = ImageVariable.fromResource(R.drawable.ic_files)));
         }
         catch(ex: Throwable) {
             Logger.e(TAG, "Scanning failed for dir [${dir.name}]", ex);
@@ -152,18 +153,18 @@ class StateFiles {
         }
     }
 
-    fun scanDirectory(context: Context, dir: DBDirectory): DirectoryScanResult {
+    fun scanDirectory(context: Context, dir: DBDirectory, onlyFindNames: MutableSet<String>? = null): DirectoryScanResult {
         val structure = dir.getDirectoryChildren(context);
-        return scanDirectory(structure);
+        return scanDirectory(structure, onlyFindNames = onlyFindNames);
     }
 
-    fun scanDirectory(dir: DirectoryChildren, root: Boolean = true): DirectoryScanResult {
+    fun scanDirectory(dir: DirectoryChildren, root: Boolean = true, onlyFindNames: MutableSet<String>? = null): DirectoryScanResult {
         val name = dir.path.toFileName();
         onScanning.emit(name);
 
-        val result = scanDirectoryFeatures(dir.path, dir.files);
+        val result = scanDirectoryFeatures(dir.path, dir.files, onlyFindNames);
         for(dir in dir.directories)
-            result.add(scanDirectory(dir.getDirectoryChildren(), false));
+            result.add(scanDirectory(dir.getDirectoryChildren(), false, onlyFindNames));
 
         if(root)
             onScanningFinished.emit(result);
@@ -183,7 +184,7 @@ class StateFiles {
         "disc",
         ""
     );
-    fun scanDirectoryFeatures(path: String, files: List<DocumentFileItem>): DirectoryScanResult {
+    fun scanDirectoryFeatures(path: String, files: List<DocumentFileItem>, onlyFindNames: MutableSet<String>? = null): DirectoryScanResult {
         val dir = DirectoryScanResult();
 
         var hasMusic = false;
@@ -192,6 +193,10 @@ class StateFiles {
 
         val images = mutableListOf<Pair<String, DocumentFileItem>>();
         for(file in files){
+            if(onlyFindNames != null && onlyFindNames.contains(file.name))
+                onlyFindNames.remove(file.name);
+            else
+                continue;
             if(file.mimeType.startsWith("image/"))
                 images.add(Pair(file.path.toFileNameWithoutExtension(), file));
             else if(file.name.endsWith(".m3u"))

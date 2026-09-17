@@ -115,6 +115,7 @@ import com.futo.music.updater.Updater
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.DelicateCoroutinesApi
 import java.io.File
+import kotlin.system.measureTimeMillis
 
 class MainActivity : AppCompatActivity() {
 
@@ -589,8 +590,38 @@ class MainActivity : AppCompatActivity() {
                                 announce.setProgress(progress.toDouble() / max, text);
                             }
                         });
+
+                    var alreadyScanned = mutableListOf<Long>();
+                    for(rescan in results.rescanIds) {
+                        val time = measureTimeMillis {
+                            try {
+                                val db = StateDatabase.instance.db.directoryDao().get(rescan);
+                                Logger.i(TAG, "Rescanning ${db?.name}")
+                                if (db != null) {
+                                    StateFiles.instance.scanAndProcessDirectory(applicationContext, db, null, true);
+                                    alreadyScanned.add(db.id);
+                                }
+                            } catch (ex: Throwable) {
+                                Logger.e(TAG, "Rescan failed for ${rescan}", ex);
+                            }
+                        }
+                        Logger.i(TAG, "Rescan of ${rescan} took ${time}ms");
+                    }
+                    val allDirs = StateDatabase.instance.db.directoryDao().getAll();
+                    for(dir in allDirs) {
+                        try {
+                            if(alreadyScanned.contains(dir.id))
+                                continue;
+                            StateFiles.instance.scanAndProcessDirectory(applicationContext, dir, results.newFileNames, true);
+                        }
+                        catch(ex: Throwable) {
+                            Logger.e(TAG, "Failed to scan-added ${dir.name}", ex);
+                        }
+                    }
+
                     StateAnnouncement.instance.deleteAnnouncement(announce.id);
                     StateAnnouncement.instance.registerAnnouncement("import-success-" + UUID.randomUUID().toString() , "Import Success", "Imported ${results.albums} albums (${results.albumsNew} new), ${results.artists} artists (${results.artistsNew} new), ${results.tracks} tracks (${results.tracksNew} new)", AnnouncementType.SESSION);
+                    StateApp.instance.refreshHome();
                 }
                 catch(ex: Throwable) {
                     Logger.e(TAG, "Import failed", ex);

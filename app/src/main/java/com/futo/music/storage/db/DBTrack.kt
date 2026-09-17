@@ -39,7 +39,7 @@ import java.time.OffsetDateTime
 
 @Entity(tableName = "tracks",
     indices = [
-        Index(value = ["fileName", "artistId"])
+        Index(value = ["fileName", "artistId", "name", "searchName", "searchAdditions"])
     ])
 class DBTrack(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
@@ -79,7 +79,12 @@ class DBTrack(
     var hidden: Boolean = false,
 
     @ColumnInfo(defaultValue = "FALSE")
-    var markedRated: Boolean = false
+    var markedRated: Boolean = false,
+
+    @ColumnInfo(defaultValue = "NULL")
+    var searchName: String? = null,
+    @ColumnInfo(defaultValue = "NULL")
+    var searchAdditions: String? = null
 ): IPlayable, IPlayableTrack {
     override val type: PlayableType get() = PlayableType.Track;
 
@@ -188,7 +193,12 @@ interface DBTrackDao {
     @Query("SELECT id FROM tracks WHERE fileName = :fileName")
     fun getIdByFileName(fileName: String): Long?;
 
-    @Query("SELECT * FROM tracks WHERE hidden != 1 AND INSTR(lower(name), lower(:str))")
+    @Query("""SELECT * FROM tracks WHERE hidden != 1 AND 
+        (
+            INSTR(lower(name), :str) OR
+            INSTR(searchName, :str) OR
+            INSTR(searchAdditions, :str)
+        )""")
     fun search(str: String): List<DBTrack>;
 
     @Query("SELECT t.* FROM tracks t INNER JOIN album_tracks at ON t.id = at.trackId WHERE at.albumId = :albumId AND t.hidden != 1 ORDER BY at.ordering")

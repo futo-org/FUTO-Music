@@ -79,6 +79,8 @@ interface DBArtistDao {
     @Query("SELECT * FROM artists WHERE hidden != 1 ORDER BY datePlayed DESC, trackCount DESC LIMIT :count")
     fun getTopByRecentPlayed(count: Int): List<DBArtist>;
 
+    @Query("SELECT DISTINCT artistId FROM artist_tracks WHERE trackId IN (:trackIds)")
+    fun getArtistIdsWithTrackIds(trackIds: List<Long>): List<Long>
 
     @Query("SELECT id, score FROM artists")
     fun getAllScores(): List<ScoredItem>;

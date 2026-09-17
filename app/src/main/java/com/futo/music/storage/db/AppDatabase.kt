@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(entities = [DBTrack::class, DBArtist::class, DBAlbum::class, DBArtistTrack::class, DBAlbumArtist::class, DBAlbumTrack::class, DBPlaylist::class, DBPlaylistTrack::class, DBDirectory::class, DBDirectoryThumbnail::class, DBFile::class],
-    version = 11,
+    version = 12,
     autoMigrations = [
         AutoMigration(1, 2),
         AutoMigration(2, 3),
@@ -17,7 +17,8 @@ import androidx.room.TypeConverters
         AutoMigration(7, 8),
         AutoMigration(8, 9),
         AutoMigration(9, 10),
-        AutoMigration(10, 11)
+        AutoMigration(10, 11),
+        AutoMigration(11, 12)
     ]
 )
 @TypeConverters(Converters::class)

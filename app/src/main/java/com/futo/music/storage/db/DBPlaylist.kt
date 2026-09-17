@@ -90,6 +90,9 @@ interface DBPlaylistDao {
     @Query("SELECT * FROM playlists WHERE hidden != 1 ORDER BY datePlayed DESC LIMIT :count")
     fun getTopByRecentPlayed(count: Int): List<DBPlaylist>;
 
+    @Query("SELECT DISTINCT playlistId FROM playlist_tracks WHERE trackId IN (:trackIds)")
+    fun getPlaylistIdsWithTrackIds(trackIds: List<Long>): List<Long>
+
     @Query("SELECT id, score FROM playlists")
     fun getAllScores(): List<ScoredItem>;
     @Query("SELECT id, score FROM playlists WHERE id IN (SELECT id FROM albums ORDER BY RANDOM() LIMIT :count)")

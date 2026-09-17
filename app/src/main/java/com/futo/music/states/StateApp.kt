@@ -35,7 +35,9 @@ class StateApp {
             val cur = it.fragCurrent;
             if(cur is HomeFragment) {
                 cur.clearCache();
-                cur.reloadContent();
+                scopeOrNull?.launch(Dispatchers.Main) {
+                    cur.reloadContent();
+                }
             }
         }
     }

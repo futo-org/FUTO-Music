@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import android.provider.MediaStore.Audio.Artists
 import android.util.Size
 import android.webkit.MimeTypeMap
+import androidx.compose.ui.text.toLowerCase
 import androidx.core.database.getStringOrNull
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -34,10 +35,13 @@ import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.StringArrayStorage
 import com.futo.music.storage.file.StringStringMapStorage
 import java.io.File
+import java.text.Normalizer
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.system.measureTimeMillis
+import kotlin.time.Duration.Companion.milliseconds
 
 //Integrations with Android Mediastore, ideally not used directly, but first synced to local DB.
 //TODO: Clean this class up
@@ -82,6 +86,7 @@ class StateLibrary {
         return false;
     }
     fun syncDatabaseDeleted(context: Context): Int {
+        val tracksDeletedIds = mutableListOf<Long>();
         var trackDeleted: Int = 0;
         val allDatabaseTracks = mutableMapOf<Long, DBTrackIds>();
         StateDatabase.instance.getAllTrackIds().filter { it.mediaStoreId > 0 }.associateByTo(allDatabaseTracks) { it.mediaStoreId };
@@ -91,19 +96,78 @@ class StateLibrary {
                 allDatabaseTracks.remove(id);
         }
         Logger.i(TAG, "Found ${allDatabaseTracks.count()} deleted tracks");
+
+        val relatedIds = findRelatedEntityIds(allDatabaseTracks.map { it.value.id });
         for(track in allDatabaseTracks) {
             try {
                 StateDatabase.instance.deleteTrack(track.value.id);
                 trackDeleted++;
+                tracksDeletedIds.add(track.value.id)
             }
             catch(ex: Throwable) {
                 Logger.e(TAG, "Failed to delete track [${track.value.id}]: " + ex.message, ex);
             }
         }
+        try {
+            syncDatabaseMetadata(relatedIds.first, relatedIds.second, relatedIds.third)
+        }
+        catch(ex: Throwable) {
+            Logger.e(TAG, "Failed to update metadata after deletion", ex);
+        }
+
+        var toRescan = mutableListOf<Long>();
+        try {
+            val time = measureTimeMillis {
+                val relevantDirs = StateDatabase.instance.db.filesDao().getDirectoryIdsInTrackIds(tracksDeletedIds);
+                val rescanDirs = relevantDirs.distinct();
+                toRescan.addAll(rescanDirs);
+            }
+            Logger.i(TAG, "Finished directory checks in ${time}ms");
+        }
+        catch(ex: Throwable) {
+            Logger.e(TAG, "Rescan failed", ex);
+        }
+        try {
+
+        }
+        catch(ex: Throwable) {
+
+        }
+
         onSyncCompleted.emit();
         return trackDeleted;
     }
+    fun findRelatedEntityIds(trackIds: List<Long>): Triple<List<Long>, List<Long>, List<Long>> {
+        var albumIds: List<Long>? = null;
+        var artistIds: List<Long>? = null;
+        var playlistIds: List<Long>? = null;
+        try {
+            albumIds =  StateDatabase.instance.db.albumDao().getAlbumIdsWithTrackIds(trackIds);
+        }
+        catch(ex: Throwable) {
+            Logger.i(TAG, "Failed to update metadata for albums", ex);
+        }
+        try {
+            artistIds = StateDatabase.instance.db.artistDao().getArtistIdsWithTrackIds(trackIds);
+        }
+        catch(ex: Throwable) {
+            Logger.i(TAG, "Failed to update metadata for artists", ex);
+        }
+        try {
+            playlistIds = StateDatabase.instance.db.playlistDao().getPlaylistIdsWithTrackIds(trackIds);
+        }
+        catch(ex: Throwable) {
+            Logger.i(TAG, "Failed to update metadata for artists", ex);
+        }
+
+        return Triple(albumIds ?: listOf(), artistIds ?: listOf(), playlistIds ?: listOf());
+    }
+
     fun syncDatabase(context: Context, onProgress: (Int, Int, String, String)->Unit): ImportResult {
+        var newTrackIds = mutableListOf<Long>();
+        var newTrackNames = mutableSetOf<String>();
+        var tracksDeletedIds = mutableListOf<Long>();
+
         val albums = getAlbums(context);
         var albumPos = 0;
         var albumNew = 0;
@@ -128,21 +192,27 @@ class StateLibrary {
         val allDatabaseTracks = mutableMapOf<Long, DBTrackIds>();
         StateDatabase.instance.getAllTrackIds().filter { it.mediaStoreId > 0 }.associateByTo(allDatabaseTracks) { it.mediaStoreId };
         allTracks(context) { count, progress, track ->
-            if(updateTrack(track))
+            val trackUpdateResult = updateTrack(track);
+            if(trackUpdateResult.first) {
                 trackNew++;
+                newTrackIds.add(trackUpdateResult.second)
+                if(trackUpdateResult.third != null)
+                    newTrackNames.add(trackUpdateResult.third!!);
+            }
             trackPos++;
             onProgress(count, progress, "track", "Syncing track " + track.name);
 
             val id = track.id.toLongOrNull() ?: return@allTracks;
             if(id > 0 && allDatabaseTracks.containsKey(id)) {
                 allDatabaseTracks.remove(id);
-                trackDeleted++;
             }
         };
         Logger.i(TAG, "Found ${allDatabaseTracks.count()} deleted tracks");
         for(track in allDatabaseTracks) {
             try {
                 StateDatabase.instance.deleteTrack(track.value.id);
+                trackDeleted++;
+                tracksDeletedIds.add(track.value.id);
             }
             catch(ex: Throwable) {
                 Logger.e(TAG, "Failed to delete track [${track.value.id}]: " + ex.message, ex);
@@ -154,15 +224,37 @@ class StateLibrary {
 
         syncDatabaseMetadata(onProgress);
 
+
+        var toRescan = mutableListOf<Long>();
+        try {
+            onProgress(1, 1, "scan", "Checking outdated directories");
+            val time = measureTimeMillis {
+                val relevantAlbums = StateDatabase.instance.db.filesDao().getAlbumIdsInFilesFromTrackIds(newTrackIds);
+                val relevantAlbumsDeleted = StateDatabase.instance.db.filesDao().getAlbumIdsInFilesFromTrackIds(tracksDeletedIds);
+                val relevantDirs = StateDatabase.instance.db.filesDao().getDirectoryIdsInTrackIds(tracksDeletedIds);
+                val rescanDirs = (relevantAlbums + relevantAlbumsDeleted + relevantDirs).distinct();
+                toRescan.addAll(rescanDirs);
+            }
+            Logger.i(TAG, "Finished directory checks in ${time.milliseconds}ms");
+        }
+        catch(ex: Throwable) {
+            Logger.e(TAG, "Rescan failed", ex)
+        }
+
         onSyncCompleted.emit();
         return ImportResult(albumPos, artistPos, trackPos,
-            albumNew, artistNew, trackNew, trackDeleted);
+            albumNew, artistNew, trackNew, trackDeleted, toRescan, newTrackNames);
     }
     fun syncDatabaseQuick(context: Context, onProgress: (Int, Int, String, String)->Unit): ImportResult {
+        var newTrackIds = mutableListOf<Long>();
+        var newTrackNames = mutableSetOf<String>();
+        var tracksDeletedIds = mutableListOf<Long>();
+
         val albums = getAlbums(context);
         var albumPos = 0;
         var albumNew = 0;
         val existingAlbums = HashSet(StateDatabase.instance.getAlbumMediastoreIds());
+
         for(album in albums) {
             if(album.id.toLongOrNull() != null && !existingAlbums.contains(album.id.toLong()) && updateAlbum(album))
                 albumNew++;
@@ -185,21 +277,29 @@ class StateLibrary {
         val allDatabaseTracks = mutableMapOf<Long, DBTrackIds>();
         val existingTracks = StateDatabase.instance.getAllTrackIds().filter { it.mediaStoreId > 0 }.associateByTo(allDatabaseTracks) { it.mediaStoreId };
         allTracks(context) { count, progress, track ->
-            if(track.id.toLongOrNull() != null && !existingTracks.containsKey(track.id.toLong()) && updateTrack(track))
-                trackNew++;
+            if(track.id.toLongOrNull() != null && !existingTracks.containsKey(track.id.toLong())) {
+                val result = updateTrack(track);
+                if(result.first) {
+                    trackNew++;
+                    newTrackIds.add(result.second);
+                    if(result.third != null)
+                        newTrackNames.add(result.third!!);
+                }
+            }
             trackPos++;
             onProgress(count, progress, "track", "Syncing track " + track.name);
 
             val id = track.id.toLongOrNull() ?: return@allTracks;
             if(id > 0 && allDatabaseTracks.containsKey(id)) {
                 allDatabaseTracks.remove(id);
-                trackDeleted++;
             }
         };
         Logger.i(TAG, "Found ${allDatabaseTracks.count()} deleted tracks");
         for(track in allDatabaseTracks) {
             try {
                 StateDatabase.instance.deleteTrack(track.value.id);
+                trackDeleted++;
+                tracksDeletedIds.add(track.value.id);
             }
             catch(ex: Throwable) {
                 Logger.e(TAG, "Failed to delete track [${track.value.id}]: " + ex.message, ex);
@@ -211,9 +311,25 @@ class StateLibrary {
 
         syncDatabaseMetadata(onProgress);
 
+        var toRescan = mutableListOf<Long>();
+        try {
+            onProgress(1, 1, "scan", "Checking outdated directories");
+            val time = measureTimeMillis {
+                val relevantAlbums = StateDatabase.instance.db.filesDao().getAlbumIdsInFilesFromTrackIds(newTrackIds);
+                val relevantAlbumsDeleted = StateDatabase.instance.db.filesDao().getAlbumIdsInFilesFromTrackIds(tracksDeletedIds);
+                val relevantDirs = StateDatabase.instance.db.filesDao().getDirectoryIdsInTrackIds(tracksDeletedIds);
+                val rescanDirs = (relevantAlbums + relevantAlbumsDeleted + relevantDirs).distinct();
+                toRescan.addAll(rescanDirs);
+            }
+            Logger.i(TAG, "Finished directory checks in ${time.milliseconds}ms");
+        }
+        catch(ex: Throwable) {
+            Logger.e(TAG, "Rescan failed", ex);
+        }
+
         onSyncCompleted.emit();
         return ImportResult(albumPos, artistPos, trackPos,
-            albumNew, artistNew, trackNew, trackDeleted);
+            albumNew, artistNew, trackNew, trackDeleted, toRescan, newTrackNames);
     }
 
     fun syncDatabaseMetadata(onProgress: (Int, Int, String, String)->Unit) {
@@ -284,6 +400,77 @@ class StateLibrary {
             playlistPos++;
         }
     }
+    fun syncDatabaseMetadata(albumIds: List<Long> = listOf(), artistIds: List<Long> = listOf(), playlistIds: List<Long> = listOf()) {
+        //TODO: Optimize these into more efficient queries
+
+        var albumPos = 0;
+        for(albumId in albumIds) {
+            val album = StateDatabase.instance.getAlbum(albumId);
+            if(album == null)
+                continue;
+            val allTracks = StateDatabase.instance.getAlbumTracks(album.id);
+            val count = allTracks.size;
+            val duration = if(count > 0) allTracks.sumOf { it.duration } else 0;
+            StateDatabase.instance.db.albumDao().setTrackMetadata(DBAlbumUpdateTrackMetadata(album.id, count, duration));
+            albumPos++;
+        }
+
+        var artistPos = 0;
+        for(artistId in artistIds) {
+            val artist = StateDatabase.instance.getAlbum(artistId)
+            if(artist == null)
+                continue;
+            val allTracks = StateDatabase.instance.getArtistTracks(artist.id);
+            val likelyAlbumArts = allTracks.groupBy { it.mediaStoreAlbumId }.toList().sortedBy { it.second.size };
+            var artUri: String? = null;
+            for(album in likelyAlbumArts) {
+                if(album.second.size > 3) {
+                    val artAlbum = StateDatabase.instance.db.albumDao().getByMSID(album.first);
+                    artUri = artAlbum?.artUri;
+                }
+                if(artUri != null)
+                    break;
+            }
+            if(artUri == null && artist.artUri != null)
+                artUri = artist.artUri;
+
+            val count = allTracks.size;
+            val duration = if(count > 0) allTracks.sumOf { it.duration } else 0;
+            StateDatabase.instance.db.artistDao().setTrackMetadata(DBArtistUpdateTrackMetadata(artist.id, count, duration, artUri));
+            artistPos++;
+        }
+
+        var playlistPos = 0;
+        for(playlistId in playlistIds) {
+            val playlist = StateDatabase.instance.getAlbum(playlistId)
+            if(playlist == null)
+                continue;
+            val allTracks = StateDatabase.instance.getPlaylistTracks(playlist.id);
+            val count = allTracks.size;
+            val duration = if(count > 0) allTracks.sumOf { it.duration } else 0;
+
+            val artList = mutableListOf<Pair<String, Long>>()
+            for(track in allTracks) {
+                val albumArts = StateDatabase.instance.getTrackAlbumArt(track.id);
+                if(albumArts?.isNotBlank() == true) {
+                    artList.add(Pair(albumArts, track.id));
+                    if(artList.size >= 4)
+                        break;
+                }
+            }
+
+            StateDatabase.instance.db.playlistDao().setTrackMetadata(DBPlaylistUpdateTrackMetadata(playlist.id, count, duration,
+                artUri1 = if(artList.size > 0) artList[0].first else null,
+                artUriTrack1 = if(artList.size > 0) artList[0].second else null,
+                artUri2 = if(artList.size > 1) artList[1].first else null,
+                artUriTrack2 = if(artList.size > 1) artList[1].second else null,
+                artUri3 = if(artList.size > 2) artList[2].first else null,
+                artUriTrack3 = if(artList.size > 2) artList[2].second else null,
+                artUri4 = if(artList.size > 3) artList[3].first else null,
+                artUriTrack4 = if(artList.size > 3) artList[3].second else null));
+            playlistPos++;
+        }
+    }
 
 
     class ImportResult(
@@ -293,7 +480,9 @@ class StateLibrary {
         val albumsNew: Int,
         val artistsNew: Int,
         val tracksNew: Int,
-        val tracksDeleted: Int
+        val tracksDeleted: Int,
+        val rescanIds: List<Long> = listOf(),
+        val newFileNames: MutableSet<String> = mutableSetOf()
     )
 
     fun checkAlbumArt(albumMediastoreId: Long): Boolean {
@@ -368,8 +557,8 @@ class StateLibrary {
             StateDatabase.instance.db.albumDao().insert(DBAlbumArtist(dbAlbum.id, dbEntry.id));
         return existing == null;
     }
-    fun updateTrack(track: Track): Boolean {
-        val id = track.id.toLongOrNull() ?: return false;
+    fun updateTrack(track: Track): Triple<Boolean, Long, String?> {
+        val id = track.id.toLongOrNull() ?: return Triple(false, -1, null);
         val existing = StateDatabase.instance.getTrackByMSID(id);
         val artistId = track.artist?.id?.toLongOrNull() ?: existing?.artistId;
         val albumId = track.album?.id?.toLongOrNull() ?: existing?.mediaStoreAlbumId;
@@ -404,6 +593,12 @@ class StateLibrary {
             hidden = if(existing != null) existing.hidden else false,
             scoreLevel = if(existing != null) existing.scoreLevel else 0,
             markedRated = if(existing != null) existing.markedRated else false,
+            searchName = Normalizer.normalize(track.name, Normalizer.Form.NFD).lowercase(),
+            searchAdditions = Normalizer.normalize(
+                listOfNotNull(
+                    (dbArtist?.name ?: existing?.artistLine),
+                    (dbAlbum?.name ?: existing?.albumLine)
+                ).joinToString(" "), Normalizer.Form.NFD).lowercase(),
         )
 
         Logger.i(TAG, "Inserting track [${track.name}] (new: ${existing == null})")
@@ -412,7 +607,7 @@ class StateLibrary {
             StateDatabase.instance.db.albumDao().insert(DBAlbumTrack(dbAlbum.id, dbEntry.id, track.albumOrder));
         if(dbArtist != null)
             StateDatabase.instance.db.artistDao().insert(DBArtistTrack(dbArtist.id, dbEntry.id));
-        return existing == null;
+        return Triple(existing == null, dbEntry.id, track.fileName);
     }
 
 

@@ -99,12 +99,12 @@ class StateDatabase(
     fun search(str: String): List<IPlayable> {
         val searchAlbums = db.albumDao().search(str);
         val searchArtists = db.artistDao().search(str);
-        val searchTracks = db.tracksDao().search(str);
+        val searchTracks = db.tracksDao().search(str.lowercase());
 
         return (searchAlbums + searchArtists + searchTracks).sortedBy { it.name.levenshtein(str) };
     }
     fun searchTracks(str: String): List<DBTrack> {
-        val searchTracks = db.tracksDao().search(str);
+        val searchTracks = db.tracksDao().search(str.lowercase());
 
         return (searchTracks).sortedBy { it.name.levenshtein(str) };
     }
