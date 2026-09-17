@@ -192,13 +192,18 @@ class FilesFragment: MainFragment() {
             filesAdapter = FilesAdapter({
                 it.view.onClick.subscribe { view, item ->
                     if(item is DBDirectory && StateFiles.instance.dirsInaccessibleIds.contains(item.id)) {
-                        UIDialogs.toast("Folder is inaccessible or removed");
+                        showFolderInaccessibleDialog(item);
                     }
                     else
                         open(item);
                 }
                 it.view.onOptions.subscribe { view, item ->
                     if(item is DBDirectory) {
+                        if(StateFiles.instance.dirsInaccessibleIds.contains(item.id)) {
+                            showFolderInaccessibleDialog(item);
+                            return@subscribe;
+                        }
+
                         var sheet: BottomSheetDialog? = null;
                         sheet = UIDialogs.showSheetVertical(context, {
 
@@ -206,14 +211,7 @@ class FilesFragment: MainFragment() {
                             ListButton(context).withData(R.drawable.ic_trash, "Delete") {
                                 sheet?.dismiss();
                                 UIDialogs.showConfirmSheet(context, R.drawable.ic_trash, "Remove [${item.name}]", "Would you like to remove ${item.name} from the app?", {
-                                   fragment.lifecycleScope.launch(Dispatchers.IO) {
-                                       StateDatabase.instance.db.directoryDao().delete(item.id);
-                                       StateDatabase.instance.db.filesDao().deleteRoot(item.id);
-                                       StateFiles.instance.updateFileAccessIds();
-                                       withContext(Dispatchers.Main) {
-                                           updateContent();
-                                       }
-                                   }
+                                   deleteDirectory(item.id);
                                 });
                             }.withMarginBottom(5),
                             ListButton(context).withData(R.drawable.ic_scan, "Rescan") {
@@ -249,6 +247,26 @@ class FilesFragment: MainFragment() {
             recycler.adapter = filesAdapter;
         }
 
+        fun showFolderInaccessibleDialog(item: DBDirectory) {
+            UIDialogs.showDialog(context, R.drawable.ic_folder_limited_pred, "Directory Unavailable", "Directory [${item.name}] is no longer available. Either you removed it or temporary unavailable.\nWould you like to delete it?",
+                null, 0, UIDialogs.Action("Keep", {
+
+                }, UIDialogs.ActionStyle.NONE),
+                UIDialogs.Action("Delete", {
+                    deleteDirectory(item.id);
+                }, UIDialogs.ActionStyle.DANGEROUS));
+        }
+
+        fun deleteDirectory(id: Long) {
+            fragment.lifecycleScope.launch(Dispatchers.IO) {
+                StateDatabase.instance.db.directoryDao().delete(id);
+                StateDatabase.instance.db.filesDao().deleteRoot(id);
+                StateFiles.instance.updateFileAccessIds();
+                withContext(Dispatchers.Main) {
+                    updateContent();
+                }
+            }
+        }
 
 
         fun updateContent(item: Pair<IFileItem?, List<IFileItem>>? = null) {
