@@ -76,6 +76,18 @@ class StateFiles {
         dirsInaccessibleIds = inaccessible;
     }
 
+    fun scanAndProcessAll(context: Context) {
+        val dirs = StateDatabase.instance.db.directoryDao().getAll();
+        for(dir in dirs){
+            try {
+                scanAndProcessDirectory(context, dir, null, false);
+            }
+            catch(ex: Throwable) {
+                Logger.e(TAG, "Failed to rescan dir ${dir.name}", ex);
+                UIDialogs.appToast("Rescan ${dir.name} failed:\n" + ex.message);
+            }
+        }
+    }
     fun scanAndProcessDirectory(context: Context, dir: DBDirectory, onlyFindTrackNames: MutableSet<String>? = null, preventNotify: Boolean = false) {
         UIDialogs.appToast("Scanning [${dir.name}]");
         val announcement = StateAnnouncement.instance.registerLoading("Scanning directory [${dir.name}]", "", ImageVariable.fromResource(R.drawable.ic_files), null, true);
@@ -103,7 +115,9 @@ class StateFiles {
                 }
             }
             announcement.setProgress(0.4, "Deleting missing files..");
-            StateDatabase.instance.db.filesDao().deleteAll(allFiles.values.map { it.id })
+            if(onlyFindTrackNames == null) {
+                StateDatabase.instance.db.filesDao().deleteAll(allFiles.values.filter { it.rootId == dir.id }.map { it.id })
+            }
 
             announcement.setProgress(0.6, "Processing thumbnails..");
             for (img in result.thumbnails) {
@@ -193,9 +207,12 @@ class StateFiles {
 
         val images = mutableListOf<Pair<String, DocumentFileItem>>();
         for(file in files){
-            if(onlyFindNames != null && onlyFindNames.contains(file.name))
+            var searchedFor = false;
+            if(onlyFindNames != null && onlyFindNames.contains(file.name)) {
                 onlyFindNames.remove(file.name);
-            else
+                searchedFor = true;
+            }
+            else if(onlyFindNames != null)
                 continue;
             if(file.mimeType.startsWith("image/"))
                 images.add(Pair(file.path.toFileNameWithoutExtension(), file));
@@ -208,10 +225,10 @@ class StateFiles {
                 if (trackId != null) {
                     dir.filePaths.add(DirectoryScanFile(file.path, file.name, trackId));
 
-                    if (albumConfirmState < 2) {
+                    if (albumConfirmState < 2 || searchedFor) {
                         val album = StateDatabase.instance.getTrackAlbums(trackId).firstOrNull();
                         if (album != null) {
-                            if (albumId == null) {
+                            if (albumId == null || searchedFor) {
                                 albumId = album.id;
                             } else {
                                 if (albumId == album.id) {

@@ -141,6 +141,9 @@ interface DBAlbumDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg atrack: DBAlbumTrack);
+    @Query("DELETE FROM album_tracks WHERE albumId = :albumId AND trackId = :trackId")
+    fun deleteAlbumTrack(albumId: Long, trackId: Long);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg aartist: DBAlbumArtist);
 
@@ -149,6 +152,9 @@ interface DBAlbumDao {
 
     @Query("SELECT * FROM album_artists WHERE albumId = :albumId AND artistId = :artistId")
     fun getAlbumArtistRef(albumId: Long, artistId: Long): DBAlbumArtist?;
+
+    @Query("SELECT * FROM albums WHERE name = :name")
+    fun getAlbumsByName(name: String): List<DBAlbum>;
 
     @Update(entity = DBAlbum::class)
     fun setPlayed(update: DBAlbumUpdatePlayed)

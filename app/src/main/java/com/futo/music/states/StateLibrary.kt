@@ -85,7 +85,7 @@ class StateLibrary {
         }
         return false;
     }
-    fun syncDatabaseDeleted(context: Context): Int {
+    fun syncDatabaseDeleted(context: Context): Pair<Int, List<Long>> {
         val tracksDeletedIds = mutableListOf<Long>();
         var trackDeleted: Int = 0;
         val allDatabaseTracks = mutableMapOf<Long, DBTrackIds>();
@@ -127,15 +127,9 @@ class StateLibrary {
         catch(ex: Throwable) {
             Logger.e(TAG, "Rescan failed", ex);
         }
-        try {
-
-        }
-        catch(ex: Throwable) {
-
-        }
 
         onSyncCompleted.emit();
-        return trackDeleted;
+        return Pair(trackDeleted, toRescan);
     }
     fun findRelatedEntityIds(trackIds: List<Long>): Triple<List<Long>, List<Long>, List<Long>> {
         var albumIds: List<Long>? = null;
@@ -566,6 +560,14 @@ class StateLibrary {
         val dbArtist = if(artistId != null) StateDatabase.instance.getArtistByMSID(artistId) else null;
         val dbAlbum = if(albumId != null) StateDatabase.instance.getAlbumByMSID(albumId) else null;
 
+        var oldAlbum: DBAlbum? = null;
+        var oldAlbumId: Long? = null;
+        if(dbAlbum != null && existing?.mediaStoreAlbumId != null && existing.mediaStoreAlbumId != dbAlbum.mediaStoreId) {
+            oldAlbum = StateDatabase.instance.getAlbumByMSID(existing.mediaStoreAlbumId);
+            if(oldAlbum != null)
+                oldAlbumId = oldAlbum.id;
+        }
+
         val hasMediaStoreData = track.artist?.id?.toLongOrNull() != null || track.album?.id?.toLongOrNull() != null;
 
         val dbEntry = DBTrack(
@@ -603,6 +605,8 @@ class StateLibrary {
 
         Logger.i(TAG, "Inserting track [${track.name}] (new: ${existing == null})")
         dbEntry.id = StateDatabase.instance.insertOrUpdate(dbEntry, existing?.id ?: -1);
+        if(oldAlbumId != null && existing?.id != null)
+            StateDatabase.instance.db.albumDao().deleteAlbumTrack(oldAlbumId, existing.id)
 ;        if(dbAlbum != null)
             StateDatabase.instance.db.albumDao().insert(DBAlbumTrack(dbAlbum.id, dbEntry.id, track.albumOrder));
         if(dbArtist != null)

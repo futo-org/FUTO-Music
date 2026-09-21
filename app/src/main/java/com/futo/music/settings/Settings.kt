@@ -13,6 +13,7 @@ import com.futo.music.fragments.main.ContentsFragment
 import com.futo.music.logging.Logger
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
+import com.futo.music.states.StateFiles
 import com.futo.music.states.StatePayment
 import com.futo.music.storage.db.DBAlbumUpdateRating
 import com.futo.music.storage.db.DBArtistUpdateRating
@@ -124,7 +125,9 @@ class Settings : FragmentedStorageFileJson() {
                 UIDialogs.appToast("Already scanning...");
             else {
                 UIDialogs.appToast("Scan started, you can track progress in the app notifications");
-                StateApp.instance.activity()?.sync(true, false);
+                StateApp.instance.activity()?.sync(true, false) {
+                    StateFiles.instance.scanAndProcessAll(act);
+                }
             }
         }
 

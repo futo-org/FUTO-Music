@@ -559,7 +559,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun sync(force: Boolean = false, quick: Boolean = true) {
+    fun sync(force: Boolean = false, quick: Boolean = true, after: (()->Unit)? = null) {
         lifecycleScope.launch(Dispatchers.IO) {
             if(isSyncing)
                 return@launch;
@@ -612,12 +612,15 @@ class MainActivity : AppCompatActivity() {
                         try {
                             if(alreadyScanned.contains(dir.id))
                                 continue;
-                            StateFiles.instance.scanAndProcessDirectory(applicationContext, dir, results.newFileNames, true);
+                            val namesToSearch = HashSet(results.newFileNames);
+                            StateFiles.instance.scanAndProcessDirectory(applicationContext, dir, namesToSearch, true);
                         }
                         catch(ex: Throwable) {
                             Logger.e(TAG, "Failed to scan-added ${dir.name}", ex);
                         }
                     }
+
+                    after?.invoke();
 
                     StateAnnouncement.instance.deleteAnnouncement(announce.id);
                     StateAnnouncement.instance.registerAnnouncement("import-success-" + UUID.randomUUID().toString() , "Import Success", "Imported ${results.albums} albums (${results.albumsNew} new), ${results.artists} artists (${results.artistsNew} new), ${results.tracks} tracks (${results.tracksNew} new)", AnnouncementType.SESSION);
@@ -634,8 +637,28 @@ class MainActivity : AppCompatActivity() {
             }
             else if(shouldScanDeleted) {
                 val deleted = StateLibrary.instance.syncDatabaseDeleted(applicationContext);
-                if(deleted > 0)
-                    StateAnnouncement.instance.registerAnnouncement("import-deleted-" + UUID.randomUUID().toString(), "Tracks removed", "Removed ${deleted} tracks as they were not found on your device", AnnouncementType.SESSION);
+                if (deleted.first > 0) {
+                    StateAnnouncement.instance.registerAnnouncement(
+                        "import-deleted-" + UUID.randomUUID().toString(),
+                        "Tracks removed",
+                        "Removed ${deleted} tracks as they were not found on your device",
+                        AnnouncementType.SESSION
+                    );
+                    for(rescan in deleted.second) {
+                        val time = measureTimeMillis {
+                            try {
+                                val db = StateDatabase.instance.db.directoryDao().get(rescan);
+                                Logger.i(TAG, "Rescanning ${db?.name}")
+                                if (db != null) {
+                                    StateFiles.instance.scanAndProcessDirectory(applicationContext, db, null, true);
+                                }
+                            } catch (ex: Throwable) {
+                                Logger.e(TAG, "Rescan failed for ${rescan}", ex);
+                            }
+                        }
+                        Logger.i(TAG, "Rescan of ${rescan} took ${time}ms");
+                    }
+                }
             }
         }
     }
