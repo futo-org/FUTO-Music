@@ -570,6 +570,7 @@ class StateLibrary {
 
         val hasMediaStoreData = track.artist?.id?.toLongOrNull() != null || track.album?.id?.toLongOrNull() != null;
 
+        val normalizedSearch = normalizeForSearch(track.name);
         val dbEntry = DBTrack(
             id = existing?.id ?: 0,
             name = track.name,
@@ -595,12 +596,12 @@ class StateLibrary {
             hidden = if(existing != null) existing.hidden else false,
             scoreLevel = if(existing != null) existing.scoreLevel else 0,
             markedRated = if(existing != null) existing.markedRated else false,
-            searchName = Normalizer.normalize(track.name, Normalizer.Form.NFD).lowercase(),
-            searchAdditions = Normalizer.normalize(
+            searchName = normalizedSearch,
+            searchAdditions = normalizeForSearch(
                 listOfNotNull(
                     (dbArtist?.name ?: existing?.artistLine),
                     (dbAlbum?.name ?: existing?.albumLine)
-                ).joinToString(" "), Normalizer.Form.NFD).lowercase(),
+                ).joinToString(" ")),
         )
 
         Logger.i(TAG, "Inserting track [${track.name}] (new: ${existing == null})")
@@ -614,6 +615,11 @@ class StateLibrary {
         return Triple(existing == null, dbEntry.id, track.fileName);
     }
 
+    fun normalizeForSearch(value: String): String {
+        return Normalizer.normalize(value, Normalizer.Form.NFD)
+            .replace(Regex("\\p{M}+"), "")
+            .lowercase()
+    }
 
 
     private val _files = FragmentedStorage.get<StringArrayStorage>("libraryFiles")
