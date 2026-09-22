@@ -1,6 +1,7 @@
 package com.futo.music.files
 
 import com.futo.music.toFileNameWithoutExtension
+import java.nio.file.Path
 
 //Simple M3U Playlist parser, only supports small subset that we actually use for the app.
 //Supported Attributes: #EXTINF, #PLAYLIST
@@ -8,6 +9,29 @@ class M3UPlaylist {
     var name: String? = null;
     var path: String? = null;
     val items = mutableListOf<Item>();
+
+
+    fun getRequiredSubFolders(): List<String> {
+        var paths = mutableListOf<String>();
+        for(item in items) {
+            val path = item.path.split("/");
+            var cancel = false;
+            var dirPath = "";
+            for(seg in 0..<(path.size-1)) {
+                if(SAFE_DIR_CHARS.matches(path[seg])) {
+                    dirPath += path[seg] + "/";
+                }
+                else {
+                    cancel = true;
+                    break;
+                }
+            }
+            if(cancel)
+                break;
+            paths.add(dirPath.trim('/'));
+        }
+        return paths;
+    }
 
     companion object {
 
@@ -40,6 +64,8 @@ class M3UPlaylist {
                 return playlist;
             return null;
         }
+
+        private val SAFE_DIR_CHARS = Regex("[^A-Za-z0-9 _-]");
     }
 
     data class Item(
