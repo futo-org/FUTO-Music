@@ -112,6 +112,7 @@ class FilesFragment: MainFragment() {
         val progressBar: ProgressBar;
 
         val emptyView: NoResultsView;
+        val emptyView2: NoResultsView;
 
         init {
             val recycler = findViewById<RecyclerView>(R.id.recycler);
@@ -185,7 +186,13 @@ class FilesFragment: MainFragment() {
             emptyView.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
                 this.setMargins(0, 50.dp(resources), 0, 0);
             }
+            emptyView2 = NoResultsView(context, "Empty Directory", "This directory is empty", R.drawable.ic_files, listOf())
+            emptyView2.isVisible = false;
+            emptyView2.layoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                this.setMargins(0, 50.dp(resources), 0, 0);
+            }
             findViewById<LinearLayout>(R.id.container_before).addView(emptyView);
+            findViewById<LinearLayout>(R.id.container_before).addView(emptyView2);
 
             val fadeOffset = 10.dp(resources);
             recycler.setFadingEdgeLength(fadeOffset);
@@ -268,13 +275,30 @@ class FilesFragment: MainFragment() {
             }
         }
 
+        fun showEmpty(show: Boolean, isRoot: Boolean) {
+            if(show) {
+                if(isRoot) {
+                    emptyView.isVisible = true;
+                    emptyView2.isVisible = false;
+                }
+                else {
+                    emptyView.isVisible = false;
+                    emptyView2.isVisible = true;
+                }
+            }
+            else {
+                emptyView.isVisible = false;
+                emptyView2.isVisible = false;
+            }
+        }
 
         fun updateContent(item: Pair<IFileItem?, List<IFileItem>>? = null) {
             if(item != null) {
                 stack.add(item);
                 filesAdapter.setData(item.second);
                 updateOtherUI();
-                emptyView.isVisible = item.second.size == 0
+
+                showEmpty(item.second.isEmpty(), false);
                 return;
             }
 
@@ -285,20 +309,20 @@ class FilesFragment: MainFragment() {
                     stack.add(Pair(null, items));
                     withContext(Dispatchers.Main) {
                         filesAdapter.setData(items);
-                        emptyView.isVisible = items.size == 0
+                        showEmpty(items.isEmpty(), true);
                     }
                 }
             else if(current.first is DocumentDirectoryItem) {
                 val childs = (current.first as DocumentDirectoryItem).getFiles();
                 stack.add(Pair(current.first, childs));
                 filesAdapter.setData(childs);
-                emptyView.isVisible = childs.size == 0
+                showEmpty(childs.isEmpty(), false);
             }
             else if(current.first is DBDirectory) {
                 val childs = (current.first as DBDirectory).getFiles(context);
                 stack.add(Pair(current.first, childs));
                 filesAdapter.setData(childs);
-                emptyView.isVisible = childs.size == 0
+                showEmpty(childs.isEmpty(), false);
             }
             updateOtherUI();
         }
