@@ -46,6 +46,7 @@
         app:layout_constraintLeft_toLeftOf="@id/image_thumbnail"
         app:layout_constraintRight_toRightOf="@id/image_thumbnail"
         android:textSize="13dp"
+        android:ellipsize="end"
         android:text="Testing"
         android:layout_marginTop="7dp"
         />

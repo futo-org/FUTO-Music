@@ -262,12 +262,15 @@ class StateQueue {
 
                     //Reconstruct new queue without touching current item
                     var addedCount = 0;
+                    var handled = HashSet<IPlayableTrack>();
                     for(newPos in 0..<newQueue.size) {
                         val item = newQueue[newPos];
                         val oldPos = oldQueue.indexOfFirst { it.getItemId() != null && it.getItemId() == item.getItemId() }
-                        if(oldPos > -1) {
-                            player.player.moveMediaItem(oldPos, newPos);
-                            Collections.swap(oldQueue, oldPos, newPos);
+                        val itemOld = oldQueue.getOrNull(oldPos);
+                        if(itemOld != null && !handled.contains(itemOld)) {
+                                handled.add(itemOld)
+                                player.player.moveMediaItem(oldPos, newPos);
+                                Collections.swap(oldQueue, oldPos, newPos);
                         }
                         else {
                             player.player.addMediaItem(newPos, mediaItems[newPos]);
