@@ -28,7 +28,9 @@ class M3UPlaylist {
             }
             if(cancel)
                 break;
-            paths.add(dirPath.trim('/'));
+            dirPath = dirPath.trim('/')
+            if(!paths.contains(dirPath))
+                paths.add(dirPath);
         }
         return paths;
     }
@@ -65,7 +67,7 @@ class M3UPlaylist {
             return null;
         }
 
-        private val SAFE_DIR_CHARS = Regex("[^A-Za-z0-9 _-]");
+        private val SAFE_DIR_CHARS = Regex("^[A-Za-z0-9 _-]+$");
     }
 
     data class Item(

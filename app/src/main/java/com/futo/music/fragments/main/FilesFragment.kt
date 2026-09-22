@@ -2,6 +2,7 @@ package com.futo.music.fragments.main
 
 import android.content.Intent
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
 import android.view.Gravity
@@ -23,6 +24,7 @@ import com.futo.music.UIDialogs
 import com.futo.music.dp
 import com.futo.music.files.DocumentDirectoryItem
 import com.futo.music.files.DocumentFileItem
+import com.futo.music.files.FastDocumentFile
 import com.futo.music.files.M3UPlaylist
 import com.futo.music.fragments.MainFragView
 import com.futo.music.fragments.top.NavigationTopBarFragment
@@ -292,6 +294,38 @@ class FilesFragment: MainFragment() {
             }
         }
 
+        fun getSubDirectories(paths: List<String>): Map<String, List<IFileItem>> {
+            val current = stack.lastOrNull() ?: return mapOf();
+            if(current.first == null)
+                return mapOf();
+            val base = if(current.first is DBDirectory)
+                FastDocumentFile.fromUri(context, Uri.parse((current.first as DBDirectory).path)) ?: return mapOf();
+            else if(current.first is DocumentDirectoryItem)
+                FastDocumentFile.fromUri(context, Uri.parse((current.first as DocumentDirectoryItem).path)) ?: return mapOf();
+            else return mapOf();
+
+            val map = mutableMapOf<String, List<IFileItem>>();
+            for(path in paths) {
+                val segments = path.split("/");
+                var dirFile: FastDocumentFile? = base;
+                for(seg in segments) {
+                    dirFile = dirFile?.findFile(seg);
+                    if(dirFile == null)
+                        break;
+                }
+                if(dirFile == null)
+                    continue;
+
+                try {
+                    map[path] = DocumentDirectoryItem(dirFile)?.getFiles() ?: continue;
+                }
+                catch(ex: Throwable) {
+                    Logger.e("FilesFragment", "Failed to parse directory: " + path + "\n" + ex.message, ex);
+                }
+            }
+            return map;
+        }
+
         fun updateContent(item: Pair<IFileItem?, List<IFileItem>>? = null) {
             if(item != null) {
                 stack.add(item);
@@ -362,14 +396,33 @@ class FilesFragment: MainFragment() {
                         item.track!!.openPlayable(fragment);
                     } else if (item.path.endsWith(".m3u")) {
                         try {
-                            val m3u = M3UPlaylist.parse(item.docFile.readAsText(context) ?: return, item.path) ?: return;
-                            val currentMusic = getCurrentMusic();
-                            val tracks = m3u.items.mapNotNull { item -> currentMusic.find { it.fileName == item.path } };
-                            if (tracks.isEmpty())
-                                UIDialogs.appToast("No compatible tracks in playlist.\nOnly same-directory audio files allowed.");
-                            else {
-                                val vibe = Vibe("M3U: ${m3u.name}", ImageVariable.fromResource(R.drawable.ic_link), listOf(), listOf(), tracks);
-                                vibe.openPlayable(fragment);
+                            fragment.lifecycleScope.launch(Dispatchers.IO) {
+                                val m3u = M3UPlaylist.parse(item.docFile.readAsText(context) ?: return@launch, item.path) ?: return@launch;
+                                val requiredDirs = m3u.getRequiredSubFolders();
+                                val currentMusic = getCurrentMusic();
+                                val otherMusic = getSubDirectories(requiredDirs).flatMap { files ->
+                                    val relevantFiles = files.value.filter { fileItem ->  m3u.items.any { Uri.parse(it.path).lastPathSegment == fileItem.name } };
+                                    val tracks = relevantFiles.mapNotNull {
+                                        if(it is DocumentFileItem) {
+                                            val track = StateDatabase.instance.getTrackByFileName(it.name);
+                                            if(track != null)
+                                                return@mapNotNull track;
+                                            else null;
+                                        }
+                                        else null;
+                                    }
+                                    return@flatMap tracks;
+                                }
+                                val tracks = m3u.items.mapNotNull { item -> currentMusic.find { it.fileName == item.path } ?: otherMusic.find { it.fileName == Uri.parse(item.path).lastPathSegment} };
+
+                                withContext(Dispatchers.Main) {
+                                    if (tracks.isEmpty())
+                                        UIDialogs.appToast("No compatible tracks in playlist.\nOnly relative audio files in sub directories allowed.");
+                                    else {
+                                        val vibe = Vibe("M3U: ${m3u.name}", ImageVariable.fromResource(R.drawable.ic_link), listOf(), listOf(), tracks);
+                                        vibe.openPlayable(fragment);
+                                    }
+                                }
                             }
                         } catch (ex: Throwable) {
                             UIDialogs.appToast("Could not parse ${item.name}\n" + ex.message);

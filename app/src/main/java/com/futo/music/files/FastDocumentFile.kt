@@ -40,6 +40,25 @@ class FastDocumentFile {
 
         return result;
     }
+    fun findFile(name: String): FastDocumentFile? {
+        val resolver = StateApp.instance.activity()?.contentResolver ?: return null;
+
+        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(Uri.parse(uri), id);
+        val result = ArrayList<FastDocumentFile>();
+
+        val cursor = resolver.query(childrenUri, FAST_DOC_COLUMNS, null, null, null) ?: return null;
+
+        cursor.use {
+            while(cursor.moveToNext()) {
+                val docId = cursor.getString(0);
+                val file = readFastDoc(DocumentsContract.buildDocumentUriUsingTree(Uri.parse(uri), docId).toString(), cursor);
+                if(file.name == name)
+                    return file;
+            }
+        }
+
+        return null;
+    }
 
     fun readAsText(context: Context): String? {
         return context.contentResolver.openInputStream(Uri.parse(uri))?.bufferedReader()?.use {
