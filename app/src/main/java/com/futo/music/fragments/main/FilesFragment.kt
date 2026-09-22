@@ -301,7 +301,7 @@ class FilesFragment: MainFragment() {
             val base = if(current.first is DBDirectory)
                 FastDocumentFile.fromUri(context, Uri.parse((current.first as DBDirectory).path)) ?: return mapOf();
             else if(current.first is DocumentDirectoryItem)
-                FastDocumentFile.fromUri(context, Uri.parse((current.first as DocumentDirectoryItem).path)) ?: return mapOf();
+                (current.first as DocumentDirectoryItem).getDocFile() ?: return mapOf();
             else return mapOf();
 
             val map = mutableMapOf<String, List<IFileItem>>();
@@ -394,10 +394,10 @@ class FilesFragment: MainFragment() {
                 } else if (item is DocumentFileItem) {
                     if (item.track != null) {
                         item.track!!.openPlayable(fragment);
-                    } else if (item.path.endsWith(".m3u")) {
+                    } else if (item.path.toString().endsWith(".m3u")) {
                         try {
                             fragment.lifecycleScope.launch(Dispatchers.IO) {
-                                val m3u = M3UPlaylist.parse(item.docFile.readAsText(context) ?: return@launch, item.path) ?: return@launch;
+                                val m3u = M3UPlaylist.parse(item.docFile.readAsText(context) ?: return@launch, item.uri) ?: return@launch;
                                 val requiredDirs = m3u.getRequiredSubFolders();
                                 val currentMusic = getCurrentMusic();
                                 val otherMusic = getSubDirectories(requiredDirs).flatMap { files ->

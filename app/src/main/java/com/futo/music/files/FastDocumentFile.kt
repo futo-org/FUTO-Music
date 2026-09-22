@@ -10,13 +10,13 @@ import com.futo.music.states.StateApp
 class FastDocumentFile {
 
     val id: String;
-    val uri: String;
+    val uri: Uri;
     val name: String;
     val mimeType: String;
 
     val isDirectory: Boolean get() = mimeType == DocumentsContract.Document.MIME_TYPE_DIR;
 
-    constructor(docId: String, path: String, name: String, mimeType: String) {
+    constructor(docId: String, path: Uri, name: String, mimeType: String) {
         this.id = docId;
         this.uri = path;
         this.name = name;
@@ -26,7 +26,7 @@ class FastDocumentFile {
     fun getFiles(): List<FastDocumentFile> {
         val resolver = StateApp.instance.activity()?.contentResolver ?: return listOf();
 
-        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(Uri.parse(uri), id);
+        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, id);
         val result = ArrayList<FastDocumentFile>();
 
         val cursor = resolver.query(childrenUri, FAST_DOC_COLUMNS, null, null, null) ?: return result;
@@ -34,7 +34,7 @@ class FastDocumentFile {
         cursor.use {
             while(cursor.moveToNext()) {
                 val docId = cursor.getString(0);
-                result.add(readFastDoc(DocumentsContract.buildDocumentUriUsingTree(Uri.parse(uri), docId).toString(), cursor));
+                result.add(readFastDoc(DocumentsContract.buildDocumentUriUsingTree(uri, docId), cursor));
             }
         }
 
@@ -43,7 +43,7 @@ class FastDocumentFile {
     fun findFile(name: String): FastDocumentFile? {
         val resolver = StateApp.instance.activity()?.contentResolver ?: return null;
 
-        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(Uri.parse(uri), id);
+        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, id);
         val result = ArrayList<FastDocumentFile>();
 
         val cursor = resolver.query(childrenUri, FAST_DOC_COLUMNS, null, null, null) ?: return null;
@@ -51,7 +51,7 @@ class FastDocumentFile {
         cursor.use {
             while(cursor.moveToNext()) {
                 val docId = cursor.getString(0);
-                val file = readFastDoc(DocumentsContract.buildDocumentUriUsingTree(Uri.parse(uri), docId).toString(), cursor);
+                val file = readFastDoc(DocumentsContract.buildDocumentUriUsingTree(uri, docId), cursor);
                 if(file.name == name)
                     return file;
             }
@@ -61,7 +61,7 @@ class FastDocumentFile {
     }
 
     fun readAsText(context: Context): String? {
-        return context.contentResolver.openInputStream(Uri.parse(uri))?.bufferedReader()?.use {
+        return context.contentResolver.openInputStream(uri)?.bufferedReader()?.use {
             it?.readText();
         };
     }
@@ -79,7 +79,7 @@ class FastDocumentFile {
                 cursor.getString(1),
                 cursor.getString(2));
         }
-        private fun readFastDoc(uri: String, cursor: Cursor): FastDocumentFile {
+        private fun readFastDoc(uri: Uri, cursor: Cursor): FastDocumentFile {
             return FastDocumentFile(
                 cursor.getString(0),
                 uri,
@@ -97,7 +97,7 @@ class FastDocumentFile {
                 cursor.close();
                 return null;
             }
-            val doc = readFastDoc(uri.toString(), cursor);
+            val doc = readFastDoc(uri, cursor);
             cursor.close();
             return doc;
         }

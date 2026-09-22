@@ -12,6 +12,7 @@ class DocumentDirectoryItem: IFileItem {
 
     override val name: String;
     override val path: String;
+    val uri: Uri;
 
     private var docFile: FastDocumentFile? = null;
 
@@ -21,18 +22,23 @@ class DocumentDirectoryItem: IFileItem {
 
         this.docFile = docFile;
         name = docFile.name ?: "NONAME";
-        path = docFile.uri.toString();
+        uri = docFile.uri;
+        path = docFile.uri.toString()
     }
 
     fun getDirectoryChildren(): DirectoryChildren {
         val allFiles = docFile?.getFiles() ?: return DirectoryChildren("", listOf(),listOf());
         val dirs = allFiles.filter { it.isDirectory }.map { DocumentDirectoryItem(it) };
         val files = allFiles.filter { !it.isDirectory }.map { DocumentFileItem(it) };
-        return DirectoryChildren(docFile!!.uri, dirs, files);
+        return DirectoryChildren(docFile!!.uri.toString(), dirs, files);
     }
     fun getFiles(): List<IFileItem> {
         val structure = getDirectoryChildren();
         return structure.directories + structure.files;
+    }
+
+    fun getDocFile(): FastDocumentFile?{
+        return docFile;
     }
 
 

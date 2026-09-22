@@ -1,5 +1,6 @@
 package com.futo.music.files
 
+import android.net.Uri
 import com.futo.music.toFileNameWithoutExtension
 import java.nio.file.Path
 
@@ -7,7 +8,7 @@ import java.nio.file.Path
 //Supported Attributes: #EXTINF, #PLAYLIST
 class M3UPlaylist {
     var name: String? = null;
-    var path: String? = null;
+    var path: Uri? = null;
     val items = mutableListOf<Item>();
 
 
@@ -37,31 +38,42 @@ class M3UPlaylist {
 
     companion object {
 
-        fun parse(str: String, path: String? = null): M3UPlaylist? {
+        fun parse(str: String, path: Uri? = null): M3UPlaylist? {
             if(!str.startsWith("#EXTM3U"))
                 return null;
             val playlist = M3UPlaylist();
             playlist.path = path;
 
             val lines = str.split("\n");
-            var i = 0;
-            while(i < lines.size) {
-                val line = lines[i];
-                if(line.startsWith("#EXTINF:") && i < lines.size - 1) {
-                    //We're just ignoring extinf info cuz not needed for player, and easily to mis-parse.
-                    val extInfLine = line.substring(line.indexOf(":") + 1).trim();
-                    val path = lines[i + 1];
-                    playlist.items.add(Item(path.trim()));
+            if(lines.size > 2 && !lines.subList(1, lines.size).any { it.contains("#") }) {
+                //File name only list
+                var i = 1;
+                while (i < lines.size) {
+                    val line = lines[i];
+                    if(line.isNotEmpty())
+                        playlist.items.add(Item(line.trim()));
                     i++
                 }
-                else if(line.startsWith("#PLAYLIST:")) {
-                    val extPlaylistLine = line.substring(line.indexOf(":") + 1).trim();
-                    playlist.name = extPlaylistLine;
+            }
+            else {
+                var i = 0;
+                while (i < lines.size) {
+                    val line = lines[i];
+                    if (line.startsWith("#EXTINF:") && i < lines.size - 1) {
+                        //We're just ignoring extinf info cuz not needed for player, and easily to mis-parse.
+                        val extInfLine = line.substring(line.indexOf(":") + 1).trim();
+                        val path = lines[i + 1];
+                        playlist.items.add(Item(path.trim()));
+                        i++
+                    } else if (line.startsWith("#PLAYLIST:")) {
+                        val extPlaylistLine = line.substring(line.indexOf(":") + 1).trim();
+                        playlist.name = extPlaylistLine;
+                    }
+                    i++;
                 }
-                i++;
             }
             if(playlist.name == null && path != null)
-                playlist.name = path.toFileNameWithoutExtension();
+                playlist.name = path.toString().toFileNameWithoutExtension();
             if(playlist.items.isNotEmpty())
                 return playlist;
             return null;

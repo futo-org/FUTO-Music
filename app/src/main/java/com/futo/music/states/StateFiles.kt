@@ -2,6 +2,7 @@ package com.futo.music.states
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.constructs.Event1
@@ -103,7 +104,7 @@ class StateFiles {
                         StateDatabase.instance.db.filesDao().insert(
                             DBFile(
                                 name = file.name,
-                                path = file.path,
+                                path = file.path.toString(),
                                 dateAdded = OffsetDateTime.now(),
                                 trackId = file.trackId,
                                 rootId = dir.id,
@@ -121,16 +122,16 @@ class StateFiles {
 
             announcement.setProgress(0.6, "Processing thumbnails..");
             for (img in result.thumbnails) {
-                val path = img.path.parentPath();
+                val path = img.path.toString().parentPath();
                 val album = result.directoryAlbumMap.getOrDefault(path, -1);
                 if (album.toInt() != -1) {
-                    albumThumbnail.put(album, img.path);
+                    albumThumbnail.put(album, img.path.toString());
                 }
-                fileThumbnails.put(img.path.parentPath(), img.path);
+                fileThumbnails.put(img.path.toString().parentPath(), img.path.toString());
 
                 StateDatabase.instance.db.directoryThumbDao().insert(
                     DBDirectoryThumbnail(
-                        path = img.path,
+                        path = img.path.toString(),
                         directory = path,
                         albumId = album,
                         dateUpdated = OffsetDateTime.now(),
@@ -173,10 +174,10 @@ class StateFiles {
     }
 
     fun scanDirectory(dir: DirectoryChildren, root: Boolean = true, onlyFindNames: MutableSet<String>? = null): DirectoryScanResult {
-        val name = dir.path.toFileName();
+        val name = dir.path.toString().toFileName();
         onScanning.emit(name);
 
-        val result = scanDirectoryFeatures(dir.path, dir.files, onlyFindNames);
+        val result = scanDirectoryFeatures(Uri.parse(dir.path), dir.files, onlyFindNames);
         for(dir in dir.directories)
             result.add(scanDirectory(dir.getDirectoryChildren(), false, onlyFindNames));
 
@@ -198,7 +199,7 @@ class StateFiles {
         "disc",
         ""
     );
-    fun scanDirectoryFeatures(path: String, files: List<DocumentFileItem>, onlyFindNames: MutableSet<String>? = null): DirectoryScanResult {
+    fun scanDirectoryFeatures(path: Uri, files: List<DocumentFileItem>, onlyFindNames: MutableSet<String>? = null): DirectoryScanResult {
         val dir = DirectoryScanResult();
 
         var hasMusic = false;
@@ -215,7 +216,7 @@ class StateFiles {
             else if(onlyFindNames != null)
                 continue;
             if(file.mimeType.startsWith("image/"))
-                images.add(Pair(file.path.toFileNameWithoutExtension(), file));
+                images.add(Pair(file.path.toString().toFileNameWithoutExtension(), file));
             else if(file.name.endsWith(".m3u"))
                 dir.playlists.add(DirectoryScanPlaylist(file.docFile));
             else if(file.mimeType.startsWith("audio/")) {
@@ -223,7 +224,7 @@ class StateFiles {
 
                 val trackId = StateDatabase.instance.getTrackIdByFileName(file.name);
                 if (trackId != null) {
-                    dir.filePaths.add(DirectoryScanFile(file.path, file.name, trackId));
+                    dir.filePaths.add(DirectoryScanFile(file.uri, file.name, trackId));
 
                     if (albumConfirmState < 2 || searchedFor) {
                         val album = StateDatabase.instance.getTrackAlbums(trackId).firstOrNull();
@@ -246,13 +247,13 @@ class StateFiles {
 
         //albumMap
         if(albumId != null && albumConfirmState > 0){
-            dir.directoryAlbumMap.put(path, albumId);
+            dir.directoryAlbumMap.put(path.toString(), albumId);
         }
 
         //Thumbnails
         if(hasMusic) {
             if(images.size == 1)
-                dir.thumbnails.add(DirectoryScanThumbnail(images[0].second.path));
+                dir.thumbnails.add(DirectoryScanThumbnail(images[0].second.uri));
             else if(images.size > 1) {
                 var finalImage: DocumentFileItem? = null;
                 var priority = 999;
@@ -269,7 +270,7 @@ class StateFiles {
                         finalImage = image.second;
                 }
                 if(finalImage != null)
-                    dir.thumbnails.add(DirectoryScanThumbnail(finalImage.path));
+                    dir.thumbnails.add(DirectoryScanThumbnail(finalImage.uri));
             }
         }
 
@@ -308,7 +309,7 @@ class DirectoryScanResult {
 }
 
 data class DirectoryScanFile(
-    val path: String,
+    val path: Uri,
     val name: String,
     val trackId: Long
 )
@@ -316,5 +317,5 @@ data class DirectoryScanPlaylist(
     val file: FastDocumentFile,
 )
 data class DirectoryScanThumbnail(
-    val path: String
+    val path: Uri
 )

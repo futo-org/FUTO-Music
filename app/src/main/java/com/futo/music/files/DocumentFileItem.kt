@@ -1,5 +1,6 @@
 package com.futo.music.files
 
+import android.net.Uri
 import com.futo.music.storage.db.DBTrack
 import com.futo.music.ui.adapters.FilesItemType
 import com.futo.music.ui.adapters.IFileItem
@@ -8,6 +9,8 @@ class DocumentFileItem: IFileItem {
     override val type = FilesItemType.File
     override val name: String;
     override val path: String;
+
+    val uri: Uri;
 
     val mimeType: String;
 
@@ -23,7 +26,8 @@ class DocumentFileItem: IFileItem {
 
         this.docFile = docFile;
         name = docFile.name ?: "NONAME";
-        path = docFile.uri;
+        path = docFile.uri.toString();
+        uri = docFile.uri;
         mimeType = docFile.mimeType;
     }
 
