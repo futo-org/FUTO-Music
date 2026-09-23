@@ -38,7 +38,7 @@ class FastDocumentFile {
             }
         }
 
-        return result;
+        return result.filter { !it.name.startsWith(".") }
     }
     fun findFile(name: String): FastDocumentFile? {
         val resolver = StateApp.instance.activity()?.contentResolver ?: return null;
