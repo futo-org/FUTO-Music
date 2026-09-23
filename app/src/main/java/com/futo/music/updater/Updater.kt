@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.provider.Settings
 import androidx.core.net.toUri
+import com.futo.music.Constants
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.activities.MainActivity
@@ -218,6 +219,19 @@ class Updater {
 
     companion object {
         val TAG = "Updater";
+
+        val changelogClient = ManagedHttpClient();
+
+        fun getChangelog(version: Int): String? {
+            if(Constants.URL_CHANGELOG.isNullOrEmpty())
+                return null;
+
+            val result = changelogClient.get(Constants.URL_CHANGELOG.replace("_VERSION_", version.toString()), mutableMapOf());
+            if(!result.isOk)
+                return null;
+            val respStr = result.body?.string()?.trim();
+            return respStr;
+        }
     }
 }
 

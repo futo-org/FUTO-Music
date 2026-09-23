@@ -2,6 +2,7 @@ package com.futo.music.states
 
 import android.view.View
 import android.view.WindowManager
+import com.futo.music.UIDialogs
 import com.futo.music.constructs.Event0
 import com.futo.music.constructs.Event1
 import com.futo.music.logging.Logger
@@ -9,6 +10,7 @@ import com.futo.music.models.ImageVariable
 import com.futo.music.serialization.OffsetDateTimeNullableSerializer
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.StringHashSetStorage
+import com.futo.music.updater.Updater
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -265,12 +267,14 @@ class StateAnnouncement {
         if(id == null)
             return;
         val item = _announcementsStore.findItem { it.id == id } ?: _sessionAnnouncements[id];
-        if(item != null)
+        if(item != null) {
             actionAnnouncement(item, extra);
+        }
     }
     fun actionIdAnnouncement(announcement: Announcement, id: String?) {
         if(id == null)
             return;
+
         val item = _sessionActions[id] ?: return;
         if(item != null)
             item.invoke(announcement);
@@ -286,6 +290,7 @@ class StateAnnouncement {
             when (actionId) {
                 ACTION_NEVER -> neverAnnouncement(item.id);
                 ACTION_SOMETHING -> actionSomething();
+                ACTION_CHANGELOG -> actionChangelog(actionData);
             }
         }
     }
@@ -316,6 +321,26 @@ class StateAnnouncement {
 
     }
 
+    private fun actionChangelog(id: String? = null) {
+        val idInt = id?.toIntOrNull();
+        if(idInt != null) {
+            StateApp.instance.scopeOrNull?.launch(Dispatchers.IO) {
+                try {
+                    val changelog = Updater.getChangelog(idInt);
+                    if(changelog != null)
+                        StateApp.instance.activity()?.let {
+                            StateApp.instance.scopeOrNull?.launch(Dispatchers.Main) {
+                                UIDialogs.showChangelog(it, idInt, changelog);
+                            }
+                        }
+                }
+                catch(ex: Throwable) {
+                    Logger.e(TAG, "Failed to open changelog: " + ex.message, ex);
+                }
+            }
+        }
+    }
+
     companion object {
         private var _instance: StateAnnouncement? = null;
         val instance: StateAnnouncement
@@ -328,6 +353,8 @@ class StateAnnouncement {
 
         const val ACTION_SOMETHING = "SOMETHING";
         const val ACTION_NEVER = "NEVER";
+        const val ACTION_CHANGELOG = "CHANGELOG";
+
         private const val TAG = "StateAnnouncement";
     }
 }

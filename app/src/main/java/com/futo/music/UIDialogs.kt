@@ -1158,6 +1158,13 @@ class UIDialogs {
             return dialog;
         }
 
+        fun showChangelog(context: Context, version: Int, changelog: String) {
+            UIDialogs.showDialog(context, R.mipmap.ic_launcher, "Changelog (v${version})",
+                "Below the changes added in v${version}.",
+                changelog,
+                0, UIDialogs.Action("Ok", {}, ActionStyle.PRIMARY))
+        }
+
         fun showConfirmDialog(context: Context, icon: Int, title: String, description: String, onConfirm: ()->Unit, onDeny: (()->Unit)? = null): Dialog{
             return showDialog(context, icon, title, description, null, 0,
                 UIDialogs.Action("Cancel", onDeny ?: {}, ActionStyle.NONE, true),

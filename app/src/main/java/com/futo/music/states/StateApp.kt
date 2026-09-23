@@ -11,6 +11,9 @@ import com.futo.music.activities.MainActivity
 import com.futo.music.fragments.main.HomeFragment
 import com.futo.music.logging.Logger
 import com.futo.music.storage.file.FragmentedStorage
+import com.futo.music.storage.file.StringStorage
+import com.futo.music.storage.file.StringStringMapStorage
+import com.futo.music.updater.Updater
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +30,9 @@ class StateApp {
 
     var homeRefreshTime: OffsetDateTime = OffsetDateTime.now()
         private set;
+
+    var lastBootVersion: Int? = null;
+    var currentBootVersion: Int? = null;
 
 
     fun refreshHome() {
@@ -95,6 +101,35 @@ class StateApp {
             StateFiles.instance.updateFileAccessIds();
             StateFiles.instance.updateRootDirectoryValidation(context);
         };
+
+        val storeLastVersion = FragmentedStorage.get<StringStorage>("lastVersion");
+        lastBootVersion = storeLastVersion.value.toIntOrNull();
+        val currentBootVersion = BuildConfig.VERSION_CODE;
+
+        if(lastBootVersion != currentBootVersion) {
+            GlobalScope.launch(Dispatchers.IO) {
+                storeLastVersion.setAndSave(currentBootVersion.toString());
+
+                try {
+                    val changelog = Updater.getChangelog(currentBootVersion);
+                    if(changelog != null) {
+                        StateAnnouncement.instance.registerAnnouncement(Announcement(
+                            "update_changelog_" + currentBootVersion.toString(),
+                            "Updated to version [${currentBootVersion}]",
+                            "You can view the changelog.",
+                            AnnouncementType.DELETABLE,
+                            OffsetDateTime.now(),
+                            actionName = "Changelog",
+                            actionId = StateAnnouncement.ACTION_CHANGELOG,
+                            actionData = currentBootVersion.toString())
+                        )
+                    }
+                }
+                catch(ex: Throwable) {
+                    Logger.e(TAG, "Failed to load changelog: " + ex.message, ex);
+                }
+            }
+        }
     }
 
     fun shareFile(title: String, type: String, file: File) {
