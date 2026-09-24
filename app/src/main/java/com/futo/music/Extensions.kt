@@ -388,11 +388,14 @@ fun View.showAnimated() {
 
 
 fun IPlayable.isInFiles(): Boolean {
-    return if(this is DBTrack)
-        StateFiles.instance.fileAccessIds.containsKey(this.id);
-    else if(this is DBAlbum)
-        StateFiles.instance.albumsInFiles.contains(this.id);
-    else if(this is DBArtist)
-        StateFiles.instance.artistsInFiles.contains(this.id);
-    else true;
+    if(Settings.instance.media.filterByFiles) {
+        return if (this is DBTrack)
+            StateFiles.instance.fileAccessIds.containsKey(this.id);
+        else if (this is DBAlbum)
+            StateFiles.instance.albumsInFiles.contains(this.id);
+        else if (this is DBArtist)
+            StateFiles.instance.artistsInFiles.contains(this.id);
+        else true;
+    }
+    else return true //Ignore this if setting not enabled
 }
