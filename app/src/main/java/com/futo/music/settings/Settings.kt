@@ -7,6 +7,7 @@ import com.futo.music.BuildConfig
 import com.futo.music.R
 import com.futo.music.R.array.shuffle_reoccurrence
 import com.futo.music.R.array.shuffle_reoccurrence_time
+import com.futo.music.R.array.shuffle_algorithm
 import com.futo.music.UIDialogs
 import com.futo.music.fragments.main.BuyFragment
 import com.futo.music.fragments.main.ContentsFragment
@@ -239,7 +240,7 @@ class Settings : FragmentedStorageFileJson() {
 
         @Setting("Show Algorithm Name", "Name the smart shuffle queue after the algorithm", order = 2, type = SettingType.TOGGLE)
         public var showAlgorithmName: Boolean = false;
-        @Setting("Smart Shuffle Algorithm", order = 3, type = SettingType.DROPDOWN)
+        @Setting("Smart Shuffle Algorithm", description = "Which smart algorithm to use", order = 3, type = SettingType.DROPDOWN)
         @SettingDropdownOptions(shuffle_algorithm)
         public var shuffleAlgorithm = 0;
 

@@ -317,7 +317,7 @@ class HomeFragment: MainFragment() {
 
                     val tracks = shuffle.getTracksWithReason(500);
                     withContext(Dispatchers.Main) {
-                        val name = if(Settings.instance.developer.showAlgorithmName) shuffle.javaClass.name else "Smart Shuffle";
+                        val name = if(Settings.instance.developer.showAlgorithmName) shuffle.javaClass.simpleName else "Smart Shuffle";
                         fragment.navigate<PlaybackFragment>(Vibe(name, ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks.first, QueueType.SmartShuffle, reasons = tracks.second));
                     }
                 }
