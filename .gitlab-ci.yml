@@ -1,6 +1,20 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
+buildAndDeployApkUnstable:
+  stage: build
+  script:
+    - sh deploy-unstable.sh
+  only:
+    - tags
+  when: manual
+  needs: []
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - app/build/outputs/apk/unstable/release/*.apk
+
 buildAndDeployApkStable:
   stage: build
   script:

@@ -32,15 +32,27 @@ android {
 
     flavorDimensions("buildType")
     productFlavors {
+        create("unstable") {
+            dimension = "buildType"
+
+            applicationId = "com.futo.music.unstable"
+
+            buildConfigField("Boolean", "IS_PLAYSTORE_BUILD", "false")
+            buildConfigField("Boolean", "IS_UNSTABLE", "true")
+
+            resValue("string", "app_name", "Music (Unstable)")
+            isDefault = true
+        }
         create("stable") {
             dimension = "buildType"
 
             applicationId = "com.futo.music"
 
             buildConfigField("Boolean", "IS_PLAYSTORE_BUILD", "false")
+            buildConfigField("Boolean", "IS_UNSTABLE", "false")
 
             resValue("string", "app_name", "Music")
-            isDefault = true
+            isDefault = false
         }
 
         create("playstore") {
@@ -49,6 +61,7 @@ android {
             applicationId = "com.futo.music.playstore"
 
             buildConfigField("Boolean", "IS_PLAYSTORE_BUILD", "true")
+            buildConfigField("Boolean", "IS_UNSTABLE", "false")
 
             resValue("string", "app_name", "Music")
         }
