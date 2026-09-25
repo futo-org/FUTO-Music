@@ -223,10 +223,10 @@ class Updater {
         val changelogClient = ManagedHttpClient();
 
         fun getChangelog(version: Int): String? {
-            if(Constants.URL_CHANGELOG.isNullOrEmpty())
+            if(Constants.getChangelogUrl().isNullOrEmpty())
                 return null;
 
-            val result = changelogClient.get(Constants.URL_CHANGELOG.replace("_VERSION_", version.toString()), mutableMapOf());
+            val result = changelogClient.get(Constants.getChangelogUrl().replace("_VERSION_", version.toString()), mutableMapOf());
             if(!result.isOk)
                 return null;
             val respStr = result.body?.string()?.trim();

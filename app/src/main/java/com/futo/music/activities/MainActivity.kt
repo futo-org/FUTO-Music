@@ -422,7 +422,11 @@ class MainActivity : AppCompatActivity() {
 
         if(true) //TODO: !IS_PLAYSTORE
         {
-            _updater = Updater(Constants.URL_APK, Constants.URL_VERSION, Constants.URL_CHANGELOG, File(this.filesDir, Constants.FILE_UPDATING));
+            _updater = Updater(
+                Constants.getApkUrl(),
+                Constants.getVersionUrl(),
+                Constants.getChangelogUrl(),
+                File(this.filesDir, Constants.FILE_UPDATING));
             checkForUpdate(false);
         }
 
