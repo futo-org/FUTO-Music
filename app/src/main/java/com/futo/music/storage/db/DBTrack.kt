@@ -188,6 +188,8 @@ interface DBTrackDao {
     fun getList(ids: List<Long>): List<DBTrack>;
     @Query("SELECT * FROM tracks WHERE mediaStoreId = :id")
     fun getByMSID(id: Long): DBTrack?;
+    @Query("SELECT id, artistId, mediaStoreId, mediaStoreArtistId, mediaStoreAlbumId, hidden FROM tracks WHERE mediaStoreId = :id")
+    fun getIdsByMSID(id: Long): DBTrackIds?;
     @Query("SELECT * FROM tracks WHERE fileName = :fileName")
     fun getByFileName(fileName: String): DBTrack?;
     @Query("SELECT id FROM tracks WHERE fileName = :fileName")
@@ -219,6 +221,11 @@ interface DBTrackDao {
     @Query("SELECT id, score FROM tracks WHERE id IN (SELECT id FROM albums ORDER BY RANDOM() LIMIT :count)")
     fun getRandomScores(count: Int): List<ScoredItem>;
 
+    @Query("SELECT mediaStoreId, score FROM tracks WHERE score > 0 OR markedRated == 1")
+    fun getTrackScoresByMSID(): List<MSIDScore>;
+
+    @Query("SELECT fileName, score FROM tracks WHERE score > 0 OR markedRated == 1")
+    fun getTrackScoresByName(): List<FileNameScore>;
 
     @Query("SELECT * FROM tracks WHERE hidden != 1 ORDER BY dateAdded DESC LIMIT :count")
     fun getTracksNew(count: Int): List<DBTrack>
@@ -333,3 +340,19 @@ class ScoredItem(
         return this;
     }
 }
+
+@Entity
+class MSIDScore(
+    val mediaStoreId: Long,
+    val score: Int
+)
+@Entity
+class FileNameScore(
+    val fileName: String,
+    val score: Int
+)
+@Entity
+class NameScore(
+    val name: String,
+    val score: Int
+)

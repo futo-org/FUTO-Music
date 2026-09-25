@@ -9,6 +9,7 @@ import com.futo.music.R.array.shuffle_reoccurrence
 import com.futo.music.R.array.shuffle_reoccurrence_time
 import com.futo.music.R.array.shuffle_algorithm
 import com.futo.music.UIDialogs
+import com.futo.music.UIDialogs.ActionStyle
 import com.futo.music.fragments.main.BuyFragment
 import com.futo.music.fragments.main.ContentsFragment
 import com.futo.music.logging.Logger
@@ -24,9 +25,11 @@ import com.futo.music.storage.db.DBAlbumUpdateRating
 import com.futo.music.storage.db.DBArtistUpdateRating
 import com.futo.music.storage.db.DBPlaylistUpdateRating
 import com.futo.music.storage.db.DBTrackUpdateRating
+import com.futo.music.storage.db.DBTrackUpdateRatingDone
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.FragmentedStorageFileJson
 import com.futo.music.storage.file.StringStorage
+import com.futo.music.ui.dialogs.ProgressDialog
 import com.futo.music.ui.views.containers.Setting
 import com.futo.music.ui.views.containers.SettingDropdownOptions
 import com.futo.music.ui.views.containers.SettingType
@@ -38,6 +41,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
+import java.time.OffsetDateTime
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.jvm.javaField
@@ -160,6 +164,166 @@ class Settings : FragmentedStorageFileJson() {
         @Setting("Filter By Directories", "Filter your Home by showing only the tracks that are part of directories you add to the app", order = 10)
         public var filterByFiles = false;
 
+
+
+        @Setting("Export Ratings", "Creates an export file containing your ratings, either by filename or MediaStore ID", icon = "ic_stars", order = 15)
+        fun exportRatings() {
+            val exportName = "export-${OffsetDateTime.now().toEpochSecond()}.json";
+                StateApp.instance.activity()?.let { act ->
+                UIDialogs.showDialog(act, R.drawable.ic_stars, false, "Export Ratings", "How would you like to export?\nBy (File)Name is for different devices.\nBy MSID is for same device.", null, null, null, 0,
+                    UIDialogs.Action("Cancel", {}),
+                    UIDialogs.Action("By Name", {
+                        act.lifecycleScope.launch(Dispatchers.IO) {
+                            val scoresTracks = StateDatabase.instance.db.tracksDao().getTrackScoresByMSID().distinctBy { it.mediaStoreId }.associate { Pair(it.mediaStoreId, it.score) };
+                            val scoresAlbums = StateDatabase.instance.db.albumDao().getAlbumScoresByMSID().distinctBy { it.mediaStoreId }.associate { Pair(it.mediaStoreId, it.score) };
+                            val scoresArtists = StateDatabase.instance.db.artistDao().getArtistScoresByMSID().distinctBy { it.mediaStoreId }.associate { Pair(it.mediaStoreId, it.score) };
+                            val scoresPlaylists = StateDatabase.instance.db.playlistDao().getPlaylistsScoresByName().distinctBy { it.name }.associate { Pair(it.name, it.score) };
+
+                            val export = ExportRatings(
+                                tracksByMSID = scoresTracks,
+                                albumsByMSID = scoresAlbums,
+                                artistsByMSID = scoresArtists,
+                                playlistsByName = scoresPlaylists
+                            );
+                            val json = Json.encodeToString(export);
+
+                            StateApp.instance.saveFileJson(exportName, json);
+                            //StateApp.instance.shareData("Export Name-Score", "application/json", exportName, json);
+                        }
+                    }, ActionStyle.PRIMARY),
+                    UIDialogs.Action("By MSID", {
+                        act.lifecycleScope.launch(Dispatchers.IO) {
+                            val scoresTracks = StateDatabase.instance.db.tracksDao().getTrackScoresByName().distinctBy { it.fileName }.associate { Pair(it.fileName, it.score) };
+                            val scoresAlbums = StateDatabase.instance.db.albumDao().getAlbumScoresByName().distinctBy { it.name }.associate { Pair(it.name, it.score) };
+                            val scoresArtists = StateDatabase.instance.db.artistDao().getArtistScoresByName().distinctBy { it.name }.associate { Pair(it.name, it.score) };
+                            val scoresPlaylists = StateDatabase.instance.db.playlistDao().getPlaylistsScoresByName().distinctBy { it.name }.associate { Pair(it.name, it.score) };
+
+                            val export = ExportRatings(
+                                tracksByName = scoresTracks,
+                                albumsByName = scoresAlbums,
+                                artistsByName = scoresArtists,
+                                playlistsByName = scoresPlaylists
+                            );
+                            val json = Json.encodeToString(export);
+
+                            StateApp.instance.saveFileJson(exportName, json);
+                            //StateApp.instance.shareData("Export MSID-Score", "application/json", exportName, json);
+                        }
+                    }, ActionStyle.PRIMARY))
+            }
+        }
+        @Setting("Import Ratings", "Imports a rating json export", icon = "ic_stars", order = 16)
+        fun importRatings() {
+            StateApp.instance.activity()?.let { act ->
+                StateApp.instance.pickFile({
+                    var dialog: ProgressDialog? = null;
+                    act.lifecycleScope.launch(Dispatchers.IO) {
+                        try {
+                            val text = act.contentResolver
+                                .openInputStream(it ?: return@launch)
+                                ?.bufferedReader()
+                                ?.use { it.readText() }
+                                ?: "";
+                            if (text.isNullOrEmpty()) {
+                                UIDialogs.appToast("File empty or unable to read");
+                            } else {
+                                val forceShowProgress = true;
+                                val export = Json.decodeFromString<ExportRatings>(text);
+                                withContext(Dispatchers.Main) {
+                                    dialog = UIDialogs.showDialogProgress(act, {
+
+                                    });
+                                    dialog.setTitle("Importing");
+                                    dialog.setText("Importing ${export.totalCount()} ratings");
+                                }
+                                val total = export.totalCount().toDouble();
+                                var fin = 0;
+                                for (trackMSID in export.tracksByMSID ?: mapOf()) {
+                                    val trackIds = StateDatabase.instance.getTrackIdsByMSID(trackMSID.key) ?: continue;
+                                    StateDatabase.instance.setRatingTrack(trackIds.id, trackMSID.value);
+                                    fin++;
+                                    if (fin % 10 == 0 || forceShowProgress)
+                                        withContext(Dispatchers.Main) { dialog?.setProgress(fin / total); }
+                                }
+                                for (trackName in export.tracksByName ?: mapOf()) {
+                                    val trackId = StateDatabase.instance.getTrackIdByFileName(trackName.key) ?: continue;
+                                    StateDatabase.instance.setRatingTrack(trackId, trackName.value);
+                                    fin++;
+                                    if (fin % 10 == 0 || forceShowProgress)
+                                        withContext(Dispatchers.Main) {dialog?.setProgress(fin / total); }
+                                }
+                                for (albumMSID in export.albumsByMSID ?: mapOf()) {
+                                    val album = StateDatabase.instance.getAlbumByMSID(albumMSID.key) ?: continue;
+                                    StateDatabase.instance.setRatingAlbum(album.id, albumMSID.value);
+                                    fin++;
+                                    if (fin % 10 == 0 || forceShowProgress)
+                                        withContext(Dispatchers.Main) { dialog?.setProgress(fin / total); }
+                                }
+                                for (albumName in export.albumsByName ?: mapOf()) {
+                                    val album = StateDatabase.instance.getAlbumByName(albumName.key) ?: continue;
+                                    StateDatabase.instance.setRatingAlbum(album.id, albumName.value);
+                                    fin++;
+                                    if (fin % 10 == 0 || forceShowProgress)
+                                        withContext(Dispatchers.Main) { dialog?.setProgress(fin / total); }
+                                }
+                                for (artistMSID in export.artistsByMSID ?: mapOf()) {
+                                    val artist = StateDatabase.instance.getAlbumByMSID(artistMSID.key) ?: continue;
+                                    StateDatabase.instance.setRatingArtist(artist.id, artistMSID.value);
+                                    fin++;
+                                    if (fin % 10 == 0 || forceShowProgress)
+                                        withContext(Dispatchers.Main) { dialog?.setProgress(fin / total); }
+                                }
+                                for (artistName in export.artistsByName ?: mapOf()) {
+                                    val artist = StateDatabase.instance.getArtistByName(artistName.key) ?: continue;
+                                    StateDatabase.instance.setRatingArtist(artist.id, artistName.value);
+                                    fin++;
+                                    if (fin % 10 == 0 || forceShowProgress)
+                                        withContext(Dispatchers.Main) { dialog?.setProgress(fin / total); }
+                                }
+                                for (playlistName in export.playlistsByName ?: mapOf()) {
+                                    val playlist = StateDatabase.instance.getPlaylistByName(playlistName.key) ?: continue;
+                                    StateDatabase.instance.setRatingPlaylist(playlist.id, playlistName.value);
+                                    fin++;
+                                    if (fin % 10 == 0 || forceShowProgress)
+                                        withContext(Dispatchers.Main) { dialog?.setProgress(fin / total); }
+                                }
+                                dialog?.setProgress(1.0);
+                                UIDialogs.appToast("Imported ${fin} ratings");
+                            }
+                        } catch (ex: Throwable) {
+                            Logger.e(TAG, "Failed to import file\n" + ex.message, ex);
+                            UIDialogs.appToast("Failed to import file\n" + ex.message);
+                        } finally {
+                            withContext(Dispatchers.Main) { dialog?.hide(); }
+                        }
+                    }
+                }, arrayOf("*/*"));
+            }
+        }
+
+        @Serializable
+        data class ExportRatings(
+            val tracksByMSID: Map<Long, Int>? = null,
+            val tracksByName: Map<String, Int>? = null,
+            val albumsByMSID: Map<Long, Int>? = null,
+            val albumsByName: Map<String, Int>? = null,
+            val artistsByMSID: Map<Long, Int>? = null,
+            val artistsByName: Map<String, Int>? = null,
+            val playlistsByName: Map<String, Int>? = null
+        ) {
+            var type = "EXPORT_RATINGS";
+
+            fun totalCount() =
+                    (tracksByMSID?.size ?: 0) +
+                    (tracksByName?.size ?: 0) +
+                    (albumsByMSID?.size ?: 0) +
+                    (albumsByName?.size ?: 0) +
+                    (artistsByMSID?.size ?: 0) +
+                    (artistsByName?.size ?: 0) +
+                    (playlistsByName?.size ?: 0);
+
+        }
+
     }
     @SettingsGroup("Media", 2)
     var media = MediaSettings();
@@ -257,7 +421,7 @@ class Settings : FragmentedStorageFileJson() {
                     UIDialogs.appToast("Starting clearing (1/5)..");
 
                     for(id in idTracks)
-                        StateDatabase.instance.db.tracksDao().setRating(DBTrackUpdateRating(id, 0));
+                        StateDatabase.instance.db.tracksDao().setRating(DBTrackUpdateRatingDone(id, 0, false));
                     UIDialogs.appToast("Reset track ratings (2/5)..");
                     for(id in idAlbums)
                         StateDatabase.instance.db.albumDao().setRating(DBAlbumUpdateRating(id, 0));

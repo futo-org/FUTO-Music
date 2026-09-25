@@ -83,13 +83,14 @@ class UIDialogs {
         }
 
 
-        fun showDialogProgress(context: Context, handler: ((ProgressDialog)->Unit)) {
+        fun showDialogProgress(context: Context, handler: ((ProgressDialog)->Unit)): ProgressDialog {
             val dialog = ProgressDialog(context, handler);
             registerDialogOpened(dialog);
             dialog.setOnDismissListener {
                 registerDialogClosed(dialog)
             };
             dialog.show();
+            return dialog;
         }
 
         fun dismissAllDialogs() {
@@ -753,6 +754,7 @@ class UIDialogs {
             }, true)
             return sheet!!;
         }
+
 
         fun showSheetVertical(context: Context, onClose: (() -> Unit)?, vararg views: View): BottomSheetDialog? {
             return showSheet(context, LinearLayout(context).apply {

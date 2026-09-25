@@ -98,6 +98,9 @@ interface DBPlaylistDao {
     @Query("SELECT id, score FROM playlists WHERE id IN (SELECT id FROM albums ORDER BY RANDOM() LIMIT :count)")
     fun getRandomScores(count: Int): List<ScoredItem>;
 
+    @Query("SELECT name, score FROM playlists WHERE score > 0")
+    fun getPlaylistsScoresByName(): List<NameScore>;
+
     @Query("SELECT MAX(ordering) FROM playlist_tracks WHERE playlistId = :playlistId")
     fun getPlaylistMaxOrder(playlistId: Long): Int;
 

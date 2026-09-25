@@ -102,6 +102,11 @@ interface DBAlbumDao {
     @Query("SELECT id, score FROM albums WHERE id IN (SELECT id FROM albums ORDER BY RANDOM() LIMIT :count)")
     fun getRandomScores(count: Int): List<ScoredItem>;
 
+    @Query("SELECT mediaStoreId, score FROM albums WHERE score > 0")
+    fun getAlbumScoresByMSID(): List<MSIDScore>;
+    @Query("SELECT name, score FROM albums WHERE score > 0")
+    fun getAlbumScoresByName(): List<NameScore>;
+
     @Query("SELECT * FROM albums WHERE id = :id")
     fun get(id: Long): DBAlbum?;
     @Query("SELECT * FROM albums WHERE mediaStoreId = :id")

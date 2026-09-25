@@ -445,10 +445,22 @@ class StateDatabase(
             .getByMSID(id);
     }
 
+    fun getAlbumByName(name: String): DBAlbum? {
+        return db
+            .albumDao()
+            .getAlbumsByName(name)
+            .firstOrNull();
+    }
+
     fun getArtistByMSID(id: Long): DBArtist? {
         return db
             .artistDao()
             .getByMSID(id);
+    }
+    fun getArtistByName(name: String): DBArtist? {
+        return db
+            .artistDao()
+            .getByName(name);
     }
 
     fun getTrackByFileName(fileName: String): DBTrack? {
@@ -465,6 +477,11 @@ class StateDatabase(
         return db
             .tracksDao()
             .getByMSID(id);
+    }
+    fun getTrackIdsByMSID(id: Long): DBTrackIds? {
+        return db
+            .tracksDao()
+            .getIdsByMSID(id);
     }
 
 

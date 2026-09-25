@@ -87,11 +87,18 @@ interface DBArtistDao {
     @Query("SELECT id, score FROM artists WHERE id IN (SELECT id FROM albums ORDER BY RANDOM() LIMIT :count)")
     fun getRandomScores(count: Int): List<ScoredItem>;
 
+    @Query("SELECT mediaStoreId, score FROM artists WHERE score > 0")
+    fun getArtistScoresByMSID(): List<MSIDScore>;
+    @Query("SELECT name, score FROM artists WHERE score > 0")
+    fun getArtistScoresByName(): List<NameScore>;
+
     @Query("SELECT * FROM artists WHERE id = :id")
     fun get(id: Long): DBArtist?;
     @Query("SELECT * FROM artists WHERE mediaStoreId = :id")
     fun getByMSID(id: Long): DBArtist?;
 
+    @Query("SELECT * FROM artists WHERE name = :name")
+    fun getByName(name: String): DBArtist?;
 
     @Query("SELECT * FROM artists WHERE hidden != 1 AND INSTR(lower(name), lower(:str))")
     fun search(str: String): List<DBArtist>;

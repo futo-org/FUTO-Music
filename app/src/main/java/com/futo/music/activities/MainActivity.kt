@@ -114,6 +114,7 @@ import com.futo.music.toHumanBytesSize
 import com.futo.music.updater.Updater
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.DelicateCoroutinesApi
+import java.io.BufferedWriter
 import java.io.File
 import kotlin.system.measureTimeMillis
 
@@ -1282,13 +1283,41 @@ class MainActivity : AppCompatActivity() {
 
             contentResolver.takePersistableUriPermission(uri, flags)
 
-            UIDialogs.toast("Access: " + uri.toString());
             folderCallback?.invoke(uri);
         }
     }
+    private var fileCallback: ((uri: Uri?)->Unit)? = null;
+    private val filePicker = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+
+            contentResolver.takePersistableUriPermission(uri, flags)
+
+            fileCallback?.invoke(uri);
+        }
+    }
+
+    private var saveCallback: ((BufferedWriter?)-> Unit)? = null;
+    private val saveFileJson = registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+            uri ?: return@registerForActivityResult
+            contentResolver.openOutputStream(uri)?.bufferedWriter()?.use {
+                saveCallback?.invoke(it);
+            }
+        }
+
     fun pickFolder(callback: ((uri: Uri?)->Unit)) {
         folderCallback = callback;
         folderPicker.launch(null);
+    }
+    fun pickFile(callback: ((uri: Uri?)->Unit), fileTypes: Array<String>? = null) {
+        fileCallback = callback;
+        filePicker.launch(fileTypes);
+    }
+
+    fun saveFileJson(fileName: String, callback: (BufferedWriter?)-> Unit) {
+        saveCallback = callback;
+        saveFileJson.launch(fileName);
     }
 
     companion object {

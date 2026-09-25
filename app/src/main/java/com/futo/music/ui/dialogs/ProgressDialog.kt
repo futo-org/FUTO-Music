@@ -11,7 +11,7 @@ import com.futo.music.R
 
 class ProgressDialog : AlertDialog {
     companion object {
-        private val TAG = "AutoUpdateDialog";
+        private val TAG = "ProgressDialog";
     }
 
     private lateinit var _text: TextView;

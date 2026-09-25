@@ -3,6 +3,7 @@ package com.futo.music.states
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.core.content.FileProvider
 import com.futo.music.BuildConfig
 import com.futo.music.R
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.builtins.PairSerializer
 import java.io.File
 import java.time.OffsetDateTime
+import java.util.UUID
 import kotlin.collections.distinctBy
 
 class StateApp {
@@ -143,12 +145,46 @@ class StateApp {
 
         context.startActivity(Intent.createChooser(i, title));
     }
+    fun shareData(title: String, type: String, fileName: String, data: String) {
+        val context = StateApp.instance.activity() ?: return;
+
+        val tempFile = getShareFile(fileName);
+
+        val contentUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", tempFile);
+
+        val i = Intent(Intent.ACTION_SEND);
+        i.type = type;
+        i.putExtra(Intent.EXTRA_STREAM, contentUri);
+        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        context.startActivity(Intent.createChooser(i, title));
+    }
+
+    fun saveFileJson(fileName: String, data: String) {
+        activity()?.let {
+            it.saveFileJson(fileName) {
+                if(it != null)
+                    it.write(data);
+            }
+        }
+    }
 
     fun getShareFile(name: String): File {
         val cacheDir = File(RootApplication.applicationContext.cacheDir, "shares");
         if(!cacheDir.exists())
             cacheDir.mkdir();
         return File(cacheDir, name);
+    }
+
+    fun pickFolder(callback: (uri: Uri?)->Unit) {
+        activity()?.let {
+            it.pickFolder(callback);
+        }
+    }
+    fun pickFile(callback: (uri: Uri?)->Unit, fileTypes: Array<String>? = null) {
+        activity()?.let {
+            it.pickFile(callback, fileTypes);
+        }
     }
 
 
