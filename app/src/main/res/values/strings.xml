@@ -41,6 +41,12 @@
         <item>Gradual 10 tracks</item>
     </string-array>
 
+    <string-array name="shuffle_algorithm">
+        <item>Default</item>
+        <item>Latest</item>
+        <item>ESmartV1</item>
+        <item>ESmartV2</item>
+    </string-array>
 
     <string name="success">Success</string>
     <string name="failed_to_update_with_error">Failed to update package with error</string>

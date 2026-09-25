@@ -11,6 +11,10 @@ import com.futo.music.UIDialogs
 import com.futo.music.fragments.main.BuyFragment
 import com.futo.music.fragments.main.ContentsFragment
 import com.futo.music.logging.Logger
+import com.futo.music.logic.shuffles.ESmartShuffle
+import com.futo.music.logic.shuffles.ESmartShuffleV2
+import com.futo.music.logic.shuffles.ScoreContainer
+import com.futo.music.logic.shuffles.SmartShuffle
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateFiles
@@ -162,6 +166,7 @@ class Settings : FragmentedStorageFileJson() {
 
     @Serializable
     class ShuffleSettings {
+
         @Setting("Shuffle Re-occurrence", "How many tracks have to pass before a track re-occurs in smart shuffle.", order = 8, type = SettingType.DROPDOWN)
         @SettingDropdownOptions(shuffle_reoccurrence)
         public var shuffleReoccurrenceTime = 0;
@@ -192,6 +197,17 @@ class Settings : FragmentedStorageFileJson() {
             }
         }
 
+        fun getShuffleAlgorithm(scores: ScoreContainer): SmartShuffle {
+            return when(instance.developer.shuffleAlgorithm) {
+                0 -> getLatestShuffleAlgorithm(scores);
+                1 -> getLatestShuffleAlgorithm(scores);
+                2 -> ESmartShuffle(scores);
+                3 -> ESmartShuffleV2(scores);
+                else -> getLatestShuffleAlgorithm(scores);
+            }
+        }
+        fun getLatestShuffleAlgorithm(scores: ScoreContainer) = ESmartShuffleV2(scores);
+
     }
     @SettingsGroup("Shuffle", 3)
     var shuffle = ShuffleSettings();
@@ -221,6 +237,11 @@ class Settings : FragmentedStorageFileJson() {
         @Setting("Developer", "Are you a developer?", order = 1, type = SettingType.TOGGLE)
         public var isDeveloper: Boolean = false;
 
+        @Setting("Show Algorithm Name", "Name the smart shuffle queue after the algorithm", order = 2, type = SettingType.TOGGLE)
+        public var showAlgorithmName: Boolean = false;
+        @Setting("Smart Shuffle Algorithm", order = 3, type = SettingType.DROPDOWN)
+        @SettingDropdownOptions(shuffle_algorithm)
+        public var shuffleAlgorithm = 0;
 
         @Setting("Reset Ratings", "Resets all ratings to defaults")
         fun ResetRatings(){

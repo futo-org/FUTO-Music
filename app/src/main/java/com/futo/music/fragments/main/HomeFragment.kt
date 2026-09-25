@@ -313,11 +313,12 @@ class HomeFragment: MainFragment() {
                 fragment.lifecycleScope.launch(Dispatchers.IO) {
 
                     val scores = StateDatabase.instance.getScoresContainer();
-                    val shuffle = ESmartShuffle(scores);
+                    val shuffle = Settings.instance.shuffle.getShuffleAlgorithm(scores);
 
                     val tracks = shuffle.getTracksWithReason(500);
                     withContext(Dispatchers.Main) {
-                        fragment.navigate<PlaybackFragment>(Vibe("Smart Shuffle", ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks.first, QueueType.SmartShuffle, reasons = tracks.second));
+                        val name = if(Settings.instance.developer.showAlgorithmName) shuffle.javaClass.name else "Smart Shuffle";
+                        fragment.navigate<PlaybackFragment>(Vibe(name, ImageVariable.fromResource(R.drawable.unknown_music), listOf(), listOf(), tracks.first, QueueType.SmartShuffle, reasons = tracks.second));
                     }
                 }
             }

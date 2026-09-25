@@ -9,7 +9,7 @@ import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.ScoredItem
 import kotlin.math.floor
 
-class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
+class ESmartShuffleV2(scores: ScoreContainer): SmartShuffle(scores) {
     val chanceStar1 = 4;
     val chanceStar2 = 8;
     val chanceStar3 = 13;
@@ -36,6 +36,11 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
         var turn = -1;
         while(tracks.size < count && !scores.scores.all { it.value.isEmpty() }){
             turn++;
+            val countStar1 = scores.scores[starToScore(1)]?.size ?: 0;
+            val countStar2 = scores.scores[starToScore(2)]?.size ?: 0;
+            val countStar3 = scores.scores[starToScore(3)]?.size ?: 0;
+            val countStar4 = scores.scores[starToScore(4)]?.size ?: 0;
+            val countStar5 = scores.scores[starToScore(5)]?.size ?: 0;
             val hasStar1 = scores.scores[starToScore(1)]?.any() ?: false;
             val hasStar2 = scores.scores[starToScore(2)]?.any() ?: false;
             val hasStar3 = scores.scores[starToScore(3)]?.any() ?: false;
@@ -50,7 +55,7 @@ class ESmartShuffle(scores: ScoreContainer): SmartShuffle(scores) {
 
             if(chance1 + chance2 + chance3 + chance4 + chance5 <= 0)
                 break;
-            val targetScore = selectScore(chance1, chance2, chance3, chance4, chance5); //Selects a given star assignment with the chances described above.
+            val targetScore = selectScore(chance1 * countStar1, chance2 * countStar2, chance3 * countStar3, chance4 * countStar4, chance5 * countStar5); //Selects a given star assignment with the chances described above.
             val options = scores.scores[targetScore]; //All tracks/albums/artists/playlists with a given score/star rating.
 
             val optionIndex = random.nextInt(options!!.size); //Randomly selected playable option (track/album/artist/playlist)

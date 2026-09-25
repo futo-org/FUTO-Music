@@ -23,22 +23,6 @@ abstract class SmartShuffle(val scoresRoot: ScoreContainer) {
         return Pair(ids.mapNotNull { foundTracks.getOrDefault(it.id, null)?.firstOrNull() }, reasonMap);
     }
 
-
-    fun selectScore(chance1: Int, chance2: Int, chance3: Int, chance4: Int, chance5: Int): Int {
-        val total = chance1 + chance2 + chance3 + chance4 + chance5;
-        val index = random.nextInt(total);
-
-        if(chance1 > 0 && index < chance1)
-            return starToScore(1);
-        if(chance2 > 0 && index < chance2 + chance1)
-            return starToScore(2);
-        if(chance3 > 0 && index < chance3 + chance2 + chance1)
-            return starToScore(3);
-        if(chance4 > 0 && index < chance4 + chance3 + chance2 + chance1)
-            return starToScore(4);
-        return starToScore(5);
-    }
-
     fun starToScore(star: Int): Int {
         return when(star) {
             0 -> 0
