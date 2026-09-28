@@ -172,7 +172,7 @@ class Settings : FragmentedStorageFileJson() {
                 StateApp.instance.activity()?.let { act ->
                 UIDialogs.showDialog(act, R.drawable.ic_stars, false, "Export Ratings", "How would you like to export?\nBy (File)Name is for different devices.\nBy MSID is for same device.", null, null, null, 0,
                     UIDialogs.Action("Cancel", {}),
-                    UIDialogs.Action("By Name", {
+                    UIDialogs.Action("By MSID", {
                         act.lifecycleScope.launch(Dispatchers.IO) {
                             val scoresTracks = StateDatabase.instance.db.tracksDao().getTrackScoresByMSID().distinctBy { it.mediaStoreId }.associate { Pair(it.mediaStoreId, it.score) };
                             val scoresAlbums = StateDatabase.instance.db.albumDao().getAlbumScoresByMSID().distinctBy { it.mediaStoreId }.associate { Pair(it.mediaStoreId, it.score) };
@@ -191,7 +191,7 @@ class Settings : FragmentedStorageFileJson() {
                             //StateApp.instance.shareData("Export Name-Score", "application/json", exportName, json);
                         }
                     }, ActionStyle.PRIMARY),
-                    UIDialogs.Action("By MSID", {
+                    UIDialogs.Action("By Name", {
                         act.lifecycleScope.launch(Dispatchers.IO) {
                             val scoresTracks = StateDatabase.instance.db.tracksDao().getTrackScoresByName().distinctBy { it.fileName }.associate { Pair(it.fileName, it.score) };
                             val scoresAlbums = StateDatabase.instance.db.albumDao().getAlbumScoresByName().distinctBy { it.name }.associate { Pair(it.name, it.score) };
@@ -267,7 +267,7 @@ class Settings : FragmentedStorageFileJson() {
                                         withContext(Dispatchers.Main) { dialog?.setProgress(fin / total); }
                                 }
                                 for (artistMSID in export.artistsByMSID ?: mapOf()) {
-                                    val artist = StateDatabase.instance.getAlbumByMSID(artistMSID.key) ?: continue;
+                                    val artist = StateDatabase.instance.getArtistByMSID(artistMSID.key) ?: continue;
                                     StateDatabase.instance.setRatingArtist(artist.id, artistMSID.value);
                                     fin++;
                                     if (fin % 10 == 0 || forceShowProgress)
@@ -287,7 +287,7 @@ class Settings : FragmentedStorageFileJson() {
                                     if (fin % 10 == 0 || forceShowProgress)
                                         withContext(Dispatchers.Main) { dialog?.setProgress(fin / total); }
                                 }
-                                dialog?.setProgress(1.0);
+                                withContext(Dispatchers.Main) { dialog?.setProgress(1.0); }
                                 UIDialogs.appToast("Imported ${fin} ratings");
                             }
                         } catch (ex: Throwable) {
