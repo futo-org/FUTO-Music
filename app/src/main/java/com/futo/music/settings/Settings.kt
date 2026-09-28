@@ -289,6 +289,8 @@ class Settings : FragmentedStorageFileJson() {
                                 }
                                 withContext(Dispatchers.Main) { dialog?.setProgress(1.0); }
                                 UIDialogs.appToast("Imported ${fin} ratings");
+
+                                StateApp.instance.refreshHome();
                             }
                         } catch (ex: Throwable) {
                             Logger.e(TAG, "Failed to import file\n" + ex.message, ex);
