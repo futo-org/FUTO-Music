@@ -41,7 +41,7 @@ VERSION="$(git describe --tags)"
 ls "./app/build/outputs/apk/unstable/release/"
 
 echo "Deploying music artifacts to Cloudflare R2..."
-upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-unstable-release.apk" "app-unstable-release.apk"
+upload_apk_latest_and_versioned "./app/build/outputs/apk/unstable/release/app-unstable-release.apk" "app-unstable-release.apk"
 
 tmp_version="$(mktemp)"
 printf '%s\n' "$VERSION" > "$tmp_version"
