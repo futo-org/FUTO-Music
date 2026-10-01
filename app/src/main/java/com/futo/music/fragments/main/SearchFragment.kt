@@ -103,10 +103,10 @@ class SearchFragment: MainFragment() {
         }
 
         fun updateContent(str: String) {
-            if(str.length < 2) {
+            if(str.isEmpty() || (str.length == 1 && (str[0] in 'A'..'Z' || str[0] in 'a'..'z'))) {
                 emptyView.isVisible = true;
                 gridSearch.isVisible = false;
-                emptyView.setText("Search", "At least 2 characters are required");
+                emptyView.setText("Search", "At least 2 characters are required\n(or 1 non-alphabetic)");
             }
             else {
                 emptyView.isVisible = false;

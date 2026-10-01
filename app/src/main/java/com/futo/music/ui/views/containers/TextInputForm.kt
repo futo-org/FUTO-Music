@@ -21,7 +21,7 @@ class TextInputForm: LinearLayout {
     private var submitAction: ((String)->Unit)? = null;
 
 
-    constructor(context: Context): super(context) {
+    constructor(context: Context, focusOnShow: Boolean = false): super(context) {
         inflate(context, R.layout.text_input_form, this);
 
         title = findViewById(R.id.title);
@@ -45,6 +45,12 @@ class TextInputForm: LinearLayout {
             }
         }
         buttonSubmit.isEnabled = false;
+
+        if(focusOnShow) {
+            input.post {
+                input.requestFocus();
+            }
+        }
     }
 
     fun setData(title: String, desc: String, placeholder: String, submitName: String, handleSubmit: ((String)->Unit), handleCancel: (()->Unit)? = null) {

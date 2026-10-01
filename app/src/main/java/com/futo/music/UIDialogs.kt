@@ -658,7 +658,7 @@ class UIDialogs {
             */
             var sheet: BottomSheetDialog? = null;
             var textInputForm: TextInputForm? = null;
-            textInputForm = TextInputForm(context).apply {
+            textInputForm = TextInputForm(context, true).apply {
                 this.setData(
                     "New Playlist",
                     "Enter a name for your new playlist",
@@ -765,9 +765,14 @@ class UIDialogs {
             }, onClose ?: {}, true)
         }
 
-        fun showSheet(context: Context, view: View, onClose: (()->Unit)? = null, addTopHandle: Boolean = false): BottomSheetDialog? {
+        fun showSheet(context: Context, view: View, onClose: (()->Unit)? = null, addTopHandle: Boolean = false, skipAnimations: Boolean = false): BottomSheetDialog? {
             return StateApp.instance.activity()?.let {
                 val dialog = BottomSheetDialog(context);
+                if(skipAnimations) {
+                    val behavior = dialog.behavior;
+                    behavior.skipCollapsed = true;
+                    behavior.state = BottomSheetBehavior.STATE_EXPANDED;
+                }
 
                 var viewToUse = if(addTopHandle) {
                     val linear = LinearLayout(context);
