@@ -55,8 +55,9 @@ class PlaybackPeekView: ConstraintLayout {
         _buttonNext = findViewById(R.id.button_next);
         _buttonClose = findViewById(R.id.button_close);
 
-        _progress = findViewById(R.id.progress);
+        _progress = findViewById(R.id.progress_player);
         _progress.activeColor = Color.argb(68, 255, 255, 255);
+        _progress.inactiveColor = Color.argb(10, 255, 255, 255);
 
         _textTitle.isSelected = true;
 

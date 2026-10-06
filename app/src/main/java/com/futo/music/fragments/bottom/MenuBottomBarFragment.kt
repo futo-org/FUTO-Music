@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.futo.music.R
@@ -20,6 +21,7 @@ import com.futo.music.fragments.main.SearchFragment
 import com.futo.music.fragments.main.SettingsFragment
 import com.futo.music.logging.Logger
 import com.futo.music.logic.PlayerManager
+import com.futo.music.models.ImageVariable
 import com.futo.music.states.SessionAnnouncement
 import com.futo.music.states.StateAnnouncement
 import com.futo.music.states.StateApp
@@ -103,6 +105,14 @@ class MenuBottomBarFragment : BotFragment() {
 
             private val _buttonsMenu: List<MenuBottomButton>
 
+
+
+            val containerProgress: ConstraintLayout;
+            val textProgressTitle: TextView;
+            val textProgressDescription: TextView;
+            val progressAnn: android.widget.ProgressBar;
+            val imageProgress: ImageView;
+
             constructor(
                 fragment: MenuBottomBarFragment,
                 inflater: LayoutInflater
@@ -117,6 +127,12 @@ class MenuBottomBarFragment : BotFragment() {
                 _buttonSettings = findViewById(R.id.button_settings);
                 _buttonsMenu = listOf(_buttonHome, _buttonSearch, _buttonFiles);
 
+
+                containerProgress = findViewById(R.id.progress_container);
+                textProgressTitle = findViewById(R.id.text_progress_title);
+                textProgressDescription = findViewById(R.id.text_progress_description);
+                progressAnn = findViewById(R.id.progress_ann);
+                imageProgress = findViewById(R.id.progress_image);
 
                 _buttonHome.onClick.subscribe {
                     _buttonsMenu.forEach { it.setActive(false) };
@@ -143,18 +159,18 @@ class MenuBottomBarFragment : BotFragment() {
                 _playerPeek.onClick.subscribe {
                     fragment.navigate<PlaybackFragment>();
                 }
-
-                StateAnnouncement.instance.onAnnouncementChanged.subscribe(this) {
-                    findNewProgressAnnouncement();
-                }
-                findNewProgressAnnouncement()
             }
 
             override fun onAttachedToWindow() {
-                super.onAttachedToWindow();
+                super.onAttachedToWindow();checkForProgressAnnouncement();
+                checkForProgressAnnouncement();
+                StateAnnouncement.instance.onAnnouncementChanged.subscribe(this) {
+                    checkForProgressAnnouncement();
+                }
             }
             override fun onDetachedFromWindow() {
-                super.onDetachedFromWindow()
+                super.onDetachedFromWindow();
+                StateAnnouncement.instance.onAnnouncementChanged.remove(this);
             }
 
             fun updateBottomMenuState(currentFragment: MainFragment) {
@@ -176,51 +192,7 @@ class MenuBottomBarFragment : BotFragment() {
                 }
             }
 
-            private var _announcement_vis: SessionAnnouncement? = null;
-            private val _announcement_listeners = ConcurrentHashMap<SessionAnnouncement, Any>();
-            fun findNewProgressAnnouncement() {
-                try {
-                    var lastAnnouncementDate = System.currentTimeMillis();
-                    val announcements = StateAnnouncement.instance.getVisibleAnnouncements();
 
-                    val announcement =
-                        announcements.find { if (it is SessionAnnouncement) it.progress != null && !_announcement_listeners.containsKey(it) else false };
-                    if (announcement is SessionAnnouncement) {
-                        val obj = Any();
-                        _announcement_listeners.put(announcement, obj)
-                        announcement.onProgressChanged.subscribe(obj) {
-                            val prog = it.progress ?: return@subscribe;
-                            if ((System.currentTimeMillis() - lastAnnouncementDate) > 100 || !_progress.isVisible) {
-                                _fragment.lifecycleScope.launch(Dispatchers.Main) {
-                                    if (!_progress.isVisible)
-                                        _progress.isVisible = true;
-                                    _progress.progress = prog.toFloat();
-                                    lastAnnouncementDate = System.currentTimeMillis();
-                                    _announcement_vis = it;
-                                }
-                            } else if (prog == 1.00 || prog == 0.00) {
-                                _fragment.lifecycleScope.launch(Dispatchers.Main) {
-                                    _progress.isVisible = false;
-                                }
-                            }
-                        }
-                        announcement.onRemoved.subscribe {
-                            if(_announcement_listeners.containsKey(it))
-                            {
-                                _announcement_listeners.remove(it);
-                                if(_announcement_vis == it) {
-                                    _fragment.lifecycleScope.launch(Dispatchers.Main) {
-                                        _progress.isVisible = false;
-                                        _announcement_vis = null;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch (ex: Throwable) {
-                    Logger.e("MenuBottomBarFragment", "Failed progress update", ex);
-                }
-            }
 
 
             fun setPlayer(player: PlayerManager) {
@@ -233,6 +205,54 @@ class MenuBottomBarFragment : BotFragment() {
 
             fun onBackPressed(): Boolean {
                 return false;
+            }
+
+
+
+
+
+            fun showProgress(title: String, description:String, progressVal: Float, icon: ImageVariable? = null) {
+                val isVisible = containerProgress.isVisible;
+                if(!isVisible)
+                    containerProgress.isVisible = true;
+                textProgressTitle.text = title;
+                textProgressDescription.text = description;
+                if(icon?.resId != null)
+                    imageProgress.setImageResource(icon.resId);
+                progressAnn.isIndeterminate = progressVal <= 0f || progressVal >= 1f;
+                progressAnn.progress = (progressVal * 100).toInt();
+            }
+            fun hideProgress() {
+                containerProgress.visibility = View.GONE;
+            }
+
+            private var shownAnnouncement: SessionAnnouncement? = null;
+            fun checkForProgressAnnouncement() {
+                if(shownAnnouncement?.isRemoved ?: false)
+                    return;
+                val announcementWithProgress = StateAnnouncement.instance.getVisibleAnnouncements().find { it is SessionAnnouncement && it.progress != null } as SessionAnnouncement?;
+                if(announcementWithProgress != null) {
+                    shownAnnouncement = announcementWithProgress;
+                    var lastUpdate = System.currentTimeMillis();
+                    announcementWithProgress?.onProgressChanged?.subscribe(this) {
+                        if(shownAnnouncement == announcementWithProgress) {
+                            val nowMs = System.currentTimeMillis();
+                            if(nowMs - lastUpdate > 100) {
+                                lastUpdate = nowMs;
+                                _fragment.lifecycleScope.launch(Dispatchers.Main) {
+                                    showProgress(announcementWithProgress.title, announcementWithProgress.progressText ?: "", announcementWithProgress.progress?.toFloat() ?: -1f);
+                                }
+                            }
+                        }
+                    }
+                    _fragment.lifecycleScope.launch(Dispatchers.Main) {
+                        showProgress(announcementWithProgress?.title ?: "", announcementWithProgress?.progressText ?: "", announcementWithProgress.progress?.toFloat() ?: -1f, announcementWithProgress.icon);
+                    }
+                }
+                else
+                    _fragment.lifecycleScope.launch(Dispatchers.Main) {
+                        hideProgress();
+                    }
             }
         }
 }

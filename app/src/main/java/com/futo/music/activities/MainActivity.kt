@@ -579,7 +579,7 @@ class MainActivity : AppCompatActivity() {
             }
             if(shouldSync) {
                 isSyncing = true;
-                val announce = StateAnnouncement.instance.registerLoading("Syncing Mediastore", "Importing new music from your phone", null,
+                val announce = StateAnnouncement.instance.registerLoading("Scanning for media", "Importing new music from your phone", ImageVariable.fromResource(R.drawable.ic_scan),
                     "importing", true);
                 UIDialogs.appToast("We're importing your music!\nGive us a minute.")
                 try {

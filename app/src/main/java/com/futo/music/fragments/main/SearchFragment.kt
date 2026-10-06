@@ -14,6 +14,7 @@ import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.fragments.MainFragView
 import com.futo.music.isInFiles
+import com.futo.music.logging.Logger
 import com.futo.music.models.playable.IPlayable
 import com.futo.music.openPlayable
 import com.futo.music.settings.Settings
@@ -43,6 +44,7 @@ class SearchFragment: MainFragment() {
 
     private var _view: FragView? = null;
 
+    private var _lastSearch: String? = null;
 
     override fun onShownWithView(parameter: Any?, isBack: Boolean) {
         super.onShownWithView(parameter, isBack);
@@ -77,6 +79,7 @@ class SearchFragment: MainFragment() {
             search = findViewById(R.id.view_search);
             gridSearch = findViewById(R.id.grid_search);
             emptyView = findViewById(R.id.view_empty);
+            search.setSaveState(false);
 
             gridSearch.onOutsideClick.subscribe {
                 search.closeKeyboard(StateApp.instance.activity());
@@ -94,6 +97,7 @@ class SearchFragment: MainFragment() {
 
             search.onChange.subscribe {
                 updateContent(it);
+                fragment._lastSearch = it;
             }
             search.onEnter.subscribe {
                 search.closeKeyboard(fragment?.activity);
@@ -105,7 +109,8 @@ class SearchFragment: MainFragment() {
         fun updateContent(str: String) {
             if(str.isEmpty() || (str.length == 1 && (str[0] in 'A'..'Z' || str[0] in 'a'..'z'))) {
                 emptyView.isVisible = true;
-                gridSearch.isVisible = false;
+                gridSearch.setData(listOf())
+                gridSearch.visibility = GONE;
                 emptyView.setText("Search", "At least 2 characters are required\n(or 1 non-alphabetic)");
             }
             else {
@@ -137,9 +142,25 @@ class SearchFragment: MainFragment() {
         }
 
         fun onShown(parameter: Any? = null) {
-            if(parameter != null && parameter is String && !parameter.isEmpty())
-                search.setText(parameter);
+            if(parameter == "FORCE_CLEAR") {
+                search.setText("");
+                search.preventRestore = true;
+                Logger.i("Search", "Show Restore")
+                updateContent("");
+
+                search.post {
+                    search.preventRestore = true;
+                    Logger.i("Search", "Show Restore End")
+                }
+            }
+            else {
+                if (parameter != null && parameter is String && !parameter.isEmpty())
+                    search.setText(parameter);
+                else if(fragment._lastSearch?.isNotEmpty() ?: false)
+                    search.setText(fragment._lastSearch ?: "");
+            }
             search.focus((fragment?.activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?));
+
         }
 
         fun onHide() {

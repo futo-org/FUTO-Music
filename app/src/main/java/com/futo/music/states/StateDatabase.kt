@@ -24,6 +24,7 @@ import com.futo.music.storage.db.DBArtistUpdatePlayed
 import com.futo.music.storage.db.DBArtistUpdateRating
 import com.futo.music.storage.db.DBPlaylist
 import com.futo.music.storage.db.DBPlaylistTrack
+import com.futo.music.storage.db.DBPlaylistUpdateName
 import com.futo.music.storage.db.DBPlaylistUpdatePlayed
 import com.futo.music.storage.db.DBPlaylistUpdateRating
 import com.futo.music.storage.db.DBPlaylistUpdateTrackMetadata
@@ -223,6 +224,9 @@ class StateDatabase(
         return db.tracksDao().getMostPlayed(count);
     }
 
+    fun updatePlaylistName(playlistId: Long, name: String) {
+        db.playlistDao().setPlaylistName(DBPlaylistUpdateName(playlistId, name));
+    }
 
     fun updatePlaylistMetadata(playlistId: Long) {
         //TODO: Optimize to query

@@ -714,6 +714,48 @@ class UIDialogs {
                 onResult(null)
             }, true)
         }
+        fun showRenamePlaylistDialog(context: Context, scope: CoroutineScope, playlistId: Long, onResult: (String?)->Unit) {
+            scope.launch(Dispatchers.IO) {
+                val playlist = StateDatabase.instance.getPlaylist(playlistId) ?: return@launch;
+
+                withContext(Dispatchers.Main) {
+                    var sheet: BottomSheetDialog? = null;
+                    var textInputForm: TextInputForm? = null;
+                    textInputForm = TextInputForm(context, true).apply {
+                        this.input.setText(playlist.name);
+                        this.setData(
+                            "New Playlist",
+                            "Enter a name for your new playlist",
+                            "Playlist name..",
+                            "Update",
+                            {
+                                hideKeyboard(context, textInputForm!!.input);
+                                sheet?.hide();
+                                if (it.isNullOrBlank()) {
+                                    UIDialogs.appToast("No name provided for playlist");
+                                    onResult(null);
+                                    return@setData;
+                                }
+                                scope.launch(Dispatchers.IO) {
+                                    StateDatabase.instance.updatePlaylistName(playlist.id, it);
+                                    withContext(Dispatchers.Main) {
+                                        onResult(it);
+                                    }
+                                }
+                            },
+                            {
+                                hideKeyboard(context, textInputForm!!.input);
+                                sheet?.hide();
+                                onResult(null);
+                            })
+                    };
+                    sheet = showSheet(context, textInputForm, {
+                        hideKeyboard(context, textInputForm!!.input);
+                        onResult(null)
+                    }, true)
+                }
+            }
+        }
 
         fun showInputDialog(context: Context, scope: CoroutineScope, title: String, description: String, hint: String, button: String, onResult: (String?)->Unit) {
             var sheet: BottomSheetDialog? = null;
@@ -1023,6 +1065,8 @@ class UIDialogs {
                     this.movementMethod = ScrollingMovementMethod.getInstance();
                     this.visibility = View.VISIBLE;
                     this.textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                    this.setHorizontallyScrolling(true);
+                    this.setMovementMethod(ScrollingMovementMethod());
                 }
             };
             view.findViewById<LinearLayout>(R.id.dialog_buttons).apply {

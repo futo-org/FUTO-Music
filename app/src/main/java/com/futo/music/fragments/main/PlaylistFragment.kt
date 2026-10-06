@@ -171,6 +171,12 @@ class PlaylistFragment: MainFragment() {
                 var dialog: BottomSheetDialog? = null;
                 dialog = UIDialogs.showSheet(context, LinearLayout(context).apply {
                     this.orientation = LinearLayout.VERTICAL;
+                    this.addView(ListButton(context).withData(R.drawable.ic_edit_note, "Rename") {
+                        dialog!!.hide();
+                        UIDialogs.showRenamePlaylistDialog(context, fragment.lifecycleScope, playlistCurrent?.id ?: return@withData, {
+                            updateContent(playlistCurrent?.id ?: return@showRenamePlaylistDialog)
+                        });
+                    }.withMarginBottom(4));
                     this.addView(ListButton(context).withData(R.drawable.ic_trash, "Delete") {
                         dialog!!.hide();
                         UIDialogs.showConfirmSheet(context, R.drawable.ic_trash, "Delete [${playlistCurrent?.name}]", "Are you sure you want to delete [${playlistCurrent?.name}]?", {

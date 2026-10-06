@@ -147,6 +147,9 @@ interface DBPlaylistDao {
     @Update(entity = DBPlaylist::class)
     fun setTrackMetadata(update: DBPlaylistUpdateTrackMetadata)
 
+    @Update(entity = DBPlaylist::class)
+    fun setPlaylistName(update: DBPlaylistUpdateName)
+
     @Update(entity = DBPlaylistTrack::class)
     fun setPlaylistOrder(track: DBPlaylistTrack);
 
@@ -181,4 +184,9 @@ class DBPlaylistUpdateTrackMetadata(
     val artUriTrack3: Long?,
     val artUri4: String?,
     val artUriTrack4: Long?
+)
+@Entity
+class DBPlaylistUpdateName(
+    val id: Long,
+    val name: String
 )

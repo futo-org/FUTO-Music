@@ -5,8 +5,10 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -21,6 +23,8 @@ import com.futo.music.models.playable.Vibe
 import com.futo.music.models.playable.QueueType
 import com.futo.music.openPlayable
 import com.futo.music.settings.Settings
+import com.futo.music.states.SessionAnnouncement
+import com.futo.music.states.StateAnnouncement
 import com.futo.music.states.StateApp
 import com.futo.music.states.StateDatabase
 import com.futo.music.states.StateFiles
@@ -34,6 +38,7 @@ import com.futo.music.ui.buttons.StandardButton
 import com.futo.music.ui.views.containers.ContentGrid
 import com.futo.music.ui.views.general.SearchBarView
 import com.futo.music.ui.views.general.SortDropdownType
+import com.futo.music.ui.views.progress.ProgressBar
 import com.futo.music.ui.views.topbars.GeneralTopBarView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -185,6 +190,7 @@ class HomeFragment: MainFragment() {
             buttonWshuffle = findViewById(R.id.button_wshuffle);
             buttonHelp = findViewById(R.id.button_help);
 
+
             gridMostPlayed.gridSettings.showPlays = true;
 
             findViewById<GeneralTopBarView>(R.id.topbar).apply {
@@ -296,7 +302,7 @@ class HomeFragment: MainFragment() {
 
             search.onFocusChange.subscribe {
                 if(it) {
-                    fragment.navigate<SearchFragment>();
+                    fragment.navigate<SearchFragment>("FORCE_CLEAR");
                 }
             }
 
@@ -537,6 +543,8 @@ class HomeFragment: MainFragment() {
         }
 
         fun onHide() {
+            StateAnnouncement.instance.onAnnouncementChanged.remove(this);
         }
+
     }
 }

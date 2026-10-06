@@ -2,16 +2,17 @@ package com.futo.music.ui.views.general
 
 import android.app.Activity
 import android.content.Context
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
-import androidx.collection.emptyLongSet
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import com.futo.music.R
 import com.futo.music.constructs.Event1
+import com.futo.music.logging.Logger
 
 class SearchBarView: ConstraintLayout {
 
@@ -22,6 +23,8 @@ class SearchBarView: ConstraintLayout {
     val onFocusChange = Event1<Boolean>();
     val onChange = Event1<String>();
     val onEnter = Event1<String>();
+
+    var preventRestore: Boolean = false;
 
     constructor(context: Context, attrs: AttributeSet? = null): super(context, attrs) {
         inflate(context, R.layout.view_search_bar, this);
@@ -92,10 +95,19 @@ class SearchBarView: ConstraintLayout {
         _text.clearFocus();
     }
 
+    public override fun onRestoreInstanceState(state: Parcelable?) {
+        Logger.i("Search", "Restoring: ${preventRestore}")
+        super.onRestoreInstanceState(if(preventRestore) null else state);
+    }
+
     fun setText(str: String) {
         _text.setText(str);
     }
     fun getText(): String{
         return _text.text.toString();
+    }
+
+    fun setSaveState(state: Boolean) {
+        _text.isSaveEnabled = state;
     }
 }

@@ -18,6 +18,7 @@ class StandardButton : LinearLayout {
     val icon: ImageView;
     val text: TextView;
     val onClick = Event0();
+    val onLongClick = Event0();
     private var _isLoading = false;
 
     constructor(context : Context, attrs : AttributeSet?) : super(context, attrs) {
@@ -52,13 +53,22 @@ class StandardButton : LinearLayout {
             root.setPadding(dp7, dp6, dp7, dp7)
         }
 
-        findViewById<LinearLayout>(R.id.root).setOnClickListener {
-            if (_isLoading) {
-                return@setOnClickListener
-            }
+        findViewById<LinearLayout>(R.id.root)?.let {
+            it.setOnClickListener {
+                if (_isLoading) {
+                    return@setOnClickListener
+                }
 
-            onClick.emit();
-        };
+                onClick.emit();
+            };
+            it.setOnLongClickListener {
+                if(_isLoading) {
+                    return@setOnLongClickListener false;
+                }
+                onLongClick.emit();
+                return@setOnLongClickListener true;
+            }
+        }
     }
 
     fun withText(str: String): StandardButton {
