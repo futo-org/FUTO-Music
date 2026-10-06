@@ -53,6 +53,19 @@ r2_cp "$tmp_version" "$PREFIX/version-unstable.txt" \
   "text/plain; charset=utf-8"
 rm -f "$tmp_version"
 
+
+tmp_version_json="$(mktemp)"
+printf '%s\n' \
+  "{\"version\":\"$VERSION\",\"name\":\"FUTO Music (Unstable)\",\"downloadUrl\":\"https://music.futo.tech/music/app-unstable-release.apk\"}" \
+  > "$tmp_version_json"
+r2_cp "$tmp_version_json" "$PREFIX/$VERSION/version-unstable.json" \
+  "public, max-age=31536000, immutable" \
+  "text/plain; charset=utf-8"
+r2_cp "$tmp_version_json" "$PREFIX/version-unstable.json" \
+  "no-store" \
+  "text/plain; charset=utf-8"
+rm -f "$tmp_version_json"
+
 tmp_changelog="$(mktemp)"
 git tag -l --format='%(contents)' "$VERSION" > "$tmp_changelog"
 r2_cp "$tmp_changelog" "$PREFIX/changelogs-unstable/$VERSION" \
