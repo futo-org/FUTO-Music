@@ -5,6 +5,8 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.DocumentsContract
 import com.futo.music.states.StateApp
+import java.io.BufferedReader
+import java.io.InputStream
 
 //Use this instead of DocumentFile, its slow AF.
 class FastDocumentFile {
@@ -63,6 +65,11 @@ class FastDocumentFile {
     fun readAsText(context: Context): String? {
         return context.contentResolver.openInputStream(uri)?.bufferedReader()?.use {
             it?.readText();
+        };
+    }
+    fun <T> readAsStream(context: Context, handler: (str: InputStream)->T?): T? {
+        return context.contentResolver.openInputStream(uri)?.use {
+            return@use handler(it);
         };
     }
 

@@ -618,7 +618,7 @@ class MainActivity : AppCompatActivity() {
                             if(alreadyScanned.contains(dir.id))
                                 continue;
                             val namesToSearch = HashSet(results.newFileNames);
-                            StateFiles.instance.scanAndProcessDirectory(applicationContext, dir, namesToSearch, true);
+                            StateFiles.instance.scanAndProcessDirectory(applicationContext, dir, namesToSearch, true, true);
                         }
                         catch(ex: Throwable) {
                             Logger.e(TAG, "Failed to scan-added ${dir.name}", ex);

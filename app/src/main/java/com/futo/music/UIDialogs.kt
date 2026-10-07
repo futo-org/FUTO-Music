@@ -721,8 +721,7 @@ class UIDialogs {
                 withContext(Dispatchers.Main) {
                     var sheet: BottomSheetDialog? = null;
                     var textInputForm: TextInputForm? = null;
-                    textInputForm = TextInputForm(context, true).apply {
-                        this.input.setText(playlist.name);
+                    textInputForm = TextInputForm(context, true, playlist.name).apply {
                         this.setData(
                             "New Playlist",
                             "Enter a name for your new playlist",

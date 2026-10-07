@@ -29,7 +29,9 @@ class DBFile(
     val dateAdded: OffsetDateTime = OffsetDateTime.MIN,
 
     val path: String,
-    var fileType: DBFileType = DBFileType.Unknown
+    var fileType: DBFileType = DBFileType.Unknown,
+
+    var ratingPOPM: Int? = null
 ) {
 
 }
@@ -82,4 +84,19 @@ interface DBFileDao {
 
     @Query("DELETE FROM dir_files WHERE rootId = :rootId")
     fun deleteRoot(rootId: Long);
+
+
+    @Query("SELECT COUNT(id) FROM dir_files WHERE trackId > 0 AND ratingPOPM > 0")
+    fun countPopmRatings(): Int;
+
+    @Query("SELECT id, trackId, ratingPOPM FROM dir_files WHERE trackId > 0 AND ratingPOPM > 0")
+    fun getPopmRatings(): List<DBFilePopRating>;
+}
+
+@Entity
+class DBFilePopRating(
+    val id: Long,
+    val trackId: Long,
+    val ratingPOPM: Int
+) {
 }

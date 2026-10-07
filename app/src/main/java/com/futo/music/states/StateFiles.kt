@@ -3,6 +3,7 @@ package com.futo.music.states
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
 import com.futo.music.R
 import com.futo.music.UIDialogs
 import com.futo.music.constructs.Event1
@@ -19,6 +20,7 @@ import com.futo.music.storage.db.DBFileType
 import com.futo.music.storage.db.DirectoryChildren
 import com.futo.music.toFileName
 import com.futo.music.toFileNameWithoutExtension
+import com.futo.music.toScoreRating
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -81,7 +83,7 @@ class StateFiles {
         val dirs = StateDatabase.instance.db.directoryDao().getAll();
         for(dir in dirs){
             try {
-                scanAndProcessDirectory(context, dir, null, false);
+                scanAndProcessDirectory(context, dir, null, false, true);
             }
             catch(ex: Throwable) {
                 Logger.e(TAG, "Failed to rescan dir ${dir.name}", ex);
@@ -89,7 +91,7 @@ class StateFiles {
             }
         }
     }
-    fun scanAndProcessDirectory(context: Context, dir: DBDirectory, onlyFindTrackNames: MutableSet<String>? = null, preventNotify: Boolean = false) {
+    fun scanAndProcessDirectory(context: Context, dir: DBDirectory, onlyFindTrackNames: MutableSet<String>? = null, preventNotify: Boolean = false, scanFileMetadata: Boolean = false) {
         UIDialogs.appToast("Scanning [${dir.name}]");
         val announcement = StateAnnouncement.instance.registerLoading("Scanning directory [${dir.name}]", "", ImageVariable.fromResource(R.drawable.ic_files), null, true);
 
@@ -101,6 +103,20 @@ class StateFiles {
             for (file in result.filePaths) {
                 if (file.trackId >= 0) {
                     if (!allFiles.containsKey(file.trackId)) {
+                        var popm: POPMHeaders? = null;
+                        if(scanFileMetadata) {
+                            try {
+                                announcement.setProgress(0.25, "Scanning file headers for [${file.name}]");
+                                val docFile = FastDocumentFile.fromUri(context, file.path);
+                                if(docFile != null) {
+                                    popm = readPOPMHeaders(context, docFile);
+                                }
+                            }
+                            catch(ex: Throwable) {
+                                Logger.e(TAG, "Failed to scan file metadata: " + ex.message, ex);
+                            }
+                        }
+
                         StateDatabase.instance.db.filesDao().insert(
                             DBFile(
                                 name = file.name,
@@ -108,7 +124,8 @@ class StateFiles {
                                 dateAdded = OffsetDateTime.now(),
                                 trackId = file.trackId,
                                 rootId = dir.id,
-                                fileType = DBFileType.Media
+                                fileType = DBFileType.Media,
+                                ratingPOPM = popm?.popmRatingToStars()?.toScoreRating()
                             )
                         );
                     } else
@@ -276,6 +293,118 @@ class StateFiles {
 
         return dir;
     }
+
+
+    private fun readPOPMHeaders(context: Context, docFile: FastDocumentFile): POPMHeaders? {
+        return docFile.readAsStream<POPMHeaders>(context) { input ->
+            val header = ByteArray(10);
+            if (input.read(header) != 10)
+                return@readAsStream POPMHeaders();
+            if (String(header, 0, 3, Charsets.ISO_8859_1) != "ID3")
+                return@readAsStream POPMHeaders();
+
+            val version = header[3].toInt() and 0xFF;
+            if (version !in 3..4)
+                return@readAsStream POPMHeaders();
+
+            val tagSize = ((header[6].toInt() and 0x7F) shl 21) or
+                    ((header[7].toInt() and 0x7F) shl 14) or
+                    ((header[8].toInt() and 0x7F) shl 7) or
+                    (header[9].toInt() and 0x7F);
+
+            var consumed = 0;
+
+            while (consumed + 10 <= tagSize) {
+                val frameHeader = ByteArray(10);
+                if (input.read(frameHeader) != 10)
+                    return@readAsStream POPMHeaders();
+
+                consumed += 10;
+
+                val frameId = String(frameHeader, 0, 4, Charsets.ISO_8859_1);
+                if (frameId.all { it == '\u0000' })
+                    return@readAsStream POPMHeaders();
+
+                val frameSize = if (version == 4) {
+                    ((frameHeader[4].toInt() and 0x7F) shl 21) or
+                            ((frameHeader[5].toInt() and 0x7F) shl 14) or
+                            ((frameHeader[6].toInt() and 0x7F) shl 7) or
+                            (frameHeader[7].toInt() and 0x7F);
+                } else {
+                    ((frameHeader[4].toInt() and 0xFF) shl 24) or
+                            ((frameHeader[5].toInt() and 0xFF) shl 16) or
+                            ((frameHeader[6].toInt() and 0xFF) shl 8) or
+                            (frameHeader[7].toInt() and 0xFF);
+                }
+
+                if (frameSize <= 0 || consumed + frameSize > tagSize)
+                    return@readAsStream POPMHeaders();
+
+                if (frameId == "POPM") {
+                    val data = ByteArray(frameSize);
+                    var offset = 0;
+
+                    while (offset < frameSize) {
+                        val read = input.read(data, offset, frameSize - offset);
+                        if (read < 0)
+                            return@readAsStream POPMHeaders();
+
+                        offset += read;
+                    }
+
+                    val ownerEnd = data.indexOf(0);
+                    if (ownerEnd >= 0 && ownerEnd + 1 < data.size) {
+                        val owner = String(data, 0, ownerEnd, Charsets.ISO_8859_1);
+                        val rating = data[ownerEnd + 1].toInt() and 0xFF;
+
+                        return@readAsStream POPMHeaders(owner, rating);
+                    }
+
+                    return@readAsStream POPMHeaders();
+                }
+
+                var remaining = frameSize.toLong();
+                while (remaining > 0) {
+                    val skipped = input.skip(remaining);
+
+                    if (skipped > 0)
+                        remaining -= skipped;
+                    else {
+                        if (input.read() == -1)
+                            return@readAsStream POPMHeaders();
+
+                        remaining--;
+                    }
+                }
+
+                consumed += frameSize;
+            }
+
+            return@readAsStream POPMHeaders();
+        }
+    }
+    data class POPMHeaders(
+        val ratingType: String? = null,
+        val rating: Int? = null
+    ) {
+        fun popmRatingToStars(): Int {
+            val rating = this.rating ?: return 0;
+
+            if (rating <= 0)
+                return 0;
+            if (rating >= 224)
+                return 5;
+            if (rating >= 160)
+                return 4;
+            if (rating >= 96)
+                return 3;
+            if (rating >= 32)
+                return 2;
+
+            return 1;
+        }
+    }
+
 
     companion object {
 

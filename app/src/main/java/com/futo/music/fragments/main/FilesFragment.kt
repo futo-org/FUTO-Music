@@ -229,7 +229,7 @@ class FilesFragment: MainFragment() {
                                     val id = item.id;
                                     val dir = StateDatabase.instance.db.directoryDao().get(id);
                                     if(dir != null)
-                                        StateFiles.instance.scanAndProcessDirectory(context, dir);
+                                        StateFiles.instance.scanAndProcessDirectory(context, dir, null, false, true);
                                     else UIDialogs.appToast("Directory not found?");
                                 }
                             }.withMarginBottom(5)
@@ -483,7 +483,7 @@ class FilesFragment: MainFragment() {
                                     if(ids.size > 0) {
                                         val refetch = StateDatabase.instance.db.directoryDao().get(ids.first());
                                         if(refetch != null)
-                                            StateFiles.instance.scanAndProcessDirectory(context, refetch);
+                                            StateFiles.instance.scanAndProcessDirectory(context, refetch, null, false, true);
                                     }
                                 }
                                 catch(ex: Throwable) {

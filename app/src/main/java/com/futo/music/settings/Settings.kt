@@ -29,6 +29,7 @@ import com.futo.music.storage.db.DBTrackUpdateRatingDone
 import com.futo.music.storage.file.FragmentedStorage
 import com.futo.music.storage.file.FragmentedStorageFileJson
 import com.futo.music.storage.file.StringStorage
+import com.futo.music.toScoreRating
 import com.futo.music.ui.dialogs.ProgressDialog
 import com.futo.music.ui.views.containers.Setting
 import com.futo.music.ui.views.containers.SettingDropdownOptions
@@ -300,6 +301,47 @@ class Settings : FragmentedStorageFileJson() {
                         }
                     }
                 }, arrayOf("*/*"));
+            }
+        }
+
+        @Setting("Import Embedded Ratings", "Override all track ratings by embedded POPM ratings. (From scanned files, not mediastore)", icon = "ic_stars", order = 18)
+        fun importPOPMRatings() {
+            val act = StateApp.instance.activity() ?: return;
+
+            act.lifecycleScope.launch(Dispatchers.IO) {
+                val countAvailable = StateDatabase.instance.db.filesDao().countPopmRatings();
+                withContext(Dispatchers.Main) {
+                    if (countAvailable == 0) {
+                        UIDialogs.appToast("No Popm ratings found, try re-scanning the added directories if you have any.");
+                    } else {
+                        UIDialogs.showDialog(
+                            act,
+                            R.drawable.ic_stars,
+                            "Import Embedded Ratings",
+                            "Would you like to import embedded track ratings?\nThis will override ${countAvailable} song ratings.",
+                            null,
+                            0,
+                            UIDialogs.Action("Cancel", {}),
+                            UIDialogs.Action("Import", {
+                                act.lifecycleScope.launch(Dispatchers.IO) {
+                                    try {
+                                        val ratings = StateDatabase.instance.db.filesDao().getPopmRatings();
+                                        var count = 0;
+                                        for (rating in ratings) {
+                                            StateDatabase.instance.setRatingTrack(rating.trackId,rating.ratingPOPM);
+                                            count++;
+                                        }
+                                        UIDialogs.appToast("Imported ${count} ratings");
+                                    } catch (ex: Throwable) {
+                                        UIDialogs.appToast("Import failed:\n" + ex.message);
+                                        Logger.e(TAG, "Import failed: " + ex.message, ex);
+                                    }
+
+                                }
+                            }, UIDialogs.ActionStyle.PRIMARY)
+                        );
+                    }
+                }
             }
         }
 
