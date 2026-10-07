@@ -51,6 +51,7 @@ upload_apk_latest_and_versioned "./app/build/outputs/apk/stable/release/app-stab
 
 tmp_version="$(mktemp)"
 printf '%s\n' "$VERSION" > "$tmp_version"
+
 r2_cp "$tmp_version" "$PREFIX/$VERSION/version.txt" \
   "public, max-age=31536000, immutable" \
   "text/plain; charset=utf-8"
@@ -58,6 +59,19 @@ r2_cp "$tmp_version" "$PREFIX/version.txt" \
   "no-store" \
   "text/plain; charset=utf-8"
 rm -f "$tmp_version"
+
+
+tmp_version_json="$(mktemp)"
+printf '%s\n' \
+  "{\"version\":\"$VERSION\",\"name\":\"FUTO Music\",\"downloadUrl\":\"https://music.futo.tech/music/app-release.apk\"}" \
+  > "$tmp_version_json"
+r2_cp "$tmp_version_json" "$PREFIX/$VERSION/version.json" \
+  "public, max-age=31536000, immutable" \
+  "text/plain; charset=utf-8"
+r2_cp "$tmp_version_json" "$PREFIX/version.json" \
+  "no-store" \
+  "text/plain; charset=utf-8"
+rm -f "$tmp_version_json"
 
 tmp_changelog="$(mktemp)"
 git tag -l --format='%(contents)' "$VERSION" > "$tmp_changelog"
