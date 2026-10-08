@@ -12,6 +12,7 @@ import com.futo.music.UIDialogs
 import com.futo.music.UIDialogs.ActionStyle
 import com.futo.music.fragments.main.BuyFragment
 import com.futo.music.fragments.main.ContentsFragment
+import com.futo.music.fragments.main.NotificationOverlayView
 import com.futo.music.logging.Logger
 import com.futo.music.logic.shuffles.ESmartShuffle
 import com.futo.music.logic.shuffles.ESmartShuffleV2
@@ -430,6 +431,30 @@ class Settings : FragmentedStorageFileJson() {
         @Setting("Version Type", "The build type", order = 2, type = SettingType.INFO)
         public val versionType: String get() = BuildConfig.FLAVOR;
 
+        @Setting("Check for Updates", "Check if there is a newer version of the app")
+        fun checkForUpdates(){
+            UIDialogs.appToast("Checking for updates...");
+            val act = StateApp.instance.activity() ?: return;
+            act.lifecycleScope.launch(Dispatchers.IO) {
+                val updateVersion = act.getUpdater()?.hasUpdate(BuildConfig.VERSION_CODE);
+                if(updateVersion != null) {
+                    val changelog = act.getUpdater()?.getChangelog(updateVersion);
+                    withContext(Dispatchers.Main) {
+                        UIDialogs.showDialog(act, R.drawable.ic_update, "New Version [v${updateVersion}]",
+                            "A new version of the app was found, would you like to update?",
+                            changelog, 0, UIDialogs.Action("Cancel", {}),
+                            UIDialogs.Action("Update", {
+                                act.checkForUpdate(true);
+                                UIDialogs.appToast("Update download started, you can update from the notifications when it is finished.");
+                                act.navigate<NotificationOverlayView.Frag>();
+                            }, ActionStyle.PRIMARY));
+                    }
+                }
+                else {
+                    UIDialogs.appToast("No new version found");
+                }
+            }
+        }
 
         /*
         @Setting("Test Throw", "")

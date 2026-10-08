@@ -469,6 +469,9 @@ class MainActivity : AppCompatActivity() {
         UIDialogs.showAlphaDialog(this, lifecycleScope);
     }
 
+    fun getUpdater(): Updater?{
+        return _updater;
+    }
     @OptIn(DelicateCoroutinesApi::class)
     fun checkForUpdate(skipDownloadQuery: Boolean) {
         if(BuildConfig.IS_PLAYSTORE_BUILD)
