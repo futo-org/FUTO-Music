@@ -112,6 +112,10 @@ class SettingsFragment: MainFragment() {
                                     view.isVisible = false;
                             }
                         }
+                        else if(setting.name == "Check for Updates") {
+                            if(view is View)
+                                view.isVisible = false;
+                        }
                     }
                     sets.setSettingsObject(it.first);
                     val scrollView = ScrollView(context);
