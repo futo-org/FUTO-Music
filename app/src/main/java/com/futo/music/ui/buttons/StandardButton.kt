@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.compose.ui.graphics.Color
 import androidx.core.view.isVisible
 import com.futo.music.R
 import com.futo.music.constructs.Event0

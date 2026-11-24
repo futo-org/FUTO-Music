@@ -8,7 +8,6 @@ import android.provider.MediaStore
 import android.provider.MediaStore.Audio.Artists
 import android.util.Size
 import android.webkit.MimeTypeMap
-import androidx.compose.ui.text.toLowerCase
 import androidx.core.database.getStringOrNull
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
